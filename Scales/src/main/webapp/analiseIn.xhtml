@@ -1,0 +1,234 @@
+<ui:composition template="templates/layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+				xmlns:tp="http://java.sun.com/jsf/composite/components"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<ui:param name="contentName" value="Analizele de intrare" />
+
+	<ui:define name="info">
+		<tp:detailPanel customBean="#{laborBean}" doubleDate="false" />
+	</ui:define>
+
+	<ui:define name="content">
+		<h:form id="contentForm" autocomplete="off">
+			<f:event type="preRenderView"
+				listener="#{laborBean.initController}" />
+			<p:dataTable var="labor" value="#{laborBean.laborList}" rows="15"
+				id="table" editable="true" paginator="true"
+				currentPageReportTemplate="{currentPage} din {totalPages}"
+				emptyMessage="Nu exista date"
+				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				selection="#{laborBean.selectedLabor}" rowKey="#{labor.nr_analiz}">
+
+				<p:column headerText="№ Analiza">
+					<h:outputText value="#{labor.nr_analiz}" />
+				</p:column>
+
+				<p:column headerText="Data analizei #{labor.data_analiz}">
+					<h:outputText value="#{labor.data_analiz}">
+						<f:convertDateTime pattern="dd.MM.yyyy" />
+					</h:outputText>
+				</p:column>
+
+				<p:column headerText="Sezon">
+					<h:outputText value="#{labor.sezon_yyyy}" />
+				</p:column>
+
+				<p:column headerText="Cereale">
+					<h:outputText value="#{labor.clcsc_mpt.label}" />
+				</p:column>
+
+				<p:column headerText="Umiditate (%)">
+					<h:outputText value="#{labor.anlz_vlajn}" />
+				</p:column>
+
+				<p:column headerText="Corpuri Straine(%)">
+					<h:outputText value="#{labor.anlz_sorn}" />
+				</p:column>
+
+				<p:column headerText="Cereale necuratate(%)">
+					<h:outputText value="#{labor.anlz_zernprim}" />
+				</p:column>
+
+				<p:column headerText="Infestare (1-DA, O-NU)">
+					<h:outputText value="#{labor.anlz_zaraj}" />
+				</p:column>
+
+				<p:column headerText="Natura  (g / l)">
+					<h:outputText value="#{labor.anlz_natura}" />
+				</p:column>
+
+				<p:column headerText="IDC% ">
+					<h:outputText value="#{labor.anlz_maslprim}" />
+				</p:column>
+
+				<p:column headerText="Gluten">
+					<h:outputText value="#{labor.anlz_kleik}" />
+				</p:column>
+
+				<p:column headerText="Germinatie  (%)">
+					<h:outputText value="#{labor.sanlz_sorn}" />
+				</p:column>
+
+				<p:column headerText="Aciditate">
+					<h:outputText value="#{labor.anlz_kislot}" />
+				</p:column>
+
+				<p:column headerText="Clasacereale">
+					<h:outputText value="#{labor.partida}" />
+				</p:column>
+
+				<p:column headerText="% de cereale (cob/stiulete)">
+					<h:outputText value="#{labor.anlz_pr_vih_zerna}" />
+				</p:column>
+
+				<p:column headerText="Boabe defecte  sparte">
+					<h:outputText value="#{labor.anlz_bitoe_zerno}" />
+				</p:column>
+
+				<p:column headerText="№ certificat">
+					<h:outputText value="#{labor.nr_sert}" />
+				</p:column>
+
+				<p:column headerText="Furnizor">
+					<h:outputText value="#{labor.clcdep_postavt}" />
+				</p:column>
+
+				<p:column headerText="Transportator">
+					<h:outputText value="#{labor.clcdep_gruzootpravitt}" />
+				</p:column>
+
+				<p:column headerText="Comentariu">
+					<h:outputText value="#{labor.txt_comment}" />
+				</p:column>
+
+				<p:column headerText="Actions" style="text-align: center;width:3%;">
+					<p:commandButton icon="ui-icon-pencil" title="Editare"
+						oncomplete="setDialogName('Editare'); PF('editDialog').show();"
+						immediate="true" update=":formDlg1:editDialog" process="@this"
+						global="false" actionListener="#{laborBean.openEditForm(labor)}">
+					</p:commandButton>
+					<f:facet name="footer">
+						<p:commandButton id="addButton" icon="ui-icon-plus"
+							styleClass="regCommandButton"
+							oncomplete="setDialogName('Adauga'); PF('editDialog').show();"
+							update=":formDlg1:editDialog" process="@this" global="false">
+							<f:setPropertyActionListener value="#{laborBean.newLabor}"
+								target="#{laborBean.selectedLabor}" />
+						</p:commandButton>
+					</f:facet>
+				</p:column>
+			</p:dataTable>
+		</h:form>
+		<h:form id="formDlg1">
+			<p:dialog header="Edit" id="editDialog" widgetVar="editDialog"
+				modal="true" showEffect="explode" hideEffect="explode"
+				resizable="false" closeOnEscape="true">
+				<p:outputPanel id="scaleDetail" class="editForm">
+					<p:panelGrid columns="2" columnClasses="label slabel,value">
+
+						<h:outputText value="№ Analiza" />
+						<p:inputText value="#{laborBean.selectedLabor.nr_analiz}" />
+
+						<h:outputText value="Data analizei" />
+						<p:calendar value="#{laborBean.selectedLabor.data_analiz}"
+							pattern="dd.MM.yyyy" readonlyInput="true" locale="ro">
+							<f:convertDateTime pattern="dd.MM.yyyy" />
+						</p:calendar>
+
+						<h:outputText value="Sezon" />
+						<p:inputText value="#{laborBean.selectedLabor.sezon_yyyy}"
+							required="true" requiredMessage="Completati sezon">
+							<pe:keyFilter regEx="/[\d\-]/" />
+						</p:inputText>
+
+						<h:outputText value="Cereale" />
+						<p:autoComplete value="#{laborBean.selectedLabor.clcsc_mpt}"
+							completeMethod="#{laborBean.completeTipulList}" var="item"
+							forceSelection="true" itemLabel="#{item.label}"
+							itemValue="#{item}" converter="customItemConverter">
+						</p:autoComplete>
+
+						<h:outputText value="Umiditate  (%)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_vlajn}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Corpuri  Straine(%)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_sorn}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Cereale  necuratate(%)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_zernprim}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Infestare  (1-DA, O-NU)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_zaraj}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Natura  (g / l)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_natura}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="IDC %" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_maslprim}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Gluten" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_kleik}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Germinatie  (%)" />
+						<p:inputText value="#{laborBean.selectedLabor.sanlz_sorn}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Aciditate" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_kislot}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Clasa cereale" />
+						<p:inputText value="#{laborBean.selectedLabor.partida}">
+							<pe:keyFilter regEx="/[\d\-]/" />
+						</p:inputText>
+
+						<h:outputText value="% de cereale (cob/stiulete)" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_pr_vih_zerna}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Boabe defecte sparte" />
+						<p:inputText value="#{laborBean.selectedLabor.anlz_bitoe_zerno}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="№ certificat" />
+						<p:inputText value="#{laborBean.selectedLabor.nr_sert}" />
+
+						<h:outputText value="Comentariu" />
+						<p:inputText value="#{laborBean.selectedLabor.txt_comment}" />
+					</p:panelGrid>
+				</p:outputPanel>
+				<hr />
+				<p:commandButton value="Salvare"
+					oncomplete="if (!args.validationFailed) PF('editDialog').hide()"
+					actionListener="#{laborBean.saveLabor}"
+					update=":contentForm:table :msgs" process=":formDlg1:editDialog" />
+				<p:commandButton value="Anulare" onclick="PF('editDialog').hide()"
+					immediate="true" global="false" process=":formDlg1:editDialog">
+				</p:commandButton>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

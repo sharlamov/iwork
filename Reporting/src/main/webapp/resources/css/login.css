@@ -1,0 +1,40 @@
+body {
+    background-color: buttonface;
+}
+
+.loginBox {
+    border: 1px solid rgba(147, 184, 189, 0.8);
+    -webkit-box-shadow: 0 2px 5px rgba(105, 108, 109, 0.7), 0 0 8px 5px rgba(208, 223, 226, 0.4) inset;
+    -moz-box-shadow: 0 2px 5px rgba(105, 108, 109, 0.7), 0 0 8px 5px rgba(208, 223, 226, 0.4) inset;
+    box-shadow: 0 2px 5px rgba(105, 108, 109, 0.7), 0 0 8px 5px rgba(208, 223, 226, 0.4) inset;
+    background-color: #F5F5DC;
+
+    top: 50%;
+    left: 50%;
+    width: 300px;
+    height: 180px;
+    margin-top: -90px;
+    margin-left: -150px;
+    position: absolute;
+}
+
+.loginField {
+    display: block !important;
+    width: 90%;
+    height: 30px;
+    margin: 10px auto !important;
+    padding: 0 !important;
+    text-align: center;
+}
+
+h1 {
+    text-transform: uppercase;
+    text-shadow: -1px -1px #000, 0 1px 0 #444;
+    color: #908D8D;
+    transition: all 1s;
+}
+
+h1:hover {
+    text-shadow: -1px -1px #000, 0 1px 0 #444;
+    color: #1A1A1A;
+}

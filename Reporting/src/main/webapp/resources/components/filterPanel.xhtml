@@ -1,0 +1,85 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite">
+
+<composite:interface>
+    <composite:attribute name="bean" type="com.reporting.bean.AbstractReportBean" required="true"/>
+    <composite:attribute name="showSeasons" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="showRegions" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="showCultures" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="showPoints" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="backPath" type="String"/>
+    <composite:attribute name="oncomplete" type="String" required="false"/>
+    <composite:attribute name="update"/>
+</composite:interface>
+
+<composite:implementation>
+
+    <p:outputPanel id="fpan">
+        <p:toolbar>
+            <f:facet name="left">
+                <ui:include src="/templates/menu.xhtml"/>
+
+                <p:outputPanel rendered="#{not empty cc.attrs.backPath}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:button outcome="#{cc.attrs.backPath}" icon="fa fa-backward" value="Back"/>
+                </p:outputPanel>
+
+                <p:outputPanel rendered="#{cc.attrs.showSeasons}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:selectOneButton value="#{cc.attrs.bean.season}">
+                        <f:selectItems value="#{cc.attrs.bean.seasons}"/>
+                        <p:ajax execute="@form" update="#{cc.attrs.update}"
+                                listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
+                    </p:selectOneButton>
+                </p:outputPanel>
+
+                <p:outputPanel rendered="#{cc.attrs.showCultures}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:selectOneMenu value="#{cc.attrs.bean.culture}" converter="customItemConverter" styleClass="selectCulture">
+                        <f:selectItem itemLabel="#{msg['filter.allculture']}" itemValue="#{null}" />
+                        <f:selectItems var="t" itemLabel="#{t.label}##{t.name}" value="#{cc.attrs.bean.cultures}"/>
+                        <p:ajax event="change" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
+                    </p:selectOneMenu>
+                </p:outputPanel>
+
+                <p:outputPanel rendered="#{cc.attrs.showRegions}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:selectOneButton value="#{cc.attrs.bean.region}" converter="customItemConverter">
+                        <f:selectItems value="#{cc.attrs.bean.regions}"/>
+                        <p:ajax execute="@form" update="#{cc.attrs.update}"
+                                listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
+                    </p:selectOneButton>
+                </p:outputPanel>
+
+                <p:outputPanel rendered="#{cc.attrs.showPoints}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:selectCheckboxMenu id="menu" value="#{cc.attrs.bean.selectedPoints}" label="#{msg['filter.places']}" style="width: 200px;">
+                        <f:selectItem itemLabel="#{msg['filter.places.o1']}" itemValue="0"/>
+                        <f:selectItem itemLabel="#{msg['filter.places.o2']}" itemValue="1"/>
+                        <f:selectItem itemLabel="#{msg['filter.places.o3']}" itemValue="2"/>
+                        <f:selectItem itemLabel="#{msg['filter.places.o4']}" itemValue="3"/>
+                        <p:ajax event="change" listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
+                        <p:ajax event="toggleSelect" listener="#{cc.attrs.bean.applyFilters}"  process="#{cc.clientId}:fpan"/>
+                    </p:selectCheckboxMenu>
+                </p:outputPanel>
+            </f:facet>
+
+            <f:facet name="right">
+                <p:outputLabel>#{cc.attrs.bean.loggedUser.username}</p:outputLabel>
+                <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                <p:selectOneMenu value="#{authBean.locale}"    style="vertical-align: bottom;">
+                    <f:selectItems value="#{authBean.languages}"/>
+                    <p:ajax event="change" process="@form" update="@form"
+                            listener="#{authBean.countryLocaleCodeChanged}" />
+                </p:selectOneMenu>
+                <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                <p:commandButton action="#{authBean.logout}" icon="ui-icon-person"/>
+            </f:facet>
+        </p:toolbar>
+    </p:outputPanel>
+
+</composite:implementation>
+</html>

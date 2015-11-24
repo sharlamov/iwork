@@ -1,0 +1,76 @@
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+}
+
+html {height: 100%;}
+
+body {
+    height: 100%;
+    width: 100%;
+    font-family: "Segoe UI", Aria, sans-serif;
+    font-size: 1em;
+}
+
+a {
+    color: #F30D0D;
+    text-decoration: none;
+}
+
+a:hover{
+    color: yellow;
+}
+
+a, a:hover{
+    -webkit-transition: all.6s ease;
+    -moz-transition: all.6s ease;
+    -o-transition: all.6s ease;
+    -ms-transition: all.6s ease;
+    transition: all.6s ease;
+}
+
+.clear{
+    clear: both;
+}
+
+header{
+    width: 98%;
+    float: left;
+    padding: 1%;
+    border-bottom: 2px solid silver;
+    background-color: beige;
+}
+
+header #logo{
+    width: 30%;
+    float: left;
+    font-family: "Times New Roman", sans-serif;
+    font-size: 2em;
+    color: #939393;
+}
+header #menuHead{
+    width: 40%;
+    float: left;
+}
+
+header #menuHead div{
+    margin-right: 4px;
+    float: left;
+    padding: 3px;
+    background-color: #afafaf;
+    color: white;
+    border-radius: 3px;
+    width: 150px;
+}
+
+header #menuHead div:hover{
+    background-color: gray;
+}
+
+
+header #regAuth{
+    width: 30%;
+    float: left;
+    text-align: right;
+}

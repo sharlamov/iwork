@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view locale="#{authBean.locale}">
+    <h:head>
+        <title>${msg['company']}</title>
+        <h:outputStylesheet library="css" name="dash.css"/>
+        <h:outputStylesheet library="css" name="pf.css"/>
+    </h:head>
+
+    <body>
+    <h:form style="height: 100%;">
+        <f:event type="preRenderView" listener="#{homeBean.initController}"/>
+
+        <div id="layout-portlets-cover">
+            <div class="layout-header-box">
+                <img id="logo" src="resources/images/logo.jpg" class="Fleft"/>
+
+                <h1 class="black Fs24 FontRalewayMedium" style="display: inline-block;"> ${msg['app.name']}</h1>
+                <a href="#{request.contextPath}/j_spring_security_logout" class="Animated05"
+                   style="display: inline-block; float:right; margin-right: 10px;"><i
+                        class="fa fa-sign-out btnMenu"/></a>
+                <p:selectOneMenu value="#{authBean.locale}" style="float: right; margin-right: 10px;">
+                    <f:selectItems value="#{authBean.languages}"/>
+                    <p:ajax event="change" process="@form" update="@form"
+                            listener="#{authBean.countryLocaleCodeChanged}"/>
+                </p:selectOneMenu>
+            </div>
+            <div class="layout-portlets-box">
+                <div style="margin-left: 20%" class="Container20 Responsive">
+                    <div class="ContainerIndent">
+                        <div class="Container100">
+
+                            <div class="DispInlBlock MarTop20">
+                                <div class="ContainerTitle">
+                                    <i class="fa fa-line-chart Fs40 orange Fleft MarRight10"/>
+                                </div>
+                                <div class="Container80">
+                                    <div class="Fright">
+                                        <h2 class="black Fs24 FontRalewayMedium">${msg['home.part1.name']}</h2>
+                                        <span class="Fs15 gray FontRalewayRegular DispBlock">${msg['home.part1.desc']}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="Seperator"></div>
+                            <div class="Container100 MarTop20">
+                                <ui:repeat value="#{homeBean.reportList}" var="rep">
+                                    <p:commandLink action="#{homeBean.increment(rep[0])}" ajax = "true"
+                                                   class="Wid30 Responsive BorderedBox Fleft TexAlCenter HoverEffect">
+                                        <div class="ContainerIndent">
+                                            <div class="EmptyBox10"></div>
+                                            <i class="fa #{rep[1]} Fs24 animated swing infinite gray"/>
+                                            <span class="Fs10 DispBlock gray">#{rep[2]}</span>
+                                            <span class="Fs24 DispBlock red">#{homeBean.count(rep[0])}</span>
+
+                                            <div class="EmptyBox10"></div>
+                                        </div>
+                                    </p:commandLink>
+                                </ui:repeat>
+                            </div>
+
+                            <div class="Container100 MarTop20 TexAlLeft">
+                                <div class="Fs16 gray FontRalewayRegular"><i
+                                        class="fa fa-star MarRight10 orange"/>${msg['home.subscription']}
+                                </div>
+                                <div class="Seperator"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="Container20 Responsive">
+                    <div class="ContainerIndent">
+                        <div class="Container100">
+                            <div class="DispInlBlock MarTop20">
+                                <div class="ContainerTitle">
+                                    <i class="fa fa-phone-square Fs40 red Fleft MarRight10"/>
+                                </div>
+                                <div class="Container80">
+                                    <div class="Fright">
+                                        <h2 class="black Fs24 FontRalewayMedium">${msg['home.part2.name']}</h2>
+                                        <span class="Fs15 gray FontRalewayRegular DispBlock">${msg['home.part2.desc']}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="Seperator"></div>
+                            <div class="Container100 MarTop20">
+
+                            </div>
+
+                            <div class="Container100 MarTop20 TexAlLeft">
+                                <div class="Fs16 gray FontRalewayRegular"><i
+                                        class="fa fa-star MarRight10 orange"/>${msg['home.subscription']}
+                                </div>
+                                <div class="Seperator"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </h:form>
+
+    </body>
+</f:view>
+</html>

@@ -1,0 +1,109 @@
+.map-marker {
+	/* adjusting for the marker dimensions
+    so that it is centered on coordinates */
+	margin-left: -8px;
+	margin-top: -8px;
+}
+.map-marker.map-clickable {
+	cursor: pointer;
+}
+.pulse {
+	width: 5px;
+	height: 5px;
+	-webkit-border-radius: 30px;
+	-moz-border-radius: 30px;
+	border-radius: 30px;
+	z-index: 10;
+	position: absolute;
+}
+
+.map-marker .dot {
+	background: transparent;
+	-webkit-border-radius: 60px;
+	-moz-border-radius: 60px;
+	border-radius: 60px;
+	height: 50px;
+	width: 50px;
+	-webkit-animation: pulse 3s ease-out;
+	-moz-animation: pulse 3s ease-out;
+	animation: pulse 3s ease-out;
+	-webkit-animation-iteration-count: infinite;
+	-moz-animation-iteration-count: infinite;
+	animation-iteration-count: infinite;
+	position: absolute;
+	top: -27.5px;
+	left: -27.5px;
+	z-index: 1;
+	opacity: 0;
+}
+
+.pulseColorGreen {
+	background-color: #716f42;
+	border: 5px solid #538037;
+}
+
+.map-marker .dotGreen {
+	border: 10px solid green;
+}
+
+.pulseColorBlue {
+	background-color: #716f42;
+	border: 5px solid #506ef7;
+}
+
+.map-marker .dotBlue {
+	border: 10px solid #0937ff;
+}
+
+.pulseColorBlack {
+	background-color: #120a0d;
+}
+
+.map-marker .dotBlack {
+
+}
+
+@-moz-keyframes pulse {
+	0% {
+		-moz-transform: scale(0);
+		opacity: 0.0;
+	}
+	25% {
+		-moz-transform: scale(0);
+		opacity: 0.1;
+	}
+	50% {
+		-moz-transform: scale(0.1);
+		opacity: 0.3;
+	}
+	75% {
+		-moz-transform: scale(0.5);
+		opacity: 0.5;
+	}
+	100% {
+		-moz-transform: scale(1);
+		opacity: 0.0;
+	}
+}
+@-webkit-keyframes pulse {
+	0% {
+		-webkit-transform: scale(0);
+		opacity: 0.0;
+	}
+	25% {
+		-webkit-transform: scale(0);
+		opacity: 0.1;
+	}
+	50% {
+		-webkit-transform: scale(0.1);
+		opacity: 0.3;
+	}
+	75% {
+		-webkit-transform: scale(0.5);
+		opacity: 0.5;
+	}
+	100% {
+		-webkit-transform: scale(1);
+		opacity: 0.0;
+	}
+}

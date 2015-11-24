@@ -1,0 +1,68 @@
+body {
+    background-color: #C3CCD5;
+}
+
+.ui-layout-north {
+    z-index: 20 !important;
+    overflow: visible !important;
+}
+
+.ui-layout-north .ui-layout-unit-content {
+    overflow: visible !important;
+}
+
+.ui-dashboard-column {
+    width: 33%;
+}
+
+.ui-dashboard-column .ui-panel {
+    width: 93%;
+    height: 150px;
+}
+
+.ui-widget, .ui-widget .ui-widget {
+    font-size: 13px;
+    font-family: "Times New Roman", Times, serif;
+}
+
+.hoverLink :hover {
+    background-color: #E3E3E3;
+    border: 1px solid;
+}
+
+.cultures .ui-icon {
+    background-color: yellowgreen;
+}
+
+.ui-panel .ui-panel-titlebar {
+    font-size: 18px;
+}
+
+.ui-panel .ui-panel-footer {
+    font-size: 18px;
+    font-weight: bold;
+    color: peru;
+}
+
+.colorSpan {
+    top: 3px;
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    position: relative;
+    margin-right: 3px;
+}
+
+.selectCulture {
+    width: 200px !important;
+    vertical-align: bottom;
+    font-weight: bold !important;
+    top: 3px;
+}
+
+.selectCulture .ui-inputfield {
+    font-weight: bold !important;
+    background: #c4c4c4 -webkit-gradient(linear, left top, left bottom, from(rgba(255, 255, 255, 0.8)), to(rgba(255, 255, 255, 0)));
+    box-shadow: inset 0 0 0;
+    height: 15px !important;
+}

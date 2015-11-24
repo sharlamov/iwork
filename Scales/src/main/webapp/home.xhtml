@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>${messages.company}</title>
+  <link href="resources/css/site.css" rel="stylesheet"/>
+ 
+</head>
+
+<body>
+
+<div id="main">
+  <h1>${messages.company}</h1> 
+  <h2>Continutul site-ului:</h2>
+
+  <a href="scalesOut.xhtml" style="#{authenticationBean.currentUser.level eq 'LABORANT' ? 'display: none;' : 'display: block;'}"> <p>Iesiri auto</p></a>
+  <a href="scalesIn.xhtml" style="#{authenticationBean.currentUser.level eq 'LABORANT' ? 'display: none;' : 'display: block;'}" > <p>Intrari auto</p></a>
+  <a href="analiseIn.xhtml?type=in" style="#{authenticationBean.currentUser.level eq 'CANTAR' ? 'display: none;' : 'display: block;'}"> <p>Analizele de intrare</p></a>
+  <a href="analiseOut.xhtml?type=out" style="#{authenticationBean.currentUser.level eq 'CANTAR' ? 'display: none;' : 'display: block;'}"> <p>Analizele de iesire</p></a>
+  <a href="j_spring_security_logout" > <p>Iesire</p></a>
+  <footer id="foot01"></footer>
+</div>
+
+
+ <script>
+  document.getElementById("foot01").innerHTML =
+	  "<p>&amp;copy;" + new Date().getFullYear() + " Transoil Group. All rights reserved.</p>";
+  </script>
+
+</body>
+</html> 

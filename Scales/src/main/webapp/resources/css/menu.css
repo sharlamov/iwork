@@ -1,0 +1,42 @@
+.topmenu ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+.topmenu img {
+	width:35px;
+	height:35px;
+	vertical-align:middle;
+	text-align: center;
+}
+.topmenu li {
+    float: left;
+    padding: 1px;
+   
+}
+.topmenu a:link, a:visited {
+    display: block;
+    text-decoration: none;
+	font-weight: bold;
+	text-align: center;
+    width: 55px;
+    
+    color: #FFFFFF;
+    background-color: #909090;
+    padding: 4px;
+    border-radius: 4px;
+}
+.topmenu a:hover, a:active {
+    background-color: #333;
+}
+.topmenu span {
+    text-transform: uppercase;
+    display: block;
+    padding: 4px;
+}
+.topmenu .separateLeft{
+	border-left: 2px solid #cccccc;
+	padding-left: 5px;
+	margin-left: 5px;
+}

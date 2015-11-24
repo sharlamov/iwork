@@ -1,0 +1,140 @@
+<ui:composition template="templates/layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:cmp="http://java.sun.com/jsf/composite/components"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:param name="viewFilter" value="true"/>
+
+    <ui:define name="content">
+        <h:outputScript library="js" name="reports.js"/>
+        <f:event type="preRenderView" listener="#{managersBean.initController}"/>
+
+        <cmp:filterPanel id="filter" bean="#{managersBean}" update="@form:chart_panel" showSeasons="true"
+                         showRegions="true" showCultures="true"/>
+
+        <p:outputPanel id="chart_panel">
+            <table border="0" style="height: 100%; width: 100%">
+                <tr>
+                    <td width="34%" style="text-align:center">${msg['mng.chart1.name']}</td>
+                    <td colspan="2"
+                        style="text-align:center">${msg['mng.tables.name']}
+                    </td>
+                </tr>
+                <tr>
+                    <td width="34%">
+                        <p:chart type="bar" model="#{managersBean.horizontalBarModel}" style="height:400px" responsive="true" rendered="#{managersBean.isHorizontalBar}"/>
+                    </td>
+                    <td width="33%">
+                        <p:scrollPanel mode="native">
+                            <p:dataTable var="item" value="#{managersBean.dataManagers}" style="height: 400px"
+                                         tableStyle="width:auto" reflow="true">
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="#{msg['mng.table0.col0']}"/>
+                                        <p:column headerText="#{msg['mng.table0.col1']}"/>
+                                        <p:column headerText="#{msg['mng.table0.col2']}" colspan="2"/>
+                                        <p:column headerText="#{msg['mng.table0.col3']}" colspan="2"/>
+                                    </p:row>
+                                </p:columnGroup>
+
+
+                                <p:column>
+                                    <h:outputText value="#{item[1]}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[2]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[3]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[4]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{item[5]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[6]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:scrollPanel>
+                    </td>
+                    <td width="33%">
+                        <p:scrollPanel mode="native">
+                            <p:dataTable var="item" value="#{managersBean.dataClient}" style="height: 400px"
+                                         tableStyle="width:auto" reflow="true">
+
+                                <p:columnGroup type="header">
+                                    <p:row>
+                                        <p:column headerText="#{msg['mng.table1.col0']}"/>
+                                        <p:column headerText="#{msg['mng.table1.col1']}"/>
+                                        <p:column headerText="#{msg['mng.table1.col2']}" colspan="2"/>
+                                        <p:column headerText="#{msg['mng.table1.col3']}" colspan="2"/>
+                                    </p:row>
+                                </p:columnGroup>
+
+
+                                <p:column>
+                                    <h:outputText value="#{item[1]}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[2]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[3]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[4]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="#{item[5]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column>
+                                    <h:outputText value="#{item[6]}" style="float:right">
+                                        <f:convertNumber maxFractionDigits="2"/>
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:scrollPanel>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3">
+                        <p:chart type="line" model="#{managersBean.modelPayment}" responsive="true"
+                                 rendered="#{managersBean.isModelPayment}" style="height:400px"/>
+                    </td>
+                </tr>
+            </table>
+        </p:outputPanel>
+    </ui:define>
+</ui:composition>

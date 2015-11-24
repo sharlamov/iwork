@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<faces-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns="http://java.sun.com/xml/ns/javaee"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+				http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+              version="2.0">
+
+    <application>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>en</supported-locale>
+            <supported-locale>ro</supported-locale>
+            <supported-locale>ru</supported-locale>
+        </locale-config>
+        <resource-bundle>
+            <base-name>com.reporting.messages</base-name>
+            <var>msg</var>
+        </resource-bundle>
+        <el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>
+    </application>
+
+    <factory>
+        <render-kit-factory>org.omnifaces.renderkit.Html5RenderKitFactory</render-kit-factory>
+    </factory>
+
+    <converter>
+        <converter-id>enumConverter</converter-id>
+        <converter-class>javax.faces.convert.EnumConverter</converter-class>
+    </converter>
+</faces-config>

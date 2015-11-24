@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ro" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>${messages.company}</title>
+    <h:outputScript library="js" name="common.js"/>
+    <h:outputStylesheet library="css" name="common.css"/>
+    <h:outputStylesheet library="css" name="login.css"/>
+</h:head>
+<h:body>
+    <h:form autocomplete="off">
+        <div class="loginBox">
+
+            <p:growl id="growl" sticky="true" showDetail="true" life="3000"/>
+
+            <h1 class="loginField">${messages.company}</h1>
+
+            <p:watermark for="username" value="Nume"/>
+            <p:inputText id="username" class="loginField" required="true"
+                         requiredMessage="Introduceti va rog nume"
+                         value="#{authenticationBean.userName}"/>
+
+
+            <p:watermark for="pass" value="Parola"/>
+            <p:password id="pass" class="loginField" required="true"
+                        value="#{authenticationBean.password}"
+                        requiredMessage="Introduceti va rog parola"/>
+
+            <p:commandButton value="Intra" class="loginField" icon="ui-icon-check"
+                             actionListener="#{authenticationBean.login}" update="growl"
+                             oncomplete="handleLoginRequest(xhr, status, args)"/>
+        </div>
+
+        <p:commandLink class="helpLink" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);">
+            <p:graphicImage name="images/help.png" width="50" height="50"/>
+            <p:fileDownload value="#{authenticationBean.helpFile}"/>
+        </p:commandLink>
+    </h:form>
+
+    <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false"
+              resizable="false">
+        <p:graphicImage name="images/ajaxloadingbar.gif"/>
+    </p:dialog>
+
+    <script type="text/javascript">
+        function start() {
+            PF('statusDialog').show();
+        }
+        function stop() {
+            PF('statusDialog').hide();
+        }
+    </script>
+</h:body>
+</html>

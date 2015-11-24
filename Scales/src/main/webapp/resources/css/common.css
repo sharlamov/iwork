@@ -1,0 +1,115 @@
+.someCssClassName {
+    background-image: url(resources/images/logout-icon.png)
+}
+
+.specfont {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 12px;
+}
+
+.ui-widget-content {
+    font-family: "Times New Roman", Times, serif;
+    color: #222;
+    font-size: 12px;
+}
+
+#ui-datepicker-div {
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 13px !important;
+}
+
+.ui-button.regCommandButton {
+    background: SlateGray;
+    width: 30px;
+    height: 27px;
+    border-color: white;
+}
+
+/*********************************/
+.label {
+    font-size: 15px;
+}
+
+.value input {
+    width: 300px;
+}
+
+.value {
+    display: table-cell;
+    width: 300px;
+}
+
+.dropListEdit {
+    display: none;
+}
+
+.dropListFind input {
+    width: 265px;
+}
+
+input[type="text"]:disabled {
+    background: #cccccc;
+    color: #ffffff;
+}
+
+/*********************************/
+.rowstrongred {
+    background-color: #CC0000 !important;
+}
+
+.rowred {
+    background-color: #FF6699 !important;
+}
+
+.rowgreen {
+    background-color: #CCFFCC !important;
+}
+
+.rowstronggreen {
+    background-color: #55FF55 !important;
+}
+
+/*********************************/
+.pair {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 15px;
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+.inputlabel {
+    display: inline-block;
+    width: 150px;
+    margin: 5px;
+}
+
+.inputvalue {
+    display: inline-block;
+    margin: 5px;
+}
+
+/*********************************/
+.period input {
+    width: 80px;
+}
+
+/*********************************/
+.contentPanel {
+    border: 1px solid #cccccc;
+    background: #F2F1F1 repeat-x scroll 0 0;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.titlePanel {
+    border: 1px solid #cccccc;
+    background: dimgrey;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    color: #F9F7F7;
+}
+
+.ui-widget {
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 13px !important;
+}

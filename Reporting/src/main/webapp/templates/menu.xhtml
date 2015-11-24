@@ -1,0 +1,18 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:body>
+
+    <p:commandButton id="dynaButton" type="button" icon="fa fa-list-ul"/>
+    <p:tooltip for="dynaButton" value="#{msg['menu']}" showEffect="clip" hideEffect="explode" />
+    <p:menu overlay="true" trigger="dynaButton" my="left top" at="left bottom">
+        <p:submenu label="#{msg['menu.nav']}">
+            <p:menuitem value="#{msg['menu.main']}" outcome="home?faces-redirect=true" icon="ui-icon-home"/>
+            <p:menuitem value="#{msg['menu.managers']}"  outcome="managers?faces-redirect=true" icon="ui-icon-disk"/>
+            <p:menuitem value="#{msg['menu.elevators']}"  outcome="elevators?faces-redirect=true" icon="ui-icon-disk"/>
+            <p:menuitem value="#{msg['menu.regions']}"  outcome="regions?faces-redirect=true" icon="ui-icon-disk"/>
+        </p:submenu>
+    </p:menu>
+
+</h:body>
+</html>

@@ -1,0 +1,26 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+	<h:head>
+		<h:outputStylesheet library="css" name="menu.css" />
+	</h:head>
+	<div class="topmenu">
+		<ul class="nav-bar">
+			<li style="#{authenticationBean.isVisible('scalesOut.xhtml')}"><a href="scalesOut.xhtml?type=out"> <img
+					src="resources/images/cargo2.png" title="Iesiri auto" />
+			</a></li>
+			<li style="#{authenticationBean.isVisible('scalesIn.xhtml')}"><a href="scalesIn.xhtml?type=in"> <img
+					src="resources/images/cargo1.png" title="Intrari auto" />
+			</a></li>
+			<li style="#{authenticationBean.isVisible('analiseIn.xhtml')}"><a href="analiseIn.xhtml?type=in"> <img
+					src="resources/images/anlzIn.png" title="Analizele de intrare" />
+			</a></li>
+			<li style="#{authenticationBean.isVisible('analiseOut.xhtml')}"><a href="analiseOut.xhtml?type=out"> <img
+					src="resources/images/anlzOut.png" title="Analizele de iesire" />
+			</a></li>
+			<li class="separateLeft"><a href="j_spring_security_logout"> <img
+					src="resources/images/logout-icon.png" title="Iesire" />
+			</a></li>
+		</ul>
+	</div>
+</ui:composition>

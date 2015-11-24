@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view locale="#{authBean.locale}">
+    <h:head>
+        <title>${msg['company']}</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <meta http-equiv="refresh" content="#{session.maxInactiveInterval};url=#{request.contextPath}/login.xhtml"/>
+        <h:outputScript library="js" name="common.js"/>
+        <h:outputStylesheet library="css" name="pf.css"/>
+        <h:outputStylesheet library="css" name="header.css"/>
+
+    </h:head>
+    <h:body>
+        <p:growl id="messages" showDetail="true"/>
+        <h:form id="inputDataForm" style="height: 100%;">
+            <div>
+                <ui:insert name="filter"/>
+            </div>
+            <div style="height: 98%;">
+                <ui:insert name="content"/>
+            </div>
+        </h:form>
+    </h:body>
+</f:view>
+</html>

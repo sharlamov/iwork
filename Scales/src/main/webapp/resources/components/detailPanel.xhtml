@@ -1,0 +1,65 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite">
+
+<composite:interface>
+    <composite:attribute name="customBean"/>
+    <composite:attribute name="doubleDate" type="java.lang.Boolean" default="true"/>
+</composite:interface>
+<composite:implementation>
+    <div class="pair">
+        <h:outputLabel class="inputlabel" value="Utilizator activ:"/>
+        <h:outputLabel class="inputvalue" value="#{cc.attrs.customBean.loggedUser.username}"/>
+            <p:commandLink class="helpLink" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);"
+                           style="float: right;">
+                <p:graphicImage name="images/help.png" width="50" height="50"/>
+                <p:fileDownload value="#{cc.attrs.customBean.helpFile}"/>
+            </p:commandLink>
+    </div>
+    <div class="pair">
+        <h:outputLabel class="inputlabel" value="Date:"/>
+
+        <div class="inputvalue period">
+            <p:calendar id="date1" value="#{cc.attrs.customBean.startDate}" locale="ro"
+                        pattern="dd.MM.yyyy" readonlyInput="true" class="specfont" style="width:50px;">
+                <f:convertDateTime pattern="dd.MM.yyyy"/>
+                <p:ajax event="dateSelect" update=":contentForm:table"
+                        listener="#{cc.attrs.customBean.dateChangeHandler}"/>
+            </p:calendar>
+
+            <p:calendar id="date2" value="#{cc.attrs.customBean.endDate}" locale="ro" rendered="#{cc.attrs.doubleDate}"
+                        pattern="dd.MM.yyyy" readonlyInput="true" class="specfont" style="margin-left:5px;">
+                <f:convertDateTime pattern="dd.MM.yyyy"/>
+                <p:ajax event="dateSelect" update=":contentForm:table"
+                        listener="#{cc.attrs.customBean.dateChangeHandler}"/>
+            </p:calendar>
+        </div>
+    </div>
+    <div class="pair">
+        <h:outputLabel class="inputlabel" value="Elevatorul/silozul:"/>
+        <h:outputLabel class="inputvalue"
+                       value="#{cc.attrs.customBean.loggedUser.elevator.label}"/>
+    </div>
+    <div class="pair">
+        <h:outputLabel class="inputlabel" value="Intreprindere:"/>
+        <h:outputLabel class="inputvalue"
+                       value="#{cc.attrs.customBean.loggedUser.getDiv().label}"/>
+    </div>
+
+    <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false"
+              resizable="false">
+        <p:graphicImage name="images/ajaxloadingbar.gif"/>
+    </p:dialog>
+
+    <script type="text/javascript">
+        function start() {
+            PF('statusDialog').show();
+        }
+        function stop() {
+            PF('statusDialog').hide();
+        }
+    </script>
+</composite:implementation>
+</html>

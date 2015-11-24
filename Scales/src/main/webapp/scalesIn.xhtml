@@ -1,0 +1,189 @@
+<ui:composition template="templates/layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:tp="http://java.sun.com/jsf/composite/components"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<ui:param name="contentName" value="Cantar Intrari Auto" />
+
+	<ui:define name="info">
+		<tp:detailPanel customBean="#{scalesBean}" />
+	</ui:define>
+
+	<ui:define name="content">
+		<f:event type="preRenderView"
+			listener="#{scalesBean.initController}" />
+
+		<h:form id="contentForm" autocomplete="off">
+			<p:dataTable var="scale" value="#{scalesBean.scalesList}" rows="10"
+				currentPageReportTemplate="{currentPage} din {totalPages}"
+				id="table" editable="true" emptyMessage="Nu exista date"
+				rowStyleClass="#{scalesBean.bgcolor(scale)}" paginator="true"
+				paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				selection="#{scalesBean.selectedScale}" rowKey="#{scale.id}">
+
+				<p:column headerText="Conducator auto" style="width:5%;">
+					<h:outputText value="#{scale.sofer}" />
+				</p:column>
+				<p:column headerText="Auto" style="width:5%;">
+					<h:outputText value="#{scale.auto}" />
+				</p:column>
+				<p:column headerText="Remorca" style="width:5%;">
+					<h:outputText value="#{scale.nr_remorca}" />
+				</p:column>
+				<p:column headerText="Furnizor">
+					<h:outputText value="#{scale.clcdep_postavt.label}" />
+				</p:column>
+				<p:column headerText="Punctul de incarcare">
+					<h:outputText value="#{scale.clcppogruz_s_12t.label}" />
+				</p:column>
+				<p:column headerText="Tipul de cereale">
+					<h:outputText value="#{scale.clcsc_mpt.label}" />
+				</p:column>
+				<p:column headerText="Sezon" style="width:3%;">
+					<h:outputText value="#{scale.sezon_yyyy}" />
+				</p:column>
+				<p:column headerText="Aviz seria/№" style="width:5%;">
+					<h:outputText value="#{scale.ttn_n}" />
+				</p:column>
+				<p:column headerText="Aviz data" style="width:4%;">
+					<h:outputText value="#{scale.ttn_data}">
+						<f:convertDateTime pattern="dd.MM.yyyy" />
+					</h:outputText>
+				</p:column>
+				<p:column headerText="Aviz cantitate" style="width:3%;">
+					<h:outputText value="#{scale.masa_ttn}" />
+				</p:column>
+				<p:column headerText="Nr. Analize" style="width:3%;">
+					<h:outputText value="#{scale.nr_analiz}" />
+				</p:column>
+				<p:column headerText="Transportator">
+					<h:outputText value="#{scale.clcdep_transpt.label}" />
+				</p:column>
+				<p:column headerText="Bruto" style="width:5%;">
+					<h:outputText value="#{scale.masa_brutto}" />
+				</p:column>
+				<p:column headerText="Тara" style="width:5%;">
+					<h:outputText value="#{scale.masa_tara}" />
+				</p:column>
+				<p:column headerText="Netto" style="width:5%;">
+					<h:outputText value="#{scale.masa_netto}" />
+				</p:column>
+				<p:column headerText="Actions" style="text-align: center;width:3%;">
+					<p:commandButton icon="ui-icon-pencil" title="Editare"
+						oncomplete="setDialogName('Editare'); PF('editDialog').show();"
+						immediate="true" update=":formDlg1:editDialog" process="@this"
+						global="false">
+						<f:setPropertyActionListener value="#{scale}"
+							target="#{scalesBean.selectedScale}" />
+					</p:commandButton>
+					<f:facet name="footer">
+						<p:commandButton id="addButton" icon="ui-icon-plus"
+							styleClass="regCommandButton"
+							oncomplete="setDialogName('Adauga'); PF('editDialog').show();"
+							update=":formDlg1:editDialog" process="@this" global="false">
+							<f:setPropertyActionListener value="#{scalesBean.newScale}"
+								target="#{scalesBean.selectedScale}" />
+						</p:commandButton>
+					</f:facet>
+				</p:column>
+			</p:dataTable>
+		</h:form>
+
+		<h:form id="formDlg1">
+			<p:dialog header="Edit" id="editDialog" widgetVar="editDialog"
+				modal="true" showEffect="explode" hideEffect="explode"
+				resizable="false" closeOnEscape="true">
+				<p:outputPanel id="scaleDetail" class="editForm">
+					<p:panelGrid columns="2" columnClasses="label slabel,value">
+
+						<h:outputText value="Conducator auto" />
+						<p:inputText value="#{scalesBean.selectedScale.sofer}" />
+
+						<h:outputText value="Auto" />
+						<p:inputText value="#{scalesBean.selectedScale.auto}" />
+
+						<h:outputText value="Remorca" />
+						<p:inputText value="#{scalesBean.selectedScale.nr_remorca}" />
+
+						<h:outputText value="Furnizor" />
+						<tp:dropList bean="#{scalesBean}" table="UNIV" tip="O" gr1="E"
+							value="#{scalesBean.selectedScale.clcdep_postavt}" />
+							
+						<h:outputText value="Punctul de incarcare" />
+						<tp:dropList bean="#{scalesBean}" table="SYSS" tip="S" gr1="12"
+							value="#{scalesBean.selectedScale.clcppogruz_s_12t}" />
+
+						<h:outputText value="Tipul de cereale" />
+						<p:autoComplete value="#{scalesBean.selectedScale.clcsc_mpt}"
+							completeMethod="#{scalesBeanOut.completeTipulList}" var="item"
+							forceSelection="true" itemLabel="#{item.label}"
+							itemValue="#{item}" converter="customItemConverter">
+						</p:autoComplete>
+
+						<h:outputText value="Sezon" />
+						<p:inputText value="#{scalesBean.selectedScale.sezon_yyyy}">
+							<pe:keyFilter regEx="/[\d\-]/" />
+						</p:inputText>
+
+						<h:outputText value="Aviz seria/№" />
+						<p:inputText value="#{scalesBean.selectedScale.ttn_n}" />
+
+						<h:outputText value="Aviz data" />
+						<p:calendar value="#{scalesBean.selectedScale.ttn_data}"
+							pattern="dd.MM.yyyy" readonlyInput="true">
+							<f:convertDateTime pattern="dd.MM.yyyy" />
+						</p:calendar>
+
+						<h:outputText value="Aviz cantitate, kg" />
+						<p:inputText value="#{scalesBean.selectedScale.masa_ttn}">
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Nr. Analize" />
+						<p:inputText value="#{scalesBean.selectedScale.nr_analiz}">
+							<pe:keyFilter regEx="/[\d\-]/" />
+						</p:inputText>
+
+						<h:outputText value="Transportator" />
+						<tp:dropList bean="#{scalesBean}" table="UNIV" tip="O" gr1="E"
+							value="#{scalesBean.selectedScale.clcdep_transpt}" />
+
+						<h:outputText value="Bruto, kg" />
+						<p:inputText id="fbruto" style="font-size: 15px;"
+							value="#{scalesBean.selectedScale.masa_brutto}">
+							<p:ajax event="keyup" update=":formDlg1:fnetto" global="false"
+								process=":formDlg1:editDialog" oncomplete="calcNetto();"/>
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Тara, kg" />
+						<p:inputText id="ftara" style="font-size: 15px;"
+							value="#{scalesBean.selectedScale.masa_tara}">
+							<p:ajax event="keyup" update=":formDlg1:fnetto" global="false"
+								process=":formDlg1:editDialog" oncomplete="calcNetto();"/>
+							<pe:keyFilter regEx="/[\d\-\.]/" />
+						</p:inputText>
+
+						<h:outputText value="Netto, kg" />
+						<h:outputText id="fnetto"
+							value="#{scalesBean.selectedScale.masa_netto}"
+							style="font-weight: bold;font-size: 15px;" />
+					</p:panelGrid>
+
+				</p:outputPanel>
+				<hr />
+				<p:commandButton value="Salvare"
+					oncomplete="if (!args.validationFailed) PF('editDialog').hide()"
+					actionListener="#{scalesBean.saveScale}"
+					update=":contentForm:table :msgs" process=":formDlg1:editDialog" />
+				<p:commandButton value="Anulare" onclick="PF('editDialog').hide()"
+					immediate="true" global="false" process=":formDlg1:editDialog">
+				</p:commandButton>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

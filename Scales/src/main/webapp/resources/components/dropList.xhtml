@@ -1,0 +1,49 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:p="http://primefaces.org/ui"
+	  xmlns:composite="http://java.sun.com/jsf/composite">
+<composite:interface>
+	<composite:attribute name="bean" required="true" />
+	<composite:attribute name="value" type="net.scales.model.CustomItem"
+		required="true" />
+	<composite:attribute name="table" type="java.lang.String"
+		required="true" />
+	<composite:attribute name="tip" type="java.lang.String" required="true" />
+	<composite:attribute name="gr1" type="java.lang.String" required="true" />
+</composite:interface>
+<composite:implementation>
+
+	<p:outputPanel id="itemEdit0" class="dropListFind">
+		<p:autoComplete value="#{cc.attrs.value}" var="item"
+			completeMethod="#{cc.attrs.bean.completeListItem}"
+			itemLabel="#{item.label}" itemValue="#{item}"
+			converter="customItemConverter">
+			<f:attribute name="table" value="#{cc.attrs.table}" />
+			<f:attribute name="tip" value="#{cc.attrs.tip}" />
+			<f:attribute name="gr1" value="#{cc.attrs.gr1}" />
+		</p:autoComplete>
+		<p:commandButton icon="ui-icon-pencil" style="margin-left: 2px;" imediate="true" update="itemEdit1" process="@none"			
+			oncomplete="openListEdit('formDlg1', '#{cc.attrs.id}', true);" />
+	</p:outputPanel>
+
+	<h:form id="itemEdit1" class="dropListEdit">
+		<p:outputPanel>
+			<p:watermark for="agentname" value="Nume" />
+			<p:inputText id="agentname"
+				value="#{cc.attrs.bean.selectedItem.label}" />
+			<p:watermark for="altname" value="Alt nume" />
+			<p:inputText id="altname" value="#{cc.attrs.bean.selectedItem.name}" />
+
+			<p:commandButton icon="ui-icon-check" update="msgs"
+				process="itemEdit1"
+				actionListener="#{cc.attrs.bean.saveListItem(cc.attrs.value, cc.attrs.table, cc.attrs.tip, cc.attrs.gr1)}"
+				oncomplete="if(!args.validationFailed){openListEdit('formDlg1', '#{cc.attrs.id}', false);}">
+			</p:commandButton>
+			<p:commandButton icon="ui-icon-closethick" immediate="true"
+				oncomplete="openListEdit('formDlg1', '#{cc.attrs.id}', false)" />
+		</p:outputPanel>
+	</h:form>
+
+</composite:implementation>
+</html>

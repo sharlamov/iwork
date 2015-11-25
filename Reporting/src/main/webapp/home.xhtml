@@ -4,7 +4,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-<f:view locale="#{authBean.locale}">
+<f:view locale="#{authBean.localeCode}">
     <h:head>
         <title>${msg['company']}</title>
         <h:outputStylesheet library="css" name="dash.css"/>
@@ -13,7 +13,6 @@
 
     <body>
     <h:form style="height: 100%;">
-        <f:event type="preRenderView" listener="#{homeBean.initController}"/>
 
         <div id="layout-portlets-cover">
             <div class="layout-header-box">
@@ -23,11 +22,11 @@
                 <a href="#{request.contextPath}/j_spring_security_logout" class="Animated05"
                    style="display: inline-block; float:right; margin-right: 10px;"><i
                         class="fa fa-sign-out btnMenu"/></a>
-                <p:selectOneMenu value="#{authBean.locale}" style="float: right; margin-right: 10px;">
-                    <f:selectItems value="#{authBean.languages}"/>
-                    <p:ajax event="change" process="@form" update="@form"
-                            listener="#{authBean.countryLocaleCodeChanged}"/>
-                </p:selectOneMenu>
+                <h:selectOneMenu value="#{authBean.localeCode}" style="float: right; margin-right: 10px; font-weight: bold"
+                                 valueChangeListener="#{authBean.countryLocaleCodeChanged}">
+                    <f:selectItems value="#{authBean.countryInMap}"/>
+                    <f:ajax event="change" execute="@form" render="@form"/>
+                </h:selectOneMenu>
             </div>
             <div class="layout-portlets-box">
                 <div style="margin-left: 20%" class="Container20 Responsive">

@@ -6,11 +6,8 @@
                 xmlns:cmp="http://java.sun.com/jsf/composite/components"
                 xmlns:p="http://primefaces.org/ui">
 
-    <ui:param name="viewFilter" value="true"/>
-
     <ui:define name="content">
         <h:outputScript library="js" name="reports.js"/>
-        <f:event type="preRenderView" listener="#{elevatorsBean.initController}"/>
         <cmp:filterPanel id="filter" bean="#{elevatorsBean}" update="@form:chart_panel" showSeasons="true"
                          showRegions="true" showCultures="true"/>
 

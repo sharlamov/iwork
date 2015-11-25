@@ -2,6 +2,7 @@ package com.reporting.bean;
 
 import org.primefaces.model.chart.BarChartModel;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import java.util.List;
@@ -14,9 +15,9 @@ public class ElevatorsBean extends AbstractReportBean {
     private BarChartModel model;
     private List<Object> pageDataList;
 
-    @Override
+    @PostConstruct
     public void init() {
-        setSeasons(getReportService().getSeasons(getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setRegions(getReportService().getRegions());

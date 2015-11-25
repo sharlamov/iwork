@@ -6,6 +6,7 @@ import org.primefaces.model.chart.HorizontalBarChartModel;
 import org.primefaces.model.chart.LineChartModel;
 import org.primefaces.model.chart.LineChartSeries;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import java.math.BigDecimal;
@@ -28,9 +29,9 @@ public class ManagersBean extends AbstractReportBean {
     private Boolean isHorizontalBar;
     private Boolean isModelPayment;
 
-    @Override
+    @PostConstruct
     public void init() {
-        setSeasons(getReportService().getSeasons(getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setRegions(getReportService().getRegions());

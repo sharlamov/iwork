@@ -14,47 +14,44 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.List;
+import javax.faces.event.ValueChangeEvent;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 @ManagedBean(name = "authBean")
 @SessionScoped
 public class AuthBean extends AbstractBean {
 
-    private static List<String> languages = new ArrayList<>();//{"en","ro","ru"};
+    private static Map<String, String> countries;
 
     static {
-        languages.add("en");
-        languages.add("ro");
-        languages.add("ru");
+        countries = new LinkedHashMap<>();
+        countries.put("EN", "en");
+        countries.put("RO", "ro");
+        countries.put("RU", "ru");
     }
 
     @ManagedProperty(value = "#{authenticationManager}")
     private AuthenticationManager authenticationManager;
     @ManagedProperty(value = "#{userServiceImpl}")
     private UserService userService;
+
     private String userName;
     private String password;
     private CustomUser currentUser;
-    private String locale = languages.get(0);
-
-    public List<String> getLanguages() {
-        return languages;
-    }
-
-    public void setLanguages(List<String> languages) {
-        AuthBean.languages = languages;
-    }
+    private String localeCode = "en";
 
     @Override
     public void init() {
-        countryLocaleCodeChanged();
+       /* FacesContext.getCurrentInstance()
+                .getViewRoot().setLocale(new Locale(locale));*/
     }
 
-    public void countryLocaleCodeChanged() {
-        FacesContext.getCurrentInstance()
-                .getViewRoot().setLocale(new Locale(locale));
+    public void countryLocaleCodeChanged(ValueChangeEvent e) {
+        localeCode = e.getNewValue().toString();
+        /*FacesContext.getCurrentInstance()
+                .getViewRoot().setLocale(new Locale(e.getNewValue().toString()));*/
     }
 
     public void login(ActionEvent event) {
@@ -64,20 +61,17 @@ public class AuthBean extends AbstractBean {
         String page = "";
 
         try {
-            Authentication request = new UsernamePasswordAuthenticationToken(
-                    userName, password);
+            Authentication request = new UsernamePasswordAuthenticationToken(userName, password);
             Authentication result = authenticationManager.authenticate(request);
             currentUser = (CustomUser) result.getPrincipal();
             userService.updateUserDetails(currentUser);
             SecurityContextHolder.getContext().setAuthentication(result);
             loggedIn = true;
-            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome",
-                    userName);
+            message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome", userName);
             page = getStartPage();
         } catch (Exception e) {
             loggedIn = false;
-            message = new FacesMessage(FacesMessage.SEVERITY_FATAL,
-                    "Loggin Error", e.getMessage());
+            message = new FacesMessage(FacesMessage.SEVERITY_FATAL, "Loggin Error", e.getMessage());
             e.printStackTrace();
         }
 
@@ -128,11 +122,15 @@ public class AuthBean extends AbstractBean {
         this.currentUser = currentUser;
     }
 
-    public String getLocale() {
-        return locale;
+    public Map<String, String> getCountryInMap() {
+        return this.countries;
     }
 
-    public void setLocale(String locale) {
-        this.locale = locale;
+    public String getLocaleCode() {
+        return localeCode;
+    }
+
+    public void setLocaleCode(String localeCode) {
+        this.localeCode = localeCode;
     }
 }

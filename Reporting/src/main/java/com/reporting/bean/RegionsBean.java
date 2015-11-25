@@ -2,6 +2,7 @@ package com.reporting.bean;
 
 import org.primefaces.context.RequestContext;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
@@ -15,11 +16,12 @@ public class RegionsBean extends AbstractReportBean {
     private List<Object> pageDataList;
     private String contextPath;
 
-    @Override
+
+    @PostConstruct
     public void init() {
         contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
 
-        setSeasons(getReportService().getSeasons(getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setCultures(getReportService().getCultures());

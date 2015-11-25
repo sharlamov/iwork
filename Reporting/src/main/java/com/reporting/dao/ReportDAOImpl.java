@@ -36,26 +36,6 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
         return currentSession().createSQLQuery(sql).list();
     }
 
-    /*@Override
-    public List getElevators() {
-        String sql = "select cod, langText from vms_univers_lang where tip='O' and gr1='I' and gr2='E' and  isarhiv is null";
-        return currentSession().createSQLQuery(sql).list();
-    }
-
-    @Override
-    public List<Object> getReportPrices(int season, long culture, String elevators) {
-        String sql = "select to_char(datastart,'dd.MM.yyyy'), pret, sc_elevator, clcsc_elevatort from VMS_PRIKAZ " +
-                "where datastart between '01.07.' || :season and '30.06.' || (:season + 1) and sc_elevator in (" + elevators + ") and sc_mp = :culture " +
-                "order by sc_elevator, datastart";
-        return currentSession().createSQLQuery(sql).setInteger("season", season).setLong("culture", culture).list();
-    }
-
-    @Override
-    public List getFilials() {
-        String sql = "select cod, langText from vms_univers_lang where tip='O' and gr1='DIV' and isarhiv is null";
-        return currentSession().createSQLQuery(sql).list();
-    }*/
-
     @Override
     public List<Object> getReportContracts(int season, int region, int sc) {
         String predicate = sc == 0 ? "" : " and sc_mp = " + sc;

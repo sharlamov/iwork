@@ -13,16 +13,6 @@ public interface ReportService {
 
     List<CustomItem> getCultures();
 
-/*
-    List<CustomItem> getElevators();
-
-    List<Object> getReportPrices(int season, CustomItem culture, List<CustomItem> selectedElevators);
-
-    List<CustomItem> getFilials();
-
-    List<CustomItem>  getRegionCultures(int season, CustomItem region, List<CustomItem> cultures);
-*/
-
     List<Object> getReportContracts(int season, CustomItem region, CustomItem sc);
 
     List<Object> getReportContractsByCulture(int season, CustomItem region, CustomItem sc);

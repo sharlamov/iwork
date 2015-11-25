@@ -6,6 +6,7 @@ import com.reporting.util.MapUtil;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.model.map.*;
 
+import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
@@ -28,7 +29,7 @@ public class RegionDetailBean extends AbstractReportBean {
     private MapModel geoMap;
     private String centerGeoMap = "41.850033, -87.6500523";
 
-    @Override
+    @PostConstruct
     public void init() {
         Map<String, String> params = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
         season = Integer.valueOf(params.get("season"));

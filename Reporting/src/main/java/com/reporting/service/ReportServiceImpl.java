@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import java.awt.*;
 import java.text.DateFormat;
@@ -25,10 +26,11 @@ public class ReportServiceImpl implements ReportService {
     @Autowired
     private ReportDAO reportDAO;
 
-    @Autowired
-    private AuthBean authBean;
-
-
+    private void initLang() {
+        AuthBean authBean = (AuthBean) FacesContext.getCurrentInstance().
+                getExternalContext().getSessionMap().get("authBean");
+        reportDAO.initLang(authBean.getLocaleCode());
+    }
 
     @Override
     public List<SelectItem> getSeasons(CustomUser user) {
@@ -42,50 +44,25 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<CustomItem> getCultures() {
-        //reportDAO.initLang(authBean.getLocale());
+        initLang();
         List<CustomItem> items = WebUtil.toCustomItemList(reportDAO.getCultures());
-        for(CustomItem ci: items){
+        for (CustomItem ci : items) {
             Color c = WebUtil.getRandomColor();
             ci.setName(Integer.toHexString(c.getRGB()).substring(2));
         }
         return items;
     }
 
-/*
-    @Override
-    public List<CustomItem> getElevators() {
-        reportDAO.initLang(authBean.getLocale());
-        List items = reportDAO.getElevators();
-        return WebUtil.toCustomItemList(items);
-    }
-
-    @Override
-    public List<Object> getReportPrices(int season, CustomItem culture, List<CustomItem> selectedElevators) {
-        String elevators = "0";
-        for (CustomItem ci : selectedElevators) {
-            elevators += "," + ci.getId();
-        }
-        return reportDAO.getReportPrices(season, culture.getId().longValue(), elevators);
-    }
-
-    @Override
-    public List<CustomItem> getFilials() {
-        reportDAO.initLang(authBean.getLocale());
-        List items = reportDAO.getFilials();
-        return WebUtil.toCustomItemList(items);
-    }
-*/
-
     @Override
     public List<Object> getReportContracts(int season, CustomItem region, CustomItem sc) {
-        reportDAO.initLang(authBean.getLocale());
+        initLang();
         int sc_mp = sc == null ? 0 : sc.getId().intValue();
         return reportDAO.getReportContracts(season, region.getId().intValue(), sc_mp);
     }
 
     @Override
     public List<Object> getReportContractsByCulture(int season, CustomItem region, CustomItem sc) {
-        reportDAO.initLang(authBean.getLocale());
+        initLang();
         return reportDAO.getReportContractsByCulture(season, region.getId().intValue(), sc.getId().intValue());
     }
 
@@ -105,7 +82,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<Object> getSilosSoldValues(Integer season, CustomItem region, CustomItem culture) {
-        reportDAO.initLang(authBean.getLocale());
+        initLang();
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
         List<Object> data = reportDAO.getSilosSoldValues("01.01." + season, region.getId().intValue(), culture.getId().toString());
         Map<CustomItem, Object[]> map = new LinkedHashMap<>();
@@ -118,7 +95,7 @@ public class ReportServiceImpl implements ReportService {
 
             Object[] newRow;
 
-            if(map.containsKey(silos)){
+            if (map.containsKey(silos)) {
                 newRow = map.get(silos);
                 /*client */
                 List<Object[]> clients = (List<Object[]>) newRow[1];
@@ -127,7 +104,7 @@ public class ReportServiceImpl implements ReportService {
                 clientRow[1] = row[5];
 
                 List<Object> lastContract = reportDAO.getLastContractByClient(silos.getId().intValue(), client.getId().intValue(), season, culture.getId().intValue());
-                if(!lastContract.isEmpty()){
+                if (!lastContract.isEmpty()) {
                     Object[] item = (Object[]) lastContract.get(0);
                     clientRow[2] = item[0];
                     clientRow[3] = item[1];
@@ -144,9 +121,9 @@ public class ReportServiceImpl implements ReportService {
                 pie.set(client.toString(), (Number) row[5]);
                 /**/
 
-                newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(),5);
+                newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(), 5);
 
-            }else{
+            } else {
                 newRow = new Object[7];
                 newRow[0] = silos;
 
@@ -157,7 +134,7 @@ public class ReportServiceImpl implements ReportService {
                 clientRow[1] = row[5];
 
                 List<Object> lastContract = reportDAO.getLastContractByClient(silos.getId().intValue(), client.getId().intValue(), season, culture.getId().intValue());
-                if(!lastContract.isEmpty()){
+                if (!lastContract.isEmpty()) {
                     Object[] item = (Object[]) lastContract.get(0);
                     clientRow[2] = item[0];
                     clientRow[3] = item[1];
@@ -177,13 +154,13 @@ public class ReportServiceImpl implements ReportService {
                 newRow[2] = pie;
                 /**/
 
-                newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(),5);
+                newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(), 5);
 
                 List<Object> silosPrice = reportDAO.getCulturePriceBySilos(silos.getId().intValue(), season, culture.getId().intValue());
-                if(!silosPrice.isEmpty()){
+                if (!silosPrice.isEmpty()) {
                     Object[] item = (Object[]) silosPrice.get(0);
                     newRow[4] = item[0];
-                    newRow[5] = df.format((Date)item[1]);
+                    newRow[5] = df.format((Date) item[1]);
                     newRow[6] = item[2];
                 }
             }
@@ -192,7 +169,7 @@ public class ReportServiceImpl implements ReportService {
         }
 
         List<Object> lst = new ArrayList<>();
-        for (Object obj: map.values()) {
+        for (Object obj : map.values()) {
             lst.add(obj);
         }
         return lst;
@@ -211,7 +188,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<Object> getContractByDistrictDetail(int season, int region, int sc) {
-        reportDAO.initLang(authBean.getLocale());
+        initLang();
         return reportDAO.getContractByDistrictDetail(season, region, sc);
     }
 

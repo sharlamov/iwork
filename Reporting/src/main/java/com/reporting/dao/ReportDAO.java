@@ -12,12 +12,6 @@ public interface ReportDAO {
 
     List getCultures();
 
-    /*List getElevators();
-
-    List<Object> getReportPrices(int season, long culture, String elevators);
-
-    List getFilials();*/
-
     List<Object> getReportContracts(int season, int region, int sc);
 
     List<Object> getReportContractsByCulture(int season, int region, int sc);

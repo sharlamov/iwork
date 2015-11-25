@@ -4,7 +4,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 <f:event type="preRenderView" listener="#{authBean.initController}"/>
-<f:view locale="#{authBean.locale}">
+<f:view locale="#{authBean.localeCode}">
     <h:head>
         <title>${msg.company}</title>
         <h:outputScript library="js" name="common.js"/>
@@ -13,11 +13,11 @@
     </h:head>
     <h:body style="background-color: #C3CCD5;">
         <h:form autocomplete="off">
-            <p:selectOneMenu value="#{authBean.locale}" style="float: right;">
-                <f:selectItems value="#{authBean.languages}"/>
-                <p:ajax event="change" process="@form" update="@form"
-                        listener="#{authBean.countryLocaleCodeChanged}"/>
-            </p:selectOneMenu>
+            <h:selectOneMenu value="#{authBean.localeCode}"
+                             valueChangeListener="#{authBean.countryLocaleCodeChanged}">
+                <f:selectItems value="#{authBean.countryInMap}"/>
+                <f:ajax event="change" execute="@form" render="loginBtn"/>
+            </h:selectOneMenu>
 
             <div class="loginBox">
                 <p:growl id="growl" sticky="true" showDetail="true" life="3000"/>
@@ -35,7 +35,7 @@
                             value="#{authBean.password}"
                             requiredMessage="#{msg['pass.err.msg']}"/>
 
-                <p:commandButton value="#{msg['enter']}" class="loginField" icon="ui-icon-check"
+                <p:commandButton id="loginBtn" value="#{msg['enter']}" class="loginField" icon="ui-icon-check"
                                  actionListener="#{authBean.login}" update="growl"
                                  oncomplete="handleLoginRequest(xhr, status, args)"/>
 

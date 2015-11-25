@@ -2,7 +2,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:composite="http://java.sun.com/jsf/composite">
+      xmlns:composite="http://java.sun.com/jsf/composite" xmlns:h="http://xmlns.jcp.org/jsf/html">
 
 <composite:interface>
     <composite:attribute name="bean" type="com.reporting.bean.AbstractReportBean" required="true"/>
@@ -11,7 +11,7 @@
     <composite:attribute name="showCultures" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="showPoints" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="backPath" type="String"/>
-    <composite:attribute name="oncomplete" type="String" required="false"/>
+    <composite:attribute name="langUpdate" type="String" default="@form"/>
     <composite:attribute name="update"/>
 </composite:interface>
 
@@ -36,10 +36,10 @@
                     </p:selectOneButton>
                 </p:outputPanel>
 
-                <p:outputPanel rendered="#{cc.attrs.showCultures}" style="display: inline-block">
+                <p:outputPanel rendered="#{cc.attrs.showCultures}" style="display: inline-block" styleClass="noupdate">
                     <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
                     <p:selectOneMenu value="#{cc.attrs.bean.culture}" converter="customItemConverter" styleClass="selectCulture">
-                        <f:selectItem itemLabel="#{msg['filter.allculture']}" itemValue="#{null}" />
+                       <!-- <f:selectItem itemLabel="#{msg['filter.allculture']}" itemValue="#{null}" />-->
                         <f:selectItems var="t" itemLabel="#{t.label}##{t.name}" value="#{cc.attrs.bean.cultures}"/>
                         <p:ajax event="change" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
                     </p:selectOneMenu>
@@ -68,13 +68,13 @@
             </f:facet>
 
             <f:facet name="right">
-                <p:outputLabel>#{cc.attrs.bean.loggedUser.username}</p:outputLabel>
+                <p:outputLabel>#{authBean.loggedUser.username}</p:outputLabel>
                 <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
-                <p:selectOneMenu value="#{authBean.locale}"    style="vertical-align: bottom;">
-                    <f:selectItems value="#{authBean.languages}"/>
-                    <p:ajax event="change" process="@form" update="@form"
-                            listener="#{authBean.countryLocaleCodeChanged}" />
-                </p:selectOneMenu>
+                <h:selectOneMenu value="#{authBean.localeCode}" style="vertical-align: bottom;font-weight: bold"
+                                 valueChangeListener="#{authBean.countryLocaleCodeChanged}" >
+                    <f:selectItems value="#{authBean.countryInMap}"/>
+                    <f:ajax event="change" execute="@form" listener="#{cc.attrs.bean.applyFilters}" render="#{cc.attrs.langUpdate}"/>
+                </h:selectOneMenu>
                 <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
                 <p:commandButton action="#{authBean.logout}" icon="ui-icon-person"/>
             </f:facet>

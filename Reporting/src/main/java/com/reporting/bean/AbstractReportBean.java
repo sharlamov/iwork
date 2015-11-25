@@ -5,15 +5,19 @@ import com.reporting.service.ReportService;
 
 import javax.faces.bean.ManagedProperty;
 import javax.faces.model.SelectItem;
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by sharlamov on 19.11.2015.
  */
-public abstract class AbstractReportBean extends AbstractBean {
+public abstract class AbstractReportBean implements Serializable {
 
     @ManagedProperty(value = "#{reportServiceImpl}")
     private ReportService reportService;
+
+    @ManagedProperty(value = "#{authBean}")
+    private AuthBean authBean;
 
     private List<SelectItem> seasons;
     private Integer season;
@@ -87,5 +91,13 @@ public abstract class AbstractReportBean extends AbstractBean {
 
     public void setSelectedPoints(String[] selectedPoints) {
         this.selectedPoints = selectedPoints;
+    }
+
+    public AuthBean getAuthBean() {
+        return authBean;
+    }
+
+    public void setAuthBean(AuthBean authBean) {
+        this.authBean = authBean;
     }
 }

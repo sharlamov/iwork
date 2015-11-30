@@ -54,6 +54,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public List<CustomItem> getElevators() {
+        List items = reportDAO.getElevators();
+        return WebUtil.toCustomItemList(items);
+    }
+
+    @Override
     public List<Object> getReportContracts(int season, CustomItem region, CustomItem sc) {
         initLang();
         int sc_mp = sc == null ? 0 : sc.getId().intValue();
@@ -81,6 +87,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public List<Object> getSilosGroupSold(Integer season, CustomItem region, CustomItem culture) {
+        initLang();
+        return reportDAO.getSilosGroupSold("01.01." + season, region.getId().intValue(), culture.getId().intValue());
+    }
+
+    @Override
     public List<Object> getSilosSoldValues(Integer season, CustomItem region, CustomItem culture) {
         initLang();
         DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
@@ -97,7 +109,8 @@ public class ReportServiceImpl implements ReportService {
 
             if (map.containsKey(silos)) {
                 newRow = map.get(silos);
-                /*client */
+                /*client*/
+
                 List<Object[]> clients = (List<Object[]>) newRow[1];
                 Object[] clientRow = new Object[6];
                 clientRow[0] = client;
@@ -114,12 +127,13 @@ public class ReportServiceImpl implements ReportService {
                 clientRow[5] = reportDAO.getHistoryByClient(silos.getId().intValue(), client.getId().intValue(), culture.getId().intValue());
 
                 clients.add(clientRow);
-                /**/
 
                 /*CHART*/
+
                 PieChartModel pie = (PieChartModel) newRow[2];
                 pie.set(client.toString(), (Number) row[5]);
-                /**/
+
+
 
                 newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(), 5);
 
@@ -128,6 +142,7 @@ public class ReportServiceImpl implements ReportService {
                 newRow[0] = silos;
 
                 /*client */
+
                 List<Object[]> clients = new ArrayList<>();
                 Object[] clientRow = new Object[6];
                 clientRow[0] = client;
@@ -145,14 +160,17 @@ public class ReportServiceImpl implements ReportService {
 
                 clients.add(clientRow);
                 newRow[1] = clients;
-                /**/
+
+
 
                 /*CHART*/
+
                 PieChartModel pie = new PieChartModel();
                 pie.setShowDataLabels(true);
                 pie.set(client.toString(), (Number) row[5]);
                 newRow[2] = pie;
-                /**/
+
+
 
                 newRow[3] = reportDAO.getLastContractsBySilos(silos.getId().intValue(), season, culture.getId().intValue(), 5);
 
@@ -221,4 +239,20 @@ public class ReportServiceImpl implements ReportService {
     public List<Object> getPlacesConnections(int season, int sc) {
         return reportDAO.getPlacesConnections(season, sc);
     }
+
+    @Override
+    public List<Object> getComodityContractedByDate(Date d1, Date d2, CustomItem sc, CustomItem dep){
+        initLang();
+        int scParam =  sc != null ? sc.getId().intValue() : 0;
+        int depParam =  dep != null ? dep.getId().intValue() : 0;
+        return reportDAO.getComodityContractedByDate(d1, d2, scParam, depParam);
+    }
+
+    @Override
+    public List<Object> getComodityByElevator(Date d1, Date d2, CustomItem sc){
+        initLang();
+        return reportDAO.getComodityByElevator(d1,d2, sc.getId().intValue());
+    }
 }
+
+

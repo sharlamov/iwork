@@ -10,6 +10,8 @@
     <composite:attribute name="showRegions" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="showCultures" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="showPoints" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="showElevators" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="showPeriod" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="backPath" type="String"/>
     <composite:attribute name="langUpdate" type="String" default="@form"/>
     <composite:attribute name="update"/>
@@ -38,10 +40,11 @@
 
                 <p:outputPanel rendered="#{cc.attrs.showCultures}" style="display: inline-block" styleClass="noupdate">
                     <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
-                    <p:selectOneMenu value="#{cc.attrs.bean.culture}" converter="customItemConverter" styleClass="selectCulture">
-                       <!-- <f:selectItem itemLabel="#{msg['filter.allculture']}" itemValue="#{null}" />-->
+                    <p:selectOneMenu value="#{cc.attrs.bean.culture}" converter="customItemConverter"
+                                     styleClass="selectCulture">
                         <f:selectItems var="t" itemLabel="#{t.label}##{t.name}" value="#{cc.attrs.bean.cultures}"/>
-                        <p:ajax event="change" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
+                        <p:ajax event="change" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}"
+                                process="#{cc.clientId}:fpan"/>
                     </p:selectOneMenu>
                 </p:outputPanel>
 
@@ -56,24 +59,53 @@
 
                 <p:outputPanel rendered="#{cc.attrs.showPoints}" style="display: inline-block">
                     <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
-                    <p:selectCheckboxMenu id="menu" value="#{cc.attrs.bean.selectedPoints}" label="#{msg['filter.places']}" style="width: 200px;">
+                    <p:selectCheckboxMenu id="menu" value="#{cc.attrs.bean.selectedPoints}"
+                                          label="#{msg['filter.places']}" style="width: 200px;">
                         <f:selectItem itemLabel="#{msg['filter.places.o1']}" itemValue="0"/>
                         <f:selectItem itemLabel="#{msg['filter.places.o2']}" itemValue="1"/>
                         <f:selectItem itemLabel="#{msg['filter.places.o3']}" itemValue="2"/>
                         <f:selectItem itemLabel="#{msg['filter.places.o4']}" itemValue="3"/>
                         <p:ajax event="change" listener="#{cc.attrs.bean.applyFilters}" process="#{cc.clientId}:fpan"/>
-                        <p:ajax event="toggleSelect" listener="#{cc.attrs.bean.applyFilters}"  process="#{cc.clientId}:fpan"/>
+                        <p:ajax event="toggleSelect" listener="#{cc.attrs.bean.applyFilters}"
+                                process="#{cc.clientId}:fpan"/>
                     </p:selectCheckboxMenu>
                 </p:outputPanel>
+                <p:outputPanel rendered="#{cc.attrs.showElevators}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:selectOneMenu value="#{cc.attrs.bean.elevator}" converter="customItemConverter"
+                                     styleClass="selectCulture">
+                        <f:selectItems value="#{cc.attrs.bean.elevators}"/>
+                        <p:ajax event="change" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}"
+                                process="#{cc.clientId}:fpan"/>
+                    </p:selectOneMenu>
+                </p:outputPanel>
+                <p:outputPanel rendered="#{cc.attrs.showPeriod}" style="display: inline-block">
+                    <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
+                    <p:calendar id="date1" value="#{cc.attrs.bean.startDate}" locale="#{authBean.localeCode}"
+                                pattern="dd.MM.yyyy" readonlyInput="true" style="width:50px;font-weight: bold">
+                        <f:convertDateTime pattern="dd.MM.yyyy"/>
+                        <p:ajax event="dateSelect" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}"
+                                process="#{cc.clientId}:fpan"/>
+                    </p:calendar>
+
+                    <p:calendar id="date2" value="#{cc.attrs.bean.endDate}" locale="#{authBean.localeCode}"
+                                pattern="dd.MM.yyyy" readonlyInput="true" style="margin-left:5px;font-weight: bold">
+                        <f:convertDateTime pattern="dd.MM.yyyy"/>
+                        <p:ajax event="dateSelect" update="#{cc.attrs.update}" listener="#{cc.attrs.bean.applyFilters}"
+                                process="#{cc.clientId}:fpan"/>
+                    </p:calendar>
+                </p:outputPanel>
+
             </f:facet>
 
             <f:facet name="right">
                 <p:outputLabel>#{authBean.loggedUser.username}</p:outputLabel>
                 <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
                 <h:selectOneMenu value="#{authBean.localeCode}" style="vertical-align: bottom;font-weight: bold"
-                                 valueChangeListener="#{authBean.countryLocaleCodeChanged}" >
+                                 valueChangeListener="#{authBean.countryLocaleCodeChanged}">
                     <f:selectItems value="#{authBean.countryInMap}"/>
-                    <f:ajax event="change" execute="@form" listener="#{cc.attrs.bean.applyFilters}" render="#{cc.attrs.langUpdate}"/>
+                    <f:ajax event="change" execute="@form" listener="#{cc.attrs.bean.applyFilters}"
+                            render="#{cc.attrs.langUpdate}"/>
                 </h:selectOneMenu>
                 <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
                 <p:commandButton action="#{authBean.logout}" icon="ui-icon-person"/>

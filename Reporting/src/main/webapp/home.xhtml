@@ -76,7 +76,7 @@
                         <div class="Container100">
                             <div class="DispInlBlock MarTop20">
                                 <div class="ContainerTitle">
-                                    <i class="fa fa-phone-square Fs40 red Fleft MarRight10"/>
+                                    <i class="fa fa-database Fs40 red Fleft MarRight10"/>
                                 </div>
                                 <div class="Container80">
                                     <div class="Fright">
@@ -87,9 +87,17 @@
                             </div>
                             <div class="Seperator"></div>
                             <div class="Container100 MarTop20">
-
+                                <p:link outcome="position.xhtml"
+                                               class="Wid30 Responsive BorderedBox Fleft TexAlCenter HoverEffect">
+                                    <div class="ContainerIndent">
+                                        <div class="EmptyBox10"></div>
+                                        <i class="fa fa-edit Fs24 animated swing infinite gray"/>
+                                        <p:outputLabel class="Fs10 DispBlock gray" value="#{msg['home.part2.rep0']}"/>
+                                        <span class="Fs24 DispBlock red">4</span>
+                                        <div class="EmptyBox10"></div>
+                                    </div>
+                                </p:link>
                             </div>
-
                             <div class="Container100 MarTop20 TexAlLeft">
                                 <div class="Fs16 gray FontRalewayRegular"><i
                                         class="fa fa-star MarRight10 orange"/>${msg['home.subscription']}

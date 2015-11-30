@@ -12,6 +12,8 @@ public interface ReportDAO {
 
     List getCultures();
 
+    List getElevators();
+
     List<Object> getReportContracts(int season, int region, int sc);
 
     List<Object> getReportContractsByCulture(int season, int region, int sc);
@@ -19,6 +21,8 @@ public interface ReportDAO {
     List<Object> getReportManagersOnline(int season, int region, boolean isManager, int sc, Pair<Date, Date> period);
 
     List<Object> getReportPayment(int season, int region, int sc);
+
+    List<Object> getSilosGroupSold(String date, int region, int sc);
 
     List<Object> getSilosSoldValues(String d1, int region, String sc);
 
@@ -47,4 +51,8 @@ public interface ReportDAO {
     List<Object> getBuyPlaces(int season, int sc);
 
     List<Object> getPlacesConnections(int season, int sc);
+
+    List<Object> getComodityContractedByDate(Date d1, Date d2, int sc, int dep);
+
+    List<Object> getComodityByElevator(Date d1, Date d2, int sc);
 }

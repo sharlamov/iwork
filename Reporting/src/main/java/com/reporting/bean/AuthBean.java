@@ -44,7 +44,7 @@ public class AuthBean extends AbstractBean {
 
     @Override
     public void init() {
-       /* FacesContext.getCurrentInstance()
+      /*  FacesContext.getCurrentInstance()
                 .getViewRoot().setLocale(new Locale(locale));*/
     }
 

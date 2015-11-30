@@ -3,6 +3,7 @@ package com.reporting.bean;
 import com.reporting.model.CustomItem;
 import com.reporting.service.ReportService;
 import com.reporting.util.MapUtil;
+import com.reporting.util.WebUtil;
 import org.primefaces.event.map.GeocodeEvent;
 import org.primefaces.model.map.*;
 
@@ -91,7 +92,7 @@ public class RegionDetailBean extends AbstractReportBean {
             if(row[3] != null)
                 res += Double.valueOf(row[3].toString());
         }
-        return Math.round(res * 100) / 100d;
+        return WebUtil.round(res);
     }
 
     public Integer getSeason() {

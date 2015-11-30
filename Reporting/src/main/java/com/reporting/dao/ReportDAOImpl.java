@@ -37,6 +37,12 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
     }
 
     @Override
+    public List getElevators() {
+        String sql = "select cod, langText as \"denumirea\" from vms_univers_lang where tip='O' and gr1='I' and gr2='E' and  isarhiv is null";
+        return currentSession().createSQLQuery(sql).list();
+    }
+
+    @Override
     public List<Object> getReportContracts(int season, int region, int sc) {
         String predicate = sc == 0 ? "" : " and sc_mp = " + sc;
         String sql = "select sum(suma_contract) over (partition by manager) all_sum " +
@@ -68,9 +74,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 ")a order by 1 ";
 
         return currentSession().createSQLQuery(sql)
-                .setInteger("season", season)
-                .setInteger("sc", sc)
-                .setInteger("region", region).list();
+                .setParameter("season", season)
+                .setParameter("sc", sc)
+                .setParameter("region", region).list();
     }
 
     @Override
@@ -121,6 +127,26 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
         return currentSession().createSQLQuery(sql)
                 .setInteger("season", season)
                 .setInteger("region", region).list();
+
+    }
+
+    @Override
+    public List<Object> getSilosGroupSold(String date, int region, int sc) {
+        String sqlRegion = "select elevator from vregion_settings where region = " + region;
+        String sql0 = "BEGIN UN$SLD.MAKE('','E1','DEK1',pcont=>'9211',psc=>:sc, psc1 => :region, pAn_Data=>:d1); END;";
+        Query updateQuery = currentSession().createSQLQuery(sql0);
+        updateQuery.setParameter("d1", date).setParameter("region", sqlRegion).setParameter("sc", sc).executeUpdate();
+
+        String sql1 = "select elevator,\n" +
+                "(select langtext from vms_univers_lang where cod = elevator) clcelevatort, dep, sum(cant)\n" +
+                "from ( select sc1 elevator,\n" +
+                "decode((select count(*) from vms_univers where tip = 'O' and gr1 = 'DIV' and codi = x.dep),0, 1, 0) dep,cant\n" +
+                "from xsld x\n" +
+                "where id = 'E1'\n" +
+                "and exists (select * from vms_univers where cod = x.sc1 and gr1s = x.div)\n" +
+                "and nvl (cant, 0) <> 0)\n" +
+                "group by elevator, dep\n";
+        return currentSession().createSQLQuery(sql1).list();
 
     }
 
@@ -206,14 +232,14 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
     @Override
     public List getRegions() {
-        String sql = "select cod1 cod, denumirea from vms_syss where tip='S' and cod='55' and cod1 <> 0";
+        String sql = "select cod1 cod, langText denumirea from vms_syss_lang where tip='S' and cod='55' and cod1 <> 0";
         return currentSession().createSQLQuery(sql).list();
     }
 
     @Override
     public List<Object> getContractByDistrict(int season, int sc) {
         String sql = "select raion\n" +
-                ",(select denumirea from vms_syss where tip='S' and cod=25 and cod1 = raion) \n" +
+                ",(select langText from vms_syss_lang where tip='S' and cod=25 and cod1 = raion) \n" +
                 ", sum(contract),sum(masa_netto)/1000\n" +
                 ",(select urojai from YTRANS_TMS_RAION_UROJAI_SC where raion_s_25 = raion and sc = :sc and datastart between '01.07.' || :season and '30.06.' || (:season + 1) and rownum = 1)\n" +
                 "from (\n" +
@@ -245,7 +271,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
     public List<Object> getContractByDistrictDetail(int season, int region, int sc) {
         String sql = "select \n" +
                 "raion, \n" +
-                "(select denumirea from vms_syss where tip='S' and cod=12 and cod1 = raion) raion_name,\n" +
+                "(select langText from vms_syss_lang where tip='S' and cod=12 and cod1 = raion) raion_name,\n" +
                 "(select langText from vms_univers_lang where cod = agent) agent_name,\n" +
                 "sum(masa_netto)/1000,\n" +
                 "sum(masac) \n" +
@@ -309,7 +335,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
 
     private void updateCoordinates() {
-        String sql = "select 'S12',cod1, denumirea, NMB2T     from vms_syss where cod1 in (22214,22386,22390,22552,22554,17909,274,629,783,1469,22304,1154,22327,22278,55,22416,1862,1032,22399,22282,9,19085,22910,663,2390,112) and tip = 'S' and cod = 12";
+        String sql = "select 'S12',cod1, denumirea, NMB2T from vms_syss where cod1 in (22214,22386,22390,22552,22554,17909,274,629,783,1469,22304,1154,22327,22278,55,22416,1862,1032,22399,22282,9,19085,22910,663,2390,112) and tip = 'S' and cod = 12";
 
         List list = currentSession().createSQLQuery(sql).list();
         for (Object obj : list) {
@@ -386,5 +412,41 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 "and exists( select * from tmdb_docs where sysfid = 48309 and doccolor is null and cod=nrdoc)\n" +
                 ")a) where from_lat is not null and into_lat is not null";
         return currentSession().createSQLQuery(sql).setParameter("season", season).setParameter("sc", sc).list();
+    }
+
+    @Override
+    public List<Object> getComodityContractedByDate(Date d1, Date d2, int sc, int dep) {
+        String depTerm = dep != 0 ? " AND sc_elevator = " + dep + "\n" : "";
+        String scTerm = sc != 0 ? " AND sc_mp = " + sc + "\n" : "";
+        String sql = "SELECT DATA, sc,( select initCap(langText) from vms_univers_lang where cod = sc) clcsct,SUM(cant) cant\n" +
+                "FROM ( SELECT sc_mp sc,datastart DATA, NVL(ZACONTRACTOVANO,tonaj_plan)  cant\n" +
+                "FROM YVCN1D_CLIENTS_MPFS0M m, vmdb_docs d\n" +
+                "WHERE d.cod=m.contractid AND sysfid=48701 AND CONTRACT_TYPE_FS_1 IN (15,38) \n" +
+                "     AND m.datastart BETWEEN :d1 AND :d2 " + depTerm + scTerm +
+                ")group by data, sc\n" +
+                "order by 1";
+
+        return currentSession().createSQLQuery(sql)
+                .setParameter("d1", d1)
+                .setParameter("d2", d2)
+                .list();
+    }
+
+    @Override
+    public List<Object> getComodityByElevator(Date d1, Date d2, int sc) {
+        String sql = "    SELECT sc_elevator,( select initCap(langText) from vms_univers_lang where cod = sc_elevator) clcsc_elevatort,SUM(cant) cant\n" +
+                "    FROM (\n" +
+                "            SELECT sc_elevator , NVL(ZACONTRACTOVANO,tonaj_plan)  cant\n" +
+                "    FROM YVCN1D_CLIENTS_MPFS0M m, vmdb_docs d\n" +
+                "    WHERE d.cod=m.contractid AND sysfid=48701 AND CONTRACT_TYPE_FS_1 IN (15,38)\n" +
+                "    AND m.datastart BETWEEN :d1 AND :d2 and sc_mp = :sc\n" +
+                "    )group by sc_elevator\n" +
+                "    order by 3";
+
+        return currentSession().createSQLQuery(sql)
+                .setParameter("d1", d1)
+                .setParameter("d2", d2)
+                .setParameter("sc", sc)
+                .list();
     }
 }

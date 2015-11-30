@@ -1,0 +1,66 @@
+<ui:composition template="templates/layout.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:cmp="http://java.sun.com/jsf/composite/components"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <script src="resources/js/reports.js"></script>
+        <style> .ui-panel-content {
+            height: 90%;
+        }
+        .ui-column-title:hover {
+            background-color: greenyellow;
+        }
+        </style>
+
+        <cmp:filterPanel id="filter" bean="#{headReportBean}" update="@form:dataMaster" showCultures="true"
+                         showElevators="true" showPeriod="true"/>
+
+        <p:panel id="dataMaster" style="width: 100%; height: 100%; " header="#{msg['head.position.name']}">
+
+            <p:scrollPanel mode="native" style="display: inline-block; height: 100%;">
+                <p:dataTable var="row" value="#{headReportBean.dataTable}" tableStyle="width:auto" id="dataId">
+                    <p:column headerText="#{msg['head.position.table1.col0']}">
+                        <h:outputText value="#{row[0]}">
+                            <f:convertDateTime pattern="dd.MM.yyyy"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:columns value="#{headReportBean.summaryTable}" var="col" columnIndexVar="index">
+                        <f:facet name="header">
+                            <p:commandLink actionListener="#{headReportBean.initChart(col)}" process="@this"
+                                           update="@form:silosDetail" oncomplete="PF('cultureDialog').show()" >
+                                <h:outputText value="#{col.label}"/>
+                            </p:commandLink>
+                        </f:facet>
+                        <p:commandLink actionListener="#{headReportBean.initChartDate(col, row[0])}" process="@this"
+                                       update="@form:silosDetail" oncomplete="PF('cultureDialog').show();">
+                            <h:outputText value="#{row[index + 1]}" style="float:right">
+                                <f:convertNumber maxFractionDigits="2"/>
+                            </h:outputText>
+                        </p:commandLink>
+                    </p:columns>
+
+                    <p:columnGroup type="footer">
+                        <p:row>
+                            <p:column footerText="#{msg['head.position.table1.total']}, Mt:"/>
+                            <p:columns value="#{headReportBean.summaryTable}" var="col" footerText="#{col.name}"
+                                       style="text-align:right"/>
+                        </p:row>
+                    </p:columnGroup>
+
+                </p:dataTable>
+            </p:scrollPanel>
+
+            <p:dialog header="#{msg['head.position.dlg.name']}" id="cultureDialog" widgetVar="cultureDialog"
+                      modal="true" showEffect="clip" hideEffect="explode" resizable="false" closeOnEscape="true">
+                <p:outputPanel id="silosDetail" style="text-align:center;">
+                    <p:chart type="bar" model="#{headReportBean.model}" style="width: 700px;height: 500px;" responsive="true"/>
+                </p:outputPanel>
+            </p:dialog>
+        </p:panel>
+    </ui:define>
+
+</ui:composition>

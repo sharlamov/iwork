@@ -54,6 +54,34 @@ function setColorBoxPanel() {
 
 }
 
+function soldsModel() {
+    this.cfg.animate = true;
+    this.cfg.axes.yaxis.tickOptions.formatter = tickAxisNull;
+
+}
+
+function positionModel() {
+    var ticksCount = this.cfg.axes.yaxis.ticks.length;
+
+    this.cfg.stackSeries = true;
+    this.cfg.seriesDefaults = {
+        pointLabels: {show: true, formatString: '%d'},
+        renderer: $.jqplot.BarRenderer,
+        rendererOptions: {
+            barDirection: 'horizontal',
+            barWidth: (ticksCount < 4) ? 50 : null,
+        }
+    };
+    this.cfg.axes.xaxis.tickOptions.labelPosition = 'end';
+    this.cfg.axes.yaxis.tickRenderer = $.jqplot.CanvasAxisTickRenderer;
+    this.cfg.axes.yaxis.renderer = $.jqplot.CategoryAxisRenderer;
+
+}
+
+function tickAxisNull(format, value) {
+    return "";
+}
+
 function tickAxisFormat(format, value) {
     return ( Math.abs(value) > 999 ) ? (value / 1000 ).toString() + 't' : value;
 }

@@ -115,4 +115,9 @@ public class WebUtil {
     public static String toText(String lang, String enText, String roText, String ruText){
         return lang.equals("en") ? enText : lang.equals("ro") ? roText : ruText;
     }
+
+    public static Double round(Double d){
+        return Math.round(d * 100) / 100d;
+    }
+
 }

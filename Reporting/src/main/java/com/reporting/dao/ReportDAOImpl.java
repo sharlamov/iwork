@@ -133,19 +133,19 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
     @Override
     public List<Object> getSilosGroupSold(String date, int region, int sc) {
         String sqlRegion = "select elevator from vregion_settings where region = " + region;
-        String sql0 = "BEGIN UN$SLD.MAKE('','E1','DEK1',pcont=>'9211',psc=>:sc, psc1 => :region, pAn_Data=>:d1); END;";
+        String sql0 = "BEGIN UN$SLD.MAKE('','E1','CDEK1',pcont=>'9211', psc1 => :region, pAn_Data=>:d1); END;";
         Query updateQuery = currentSession().createSQLQuery(sql0);
-        updateQuery.setParameter("d1", date).setParameter("region", sqlRegion).setParameter("sc", sc).executeUpdate();
+        updateQuery.setParameter("d1", date).setParameter("region", sqlRegion).executeUpdate();
 
-        String sql1 = "select elevator,\n" +
-                "(select langtext from vms_univers_lang where cod = elevator) clcelevatort, dep, sum(cant)\n" +
-                "from ( select sc1 elevator,\n" +
-                "decode((select count(*) from vms_univers where tip = 'O' and gr1 = 'DIV' and codi = x.dep),0, 1, 0) dep,cant\n" +
+        String sql1 = "select sc, (select langtext from vms_univers_lang where cod = sc),\n" +
+                "elevator, (select langtext from vms_univers_lang where cod = elevator) clcelevatort, dep, sum(cant)\n" +
+                "from ( select sc,sc1 elevator,\n" +
+                "decode((select count(*) from vms_univers where tip = 'O' and gr1 = 'DIV' and codi = x.dep),0, 'Trans Oil Group', 'Straners siloses') dep,cant\n" +
                 "from xsld x\n" +
                 "where id = 'E1'\n" +
                 "and exists (select * from vms_univers where cod = x.sc1 and gr1s = x.div)\n" +
                 "and nvl (cant, 0) <> 0)\n" +
-                "group by elevator, dep\n";
+                "group by sc, elevator, dep";
         return currentSession().createSQLQuery(sql1).list();
 
     }

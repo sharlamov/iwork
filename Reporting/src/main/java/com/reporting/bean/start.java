@@ -3,6 +3,8 @@ package com.reporting.bean;
 import com.reporting.util.PivotTable;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,15 @@ public class start {
 
         PivotTable ps = new PivotTable(fkey, pkey, skey, data);
         ps.print();
+
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+
+        symbols.setGroupingSeparator(' ');
+
+        String pattern = "#,##0.00";
+        DecimalFormat decimalFormat = new DecimalFormat(pattern, symbols);
+
+        System.out.println(decimalFormat.format(12123156.7));
     }
 
 }

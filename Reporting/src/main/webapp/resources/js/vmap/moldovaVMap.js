@@ -7,16 +7,30 @@ function updateDataMap(path, season, sc, filters) {
         return;
 
     $.getJSON(path + '/dataMap?season=' + season + '&sc=' + sc + '&tip=' + filters, function (result) {
-        map.dataProvider.areas = result.areas;
-        map.dataProvider.images = result.points;
-        map.dataProvider.lines = result.lines;
+        map = new AmCharts.AmMap();
 
+        var dataProvider = {
+            mapVar: AmCharts.maps.moldovaLow,
+            getAreasFromMap: true,
+            areas: result.areas,
+            images: result.points,
+            lines: result.lines
+        };
+
+        map.areasSettings = {
+            rollOverOutlineColor: '#666666',
+            rollOverColor: '#C9DFAF',
+            color: 'white',
+            outlineColor: '#666666',
+            selectedColor: '#C9DFAF',
+            balloonText: '[[title]] , [[customData]]',
+        };
+
+        map.dataProvider = dataProvider;
+        // add events to recalculate map position when the map is moved or zoomed
+        map.addListener('positionChanged', updateCustomMarkers);
         map.write('mapdiv');
     });
-}
-
-function refreshMap() {
-   map.write('mapdiv');
 }
 
 function renderMap(path, season, sc) {

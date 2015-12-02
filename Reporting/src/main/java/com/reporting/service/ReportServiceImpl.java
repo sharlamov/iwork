@@ -4,7 +4,6 @@ import com.reporting.bean.AuthBean;
 import com.reporting.dao.ReportDAO;
 import com.reporting.model.CustomItem;
 import com.reporting.model.CustomUser;
-import com.reporting.model.Pair;
 import com.reporting.util.WebUtil;
 import org.primefaces.model.chart.PieChartModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +76,7 @@ public class ReportServiceImpl implements ReportService {
         Date d1 = WebUtil.strInDate("01.01." + season);
         Date d2 = WebUtil.strInDate("30.06." + (season + 1));
         int sc_mp = sc == null ? 0 : sc.getId().intValue();
-        return reportDAO.getReportManagersOnline(season, region.getId().intValue(), isManager, sc_mp, new Pair<>(d1, d2));
+        return reportDAO.getReportManagersOnline(season, region.getId().intValue(), isManager, sc_mp, d1, d2);
     }
 
     @Override

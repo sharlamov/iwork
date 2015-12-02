@@ -141,11 +141,11 @@ public class ManagersBean extends AbstractReportBean {
         isModelPayment = !lst.isEmpty();
         if (isModelPayment) {
             LineChartSeries contr = new LineChartSeries();
-            contr.setLabel("Законтрактовано");
+            contr.setLabel(getBundle().getString("mng.chart2.name0"));
             LineChartSeries payed = new LineChartSeries();
-            payed.setLabel("Оплачено");
+            payed.setLabel(getBundle().getString("mng.chart2.name1"));
             LineChartSeries shiped = new LineChartSeries();
-            shiped.setLabel("Отписано");
+            shiped.setLabel(getBundle().getString("mng.chart2.name2"));
 
             for (Object r : lst) {
                 Object[] row = (Object[]) r;

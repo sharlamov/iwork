@@ -1,7 +1,5 @@
 package com.reporting.dao;
 
-import com.reporting.model.Pair;
-
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +16,7 @@ public interface ReportDAO {
 
     List<Object> getReportContractsByCulture(int season, int region, int sc);
 
-    List<Object> getReportManagersOnline(int season, int region, boolean isManager, int sc, Pair<Date, Date> period);
+    List<Object> getReportManagersOnline(int season, int region, boolean isManager, int sc, Date d1, Date d2);
 
     List<Object> getReportPayment(int season, int region, int sc);
 

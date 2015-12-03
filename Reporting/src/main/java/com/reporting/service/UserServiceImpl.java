@@ -49,7 +49,6 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 
     public void updateUserDetails(CustomUser cu) throws UsernameNotFoundException {
-
         CustomItem div = userDAO.getUserDiv(cu.getId());
         if (div == null || div.getLabel() == null) {
             throw new UsernameNotFoundException("DIV not found");

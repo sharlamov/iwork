@@ -44,10 +44,13 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<CustomItem> getCultures() {
         initLang();
-        List<CustomItem> items = WebUtil.toCustomItemList(reportDAO.getCultures());
-        for (CustomItem ci : items) {
-            Color c = WebUtil.getRandomColor();
-            ci.setName(Integer.toHexString(c.getRGB()).substring(2));
+
+        List data = reportDAO.getCultures();
+        List<CustomItem> items = new ArrayList<>();
+
+        for (Object ci : data) {
+            Object[] row = (Object[]) ci;
+            items.add(new CustomItem(row[0], row[1].toString().replaceFirst("#", ""), row[2]));
         }
         return items;
     }

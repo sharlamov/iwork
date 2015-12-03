@@ -123,12 +123,13 @@ public class ManagersBean extends AbstractReportBean {
 
 
                 String hex0 = getCultures().get(getCultures().indexOf(getCulture())).getName();
-                int value = new BigInteger(hex0, 16).intValue();
-                String hex1 = Integer.toHexString(value - 50);
+                //int value = new BigInteger(hex0, 16).intValue();
+                //String hex1 = Integer.toHexString(value - 50);
+                String hex1 = "A9A9A9";
 
                 horizontalBarModel.addSeries(otpis);
                 horizontalBarModel.addSeries(contr);
-                horizontalBarModel.setSeriesColors(hex1 + "," + hex0);
+                horizontalBarModel.setSeriesColors(hex0 + "," + hex1);
             }
         }
         System.out.println("Count of itereation: " + i);

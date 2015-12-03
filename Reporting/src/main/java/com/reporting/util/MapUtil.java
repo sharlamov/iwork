@@ -41,10 +41,10 @@ public class MapUtil {
         try {
             String path = (country + " " + district + " " + place).replace(" ", "%20");
             JSONObject json = readJsonFromUrl("http://maps.google.com/maps/api/geocode/json?address=" + path + "&sensor=false");
-            if(json.get("status").equals("ZERO_RESULTS")){
+            /*if(json.get("status").equals("ZERO_RESULTS")){
                 path = (country + " " + place).replace(" ", "%20");
                 json = readJsonFromUrl("http://maps.google.com/maps/api/geocode/json?address=" + path + "&sensor=false");
-            }
+            }*/
             JSONArray jarr = json.getJSONArray("results");
 
             for (int i = 0; i < jarr.length(); i++) {

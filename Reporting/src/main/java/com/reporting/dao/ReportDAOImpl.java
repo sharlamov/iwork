@@ -31,7 +31,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
     @Override
     public List getCultures() {
-        String sql = "select cod, upper(langText) from vms_univers_lang where tip in ('M','P') and gr1 in ('2171','2161','2111') and cod not in (211899, 50367, 38320) and gr2='W' and  isarhiv is null";
+        String sql = "select cod, rdb_codvechi, upper(langText) from vms_univers_lang where tip in ('M','P') and gr1 in ('2171','2161','2111') and cod not in (211899, 50367, 38320) and gr2='W' and  isarhiv is null";
         return currentSession().createSQLQuery(sql).list();
     }
 
@@ -262,6 +262,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
     @Override
     public List<Object> getContractByDistrictDetail(int season, int region, int sc) {
+        //updateCoordinates();
         String sql = "select \n" +
                 "raion, \n" +
                 "(select langText from vms_syss_lang where tip='S' and cod=12 and cod1 = raion) raion_name,\n" +
@@ -328,7 +329,8 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
 
     private void updateCoordinates() {
-        String sql = "select 'S12', cod1, denumirea, nmb2t, nmb1t from datacoord";
+        String sql = "select 'S12', cod1, denumirea, nmb2t, NMB1T from vms_syss s where tip = 'S' and cod = '12' and number1 = 3 and  denumirea is not null and nmb2t  is not null and NMB1T  is not null\n" +
+                "and not exists (select * from YPLACE_VCOORDINATES u where u.cod=s.cod1 and tip='S12')";
 
         List list = currentSession().createSQLQuery(sql).list();
         for (Object obj : list) {

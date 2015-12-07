@@ -1,40 +1,37 @@
 package com.reporting.bean;
 
-import com.reporting.util.PivotTable;
-
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
-import java.util.List;
 
 public class start {
 
 
     public static void main(String args[]) throws Exception {
 
-        List<Object[]> data = new ArrayList<>();
-        data.add(new Object[]{"01.01.2015", "01.01.2015", "A", "x", new BigDecimal(1.0), new BigDecimal(1.0)});
-        data.add(new Object[]{"01.01.2015", "01.01.2015", "A", "x", new BigDecimal(2.0), new BigDecimal(1.0)});
-        data.add(new Object[]{"01.02.2015", "01.01.2015", "B", "x", new BigDecimal(3.0), new BigDecimal(1.0)});
-        data.add(new Object[]{"01.03.2015", "01.01.2015", "B", "y", new BigDecimal(4.0), new BigDecimal(1.0)});
+        String right = "5466442680550699541780550698435";
+        String pass = "111";
 
+        System.out.println(right);
+        System.out.println(encode(pass));
+    }
 
-        int fkey[] = {0, 1};
-        int pkey[] = {2, 3};
-        int skey[] = {4, 5};
+    public static BigDecimal defVal(BigDecimal v_result){
+        String text = v_result.toString();
+        int v_length = text.length();
+        BigDecimal v_defval = BigDecimal.ZERO;
+        for (int i = 0; i < v_length; i++) {
+            v_defval = v_defval.add(new BigDecimal((int)(text.charAt(i))));
+        }
+        return v_defval;
+    }
 
-        PivotTable ps = new PivotTable(fkey, pkey, skey, data);
-        ps.print();
-
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols();
-
-        symbols.setGroupingSeparator(' ');
-
-        String pattern = "#,##0.00";
-        DecimalFormat decimalFormat = new DecimalFormat(pattern, symbols);
-
-        System.out.println(decimalFormat.format(12123156.7));
+    public static String encode(String pass){
+        BigDecimal TEN = new BigDecimal(10);
+        BigDecimal v_result = new BigDecimal(0);
+        for (int i = 0; i < 30; i++) {
+            BigDecimal ascii = pass.length() > i ? new BigDecimal((int) pass.charAt(i)) : new BigDecimal((i+1)*7).add(defVal(v_result));
+            v_result = v_result.multiply(TEN).add(ascii);
+        }
+        return v_result.toString();
     }
 
 }

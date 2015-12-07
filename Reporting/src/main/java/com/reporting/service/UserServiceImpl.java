@@ -46,28 +46,4 @@ public class UserServiceImpl implements UserDetailsService, UserService {
         }
         return userDetails;
     }
-
-
-    public void updateUserDetails(CustomUser cu) throws UsernameNotFoundException {
-        CustomItem div = userDAO.getUserDiv(cu.getId());
-        if (div == null || div.getLabel() == null) {
-            throw new UsernameNotFoundException("DIV not found");
-        }
-
-        Integer type = userDAO.getUserScaleType(cu.getId());
-        String str = userDAO.getUserRole(cu.getId());
-        if (!str.isEmpty()) {
-            WebRole role = WebRole.valueOf(str);
-            if (role != null)
-                cu.setLevel(role);
-            else {
-                throw new UsernameNotFoundException("WebRole doesn't exist");
-            }
-        } else {
-            throw new UsernameNotFoundException("WebRole not found");
-        }
-
-        cu.setScaleType(type);
-        cu.setDiv(div);
-    }
 }

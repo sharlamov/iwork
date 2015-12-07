@@ -10,7 +10,6 @@ import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +27,8 @@ public class ManagersBean extends AbstractReportBean {
     private List<Object> dataClient;
     private Boolean isHorizontalBar;
     private Boolean isModelPayment;
+    private BigDecimal contractedSum;
+    private BigDecimal deliveredSum;
 
     @PostConstruct
     public void init() {
@@ -121,10 +122,7 @@ public class ManagersBean extends AbstractReportBean {
                     i++;
                 }
 
-
                 String hex0 = getCultures().get(getCultures().indexOf(getCulture())).getName();
-                //int value = new BigInteger(hex0, 16).intValue();
-                //String hex1 = Integer.toHexString(value - 50);
                 String hex1 = "A9A9A9";
 
                 horizontalBarModel.addSeries(otpis);
@@ -151,10 +149,18 @@ public class ManagersBean extends AbstractReportBean {
             for (Object r : lst) {
                 Object[] row = (Object[]) r;
                 long l = ((Timestamp) row[0]).getTime();
+
                 contr.set(l, (BigDecimal) row[1]);
                 payed.set(l, (BigDecimal) row[2]);
                 shiped.set(l, (BigDecimal) row[3]);
+
+                contractedSum = ((BigDecimal) row[1]);
+                deliveredSum = (BigDecimal) row[3];
             }
+
+            BigDecimal bd = new BigDecimal(1000);
+            contractedSum = contractedSum.divide(bd).setScale(3, BigDecimal.ROUND_DOWN);
+            deliveredSum = deliveredSum.divide(bd).setScale(3, BigDecimal.ROUND_DOWN);
 
             modelPayment.addSeries(contr);
             modelPayment.addSeries(payed);
@@ -209,5 +215,21 @@ public class ManagersBean extends AbstractReportBean {
 
     public void setIsModelPayment(Boolean isModelPayment) {
         this.isModelPayment = isModelPayment;
+    }
+
+    public BigDecimal getDeliveredSum() {
+        return deliveredSum;
+    }
+
+    public void setDeliveredSum(BigDecimal deliveredSum) {
+        this.deliveredSum = deliveredSum;
+    }
+
+    public BigDecimal getContractedSum() {
+        return contractedSum;
+    }
+
+    public void setContractedSum(BigDecimal contractedSum) {
+        this.contractedSum = contractedSum;
     }
 }

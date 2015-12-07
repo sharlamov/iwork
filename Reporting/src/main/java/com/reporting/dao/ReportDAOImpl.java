@@ -63,7 +63,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
         String sql = "select sum (suma_contract) over(partition by manager) all_sum " +
                 ", manager,case when manager = -1 then 'Call center'else(select initcap(lower(langText)) " +
                 "from vms_univers_lang where cod = manager)end clcmanagert " +
-                ",suma_contract - suma_otpis suma_contract " +
+                ",case when suma_contract < suma_otpis then 0 else suma_contract - suma_otpis end suma_contract " +
                 ",suma_otpis " +
                 "from(select manager, nvl(sum(zacontractovano), 0)suma_contract " +
                 ", round(nvl(sum((select sum(cant)from vmdb_cmr cm where ct = 9421and cm.ctnrdoc = c.nrdoc1)), 0), 3) suma_otpis " +
@@ -87,8 +87,8 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 ",sum(zacontractovano)zacontractovano \n" +
                 ",sum(decode(price_in,0,0,round(suma_paid/price_in,2)))cant_paid \n" +
                 ",sum(suma_paid)suma_paid \n" +
-                ",sum(zacontractovano) - sum(decode(price_in,0,0,round(suma_paid/price_in,2))) cant_ordered\n" +
-                ",(sum(zacontractovano * price_in) - sum(suma_paid)) suma_ordered \n" +
+                ",case when sum(zacontractovano) - sum(decode(price_in,0,0,round(suma_paid/price_in,2))) < 0 then 0 else sum(zacontractovano) - sum(decode(price_in,0,0,round(suma_paid/price_in,2))) end cant_ordered\n" +
+                ",case when sum(zacontractovano * price_in) - sum(suma_paid) < 0 then 0 else sum(zacontractovano * price_in) - sum(suma_paid) end suma_ordered \n" +
                 "from( select m.nrdoc1 contract," + client + ", clc" + client + "t ,nvl(price_in,0)price_in \n" +
                 ",sum(zacontractovano)zacontractovano \n" +
                 ",(select sum(suma)from vmdb_cmr where dt=9431 and dtnrdoc=m.nrdoc1 and dtsc in (4962,4963) and data between :d1 and :d2)suma_paid \n" +
@@ -139,7 +139,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 "where id = 'E1'\n" +
                 "and exists (select * from vms_univers where cod = x.sc1 and gr1s = x.div)\n" +
                 "and nvl (cant, 0) <> 0)\n" +
-                "group by sc, elevator, dep";
+                "group by sc, elevator, dep order by sc, elevator, dep ";
         return currentSession().createSQLQuery(sql1).list();
 
     }
@@ -150,7 +150,6 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
         String sql0 = "BEGIN UN$SLD.MAKE('','E1','DEK1',pcont=>'9211',psc=>:sc, psc1 => :region, pAn_Data=>:d1); END;";
         Query updateQuery = currentSession().createSQLQuery(sql0);
         updateQuery.setParameter("d1", d1).setParameter("region", sqlRegion).setParameter("sc", sc).executeUpdate();
-
 
         String sql1 = "select sum(cant) over (partition by elevator) total, x.* from " +
                 "(select elevator,(select langText from vms_univers_lang where cod = elevator) clcelevatort " +
@@ -233,8 +232,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
     @Override
     public List<Object> getContractByDistrict(int season, int sc) {
         String sql = "select raion\n" +
-                ",(select langText from vms_syss_lang where tip='S' and cod=25 and cod1 = raion) \n" +
-                ", sum(contract),sum(masa_netto)/1000\n" +
+                ",(select langText from vms_syss_lang where tip='S' and cod=25 and cod1 = raion), sum(contract), sum(masa_netto)/1000\n" +
                 ",(select urojai from YTRANS_TMS_RAION_UROJAI_SC where raion_s_25 = raion and sc = :sc and datastart between '01.07.' || :season and '30.06.' || (:season + 1) and rownum = 1)\n" +
                 "from (\n" +
                 "select (select number2 from vms_syss where tip='S' and cod='12' and cod1 = raion) raion,contract,masa_netto \n" +
@@ -251,7 +249,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 "union all\n" +
                 "select oras_from, (select zacontractovano from YTCN1D_CLIENTS_MPFS0M c where c.nrdoc1 = (select contract_id2 from yvtrans_contract_application a where a.nrdoc = p.contract_id and rownum = 1)) contract, null \n" +
                 "from yvtrans_purchase_process p where oras_from is not null and sezon_yyyy = :season and sc = :sc \n" +
-                "))group by raion\n" +
+                "))group by raion having sum(masa_netto) >= 0\n" +
                 "order by 4 desc";
 
         return currentSession().createSQLQuery(sql)
@@ -346,23 +344,17 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
 
     @Override
     public List<Object> getOurElevators() {
-        String sql = "select * from (select cod, denumirea,\n" +
-                "(select lat from YPLACE_VCOORDINATES c where c.cod = u.cod and c.tip = 'UNIV') lat,\n" +
-                "(select lng from YPLACE_VCOORDINATES c where c.cod = u.cod and c.tip = 'UNIV') lng\n" +
-                "from vms_univers u where tip='O' and gr1 = 'I' and gr2='E'\n" +
-                "and exists (select 1 from vms_univers div where tip = 'O' and gr1 = 'DIV' and div.codi=u.gr1i)\n" +
-                ")where lat is not null and lng is not null";
+        String sql = "select s.elevator, s.clcelevatort, lat, lng from \n" +
+                "vregion_settings s, YPLACE_COORDINATES c\n" +
+                "where c.tip = 'UNIV' and s.elevator = c.cod and s.our = 'P'\n";
         return currentSession().createSQLQuery(sql).list();
     }
 
     @Override
     public List<Object> getAnyElevators() {
-        String sql = "select * from (select cod, denumirea,\n" +
-                "(select lat from YPLACE_VCOORDINATES c where c.cod = u.cod and c.tip = 'UNIV') lat,\n" +
-                "(select lng from YPLACE_VCOORDINATES c where c.cod = u.cod and c.tip = 'UNIV') lng\n" +
-                "from vms_univers u where tip='O' and gr1 = 'I' and gr2='E'\n" +
-                "and not exists (select 1 from vms_univers div where tip = 'O' and gr1 = 'DIV' and div.codi=u.gr1i)\n" +
-                ")where lat is not null and lng is not null";
+        String sql = "select s.elevator, s.clcelevatort, lat, lng from \n" +
+                "vregion_settings s, YPLACE_COORDINATES c\n" +
+                "where c.tip = 'UNIV' and s.elevator = c.cod and s.our is null\n";
         return currentSession().createSQLQuery(sql).list();
     }
 
@@ -428,10 +420,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
     @Override
     public List<Object> getComodityByElevator(Date d1, Date d2, int sc) {
         String sql = "    SELECT sc_elevator,( select initCap(langText) from vms_univers_lang where cod = sc_elevator) clcsc_elevatort,SUM(cant) cant\n" +
-                "    FROM (\n" +
-                "            SELECT sc_elevator , NVL(ZACONTRACTOVANO,tonaj_plan)  cant\n" +
+                "    FROM ( SELECT sc_elevator , NVL(ZACONTRACTOVANO,tonaj_plan)  cant\n" +
                 "    FROM YVCN1D_CLIENTS_MPFS0M m, vmdb_docs d\n" +
-                "    WHERE d.cod=m.contractid AND sysfid=48701 and d.div <> 97623  AND CONTRACT_TYPE_FS_1 IN (15,38)\n" +
+                "    WHERE d.cod=m.contractid AND sysfid = 48701 and d.div <> 97623  AND CONTRACT_TYPE_FS_1 IN (15,38)\n" +
                 "    AND m.datastart BETWEEN :d1 AND :d2 and sc_mp = :sc\n" +
                 "    )group by sc_elevator\n" +
                 "    order by 3";
@@ -442,4 +433,6 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 .setParameter("sc", sc)
                 .list();
     }
+
+
 }

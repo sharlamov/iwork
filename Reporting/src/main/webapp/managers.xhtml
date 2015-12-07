@@ -15,7 +15,12 @@
         <p:outputPanel id="chart_panel">
             <table border="0" style="height: 100%; width: 100%">
                 <tr>
-                    <td width="34%" style="text-align:center">${msg['mng.chart1.name']}</td>
+                    <td width="34%" style="text-align:center">
+                        <h:outputFormat value="#{msg['mng.chart1.name']}">
+                            <f:param value="#{managersBean.contractedSum}" />
+                            <f:param value="#{managersBean.deliveredSum}" />
+                        </h:outputFormat>
+                    </td>
                     <td colspan="2"
                         style="text-align:center">${msg['mng.tables.name']}
                     </td>

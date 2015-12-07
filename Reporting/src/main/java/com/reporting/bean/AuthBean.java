@@ -2,6 +2,7 @@ package com.reporting.bean;
 
 import com.reporting.model.CustomUser;
 import com.reporting.service.UserService;
+import com.reporting.util.WebUtil;
 import org.primefaces.context.RequestContext;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,8 +51,6 @@ public class AuthBean extends AbstractBean {
 
     public void countryLocaleCodeChanged(ValueChangeEvent e) {
         localeCode = e.getNewValue().toString();
-        /*FacesContext.getCurrentInstance()
-                .getViewRoot().setLocale(new Locale(e.getNewValue().toString()));*/
     }
 
     public void login(ActionEvent event) {
@@ -61,10 +60,9 @@ public class AuthBean extends AbstractBean {
         String page = "";
 
         try {
-            Authentication request = new UsernamePasswordAuthenticationToken(userName, password);
+            Authentication request = new UsernamePasswordAuthenticationToken(userName, WebUtil.encode(password));
             Authentication result = authenticationManager.authenticate(request);
             currentUser = (CustomUser) result.getPrincipal();
-            userService.updateUserDetails(currentUser);
             SecurityContextHolder.getContext().setAuthentication(result);
             loggedIn = true;
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Welcome", userName);

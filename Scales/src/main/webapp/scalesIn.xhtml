@@ -119,7 +119,7 @@
 
 						<h:outputText value="Tipul de cereale" />
 						<p:autoComplete value="#{scalesBean.selectedScale.clcsc_mpt}"
-							completeMethod="#{scalesBeanOut.completeTipulList}" var="item"
+							completeMethod="#{scalesBean.completeTipulList}" var="item"
 							forceSelection="true" itemLabel="#{item.label}"
 							itemValue="#{item}" converter="customItemConverter">
 						</p:autoComplete>

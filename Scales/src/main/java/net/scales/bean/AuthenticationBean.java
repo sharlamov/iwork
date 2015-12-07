@@ -3,8 +3,6 @@ package net.scales.bean;
 import net.scales.model.CustomUser;
 import net.scales.service.UserService;
 import org.primefaces.context.RequestContext;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,10 +14,6 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
-import javax.servlet.ServletContext;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 @ManagedBean(name = "authenticationBean")
 @SessionScoped

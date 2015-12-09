@@ -83,7 +83,7 @@ function tickAxisNull(format, value) {
 }
 
 function tickAxisFormat(format, value) {
-    return ( Math.abs(value) > 999 ) ? (value / 1000 ).toString() + 't' : value;
+    return ( Math.abs(value) > 999 ) ? (value / 1000 ).toString() + 'Kt' : value + "t";
 }
 
 function modelPaymentExt() {
@@ -113,6 +113,7 @@ function horizontalBarExt() {
     this.cfg.animate = true;
     this.cfg.stackSeries = true;
     this.cfg.captureRightClick = true;
+
     this.cfg.seriesDefaults = {
         renderer: $.jqplot.BarRenderer,
         shadowAngle: 135,
@@ -121,11 +122,19 @@ function horizontalBarExt() {
             highlightMouseDown: true
         },
         pointLabels: {show: true, formatString: '%d'},
-        linePattern: 'dotted',
+        linePattern: 'dotted'
     };
+
+    this.cfg.highlighter= {
+        show: true,
+        useAxesFormatters: false,
+        formatString: "<div style='background-color:white; border:1px #ddd solid; font-size:14px;'>%.3f</div>"
+    }
 
     this.cfg.axes.xaxis.tickOptions.labelPosition = 'end';
     this.cfg.axes.xaxis.tickOptions.formatter = tickAxisFormat;
+    this.cfg.axes.xaxis.tickOptions.textColor = 'black';
+    this.cfg.axes.yaxis.tickOptions.textColor = 'black';
     this.cfg.axes.yaxis.tickRenderer = $.jqplot.CanvasAxisTickRenderer;
     this.cfg.axes.yaxis.renderer = $.jqplot.CategoryAxisRenderer;
 }

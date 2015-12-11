@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
 <f:view locale="#{authBean.localeCode}">
     <h:head>
         <title>${msg['company']}</title>
@@ -11,8 +12,6 @@
         <meta http-equiv="refresh" content="#{session.maxInactiveInterval};url=#{request.contextPath}/login.xhtml"/>
         <h:outputScript library="js" name="common.js"/>
         <h:outputStylesheet library="css" name="pf.css"/>
-        <h:outputStylesheet library="css" name="header.css"/>
-
     </h:head>
     <h:body>
         <p:growl id="messages" showDetail="true"/>

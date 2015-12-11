@@ -22,8 +22,6 @@
     <p:outputPanel id="fpan">
         <p:toolbar>
             <f:facet name="left">
-                <ui:include src="/templates/menu.xhtml"/>
-
                 <p:outputPanel rendered="#{not empty cc.attrs.backPath}" style="display: inline-block">
                     <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
                     <p:button outcome="#{cc.attrs.backPath}" icon="fa fa-backward" value="Back"/>
@@ -96,19 +94,6 @@
                     </p:calendar>
                 </p:outputPanel>
 
-            </f:facet>
-
-            <f:facet name="right">
-                <p:outputLabel>#{authBean.loggedUser.username}</p:outputLabel>
-                <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
-                <h:selectOneMenu value="#{authBean.localeCode}" style="vertical-align: bottom;font-weight: bold"
-                                 valueChangeListener="#{authBean.countryLocaleCodeChanged}">
-                    <f:selectItems value="#{authBean.countryInMap}"/>
-                    <f:ajax event="change" execute="@form" listener="#{cc.attrs.bean.applyFilters}"
-                            render="#{cc.attrs.langUpdate}"/>
-                </h:selectOneMenu>
-                <span class="ui-separator"><span class="ui-icon ui-icon-grip-dotted-vertical"/></span>
-                <p:commandButton action="#{authBean.logout}" icon="ui-icon-person"/>
             </f:facet>
         </p:toolbar>
     </p:outputPanel>

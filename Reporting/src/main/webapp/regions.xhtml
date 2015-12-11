@@ -8,18 +8,17 @@
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="ammap.css"/>
-        <script src="resources/js/vmap/ammap.js"></script>
-        <script src="resources/js/reports.js"></script>
-        <script src="resources/js/vmap/moldovaLow.js" type="text/javascript"></script>
-        <script src="resources/js/vmap/moldovaVMap.js"></script>
-
+        <h:outputScript library="js" name="reports.js"/>
+        <h:outputScript library="js" name="vmap/ammap.js"/>
+        <h:outputScript library="js" name="vmap/moldovaLow.js"/>
+        <h:outputScript library="js" name="vmap/moldovaVMap.js"/>
 
         <cmp:filterPanel id="filter" bean="#{regionsBean}" update="@form:dataMaster" showSeasons="true" showPoints="true" showCultures="true"/>
 
-        <p:outputPanel id="dataMaster" style="width: 100%; height: 100%;">
+        <p:outputPanel id="dataMaster">
 
-            <p style="width: 100%; text-align: center; font-weight: bold">${msg['region.name']}</p>
-            <p:scrollPanel id="regionTable" mode="native" style="height: 100%; width: 30%;display: inline-block; ">
+            <p id="regionTitle" style="text-align: center; font-weight: bold">${msg['region.name']}</p>
+            <p:scrollPanel id="regionTable" mode="native" style="height: 100%; float: left; ">
                 <p:dataTable var="item" value="#{regionsBean.pageDataList}" tableStyle="width:auto">
                     <p:column headerText="#{msg['region.table0.col0']}">
                         <h:outputText value="#{item[1]}"/>
@@ -53,7 +52,7 @@
                     </p:column>
                 </p:dataTable>
             </p:scrollPanel>
-            <div id="mapdiv" class="noupdate" style="width: 69%; height: 100%; display: inline-block;"></div>
+            <div id="mapdiv" class="noupdate" style="width: 69%;float: left;"></div>
         </p:outputPanel>
     </ui:define>
 </ui:composition>

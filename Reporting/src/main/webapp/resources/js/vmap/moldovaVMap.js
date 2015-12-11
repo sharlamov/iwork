@@ -1,6 +1,26 @@
 
 var map;
 
+$(window).on('load resize', function(){
+    resizeRegions();
+});
+
+function resizeRegions() {
+    var title = $("#regionTitle");
+    var hSize = $(window).height();
+    var wSize = $(window).width();
+
+    hSize = hSize - title.height() - title.offset().top
+    //alert(hSize);
+
+    var table = $('#inputDataForm\\:regionTable');
+    var map = $("#mapdiv");
+    table.css('height', hSize + 'px');
+    table.css('width', (0.25*wSize) + 'px');
+    map.css('height', hSize + 'px');
+    map.css('width', (0.70*wSize) + 'px');
+}
+
 function updateDataMap(path, season, sc, filters) {
 
     if (map == undefined)

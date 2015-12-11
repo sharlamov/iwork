@@ -17,12 +17,11 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 
 @ManagedBean(name = "authBean")
 @SessionScoped
-public class AuthBean extends AbstractBean {
+public class AuthBean {
 
     private static Map<String, String> countries;
 
@@ -35,6 +34,7 @@ public class AuthBean extends AbstractBean {
 
     @ManagedProperty(value = "#{authenticationManager}")
     private AuthenticationManager authenticationManager;
+
     @ManagedProperty(value = "#{userServiceImpl}")
     private UserService userService;
 
@@ -42,12 +42,6 @@ public class AuthBean extends AbstractBean {
     private String password;
     private CustomUser currentUser;
     private String localeCode = "en";
-
-    @Override
-    public void init() {
-      /*  FacesContext.getCurrentInstance()
-                .getViewRoot().setLocale(new Locale(locale));*/
-    }
 
     public void countryLocaleCodeChanged(ValueChangeEvent e) {
         localeCode = e.getNewValue().toString();
@@ -108,6 +102,10 @@ public class AuthBean extends AbstractBean {
         this.authenticationManager = authenticationManager;
     }
 
+    public UserService getUserService() {
+        return userService;
+    }
+
     public void setUserService(UserService userService) {
         this.userService = userService;
     }
@@ -121,7 +119,7 @@ public class AuthBean extends AbstractBean {
     }
 
     public Map<String, String> getCountryInMap() {
-        return this.countries;
+        return countries;
     }
 
     public String getLocaleCode() {

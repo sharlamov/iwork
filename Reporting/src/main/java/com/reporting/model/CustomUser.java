@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Set;
 
-public class CustomUser extends AbstractModel<CustomUser> implements UserDetails {
+public class CustomUser implements UserDetails {
 
     private static final long serialVersionUID = -8055629994460003294L;
 

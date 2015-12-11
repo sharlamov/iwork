@@ -4,7 +4,7 @@ import com.reporting.util.WebUtil;
 
 import java.math.BigDecimal;
 
-public class CustomItem extends AbstractModel<CustomItem> {
+public class CustomItem {
 
     private BigDecimal id;
     private String name;

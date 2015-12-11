@@ -21,7 +21,6 @@ public abstract class AbstractReportBean implements Serializable {
     @ManagedProperty("#{msg}")
     private ResourceBundle bundle;
 
-
     private List<SelectItem> seasons;
     private Integer season;
     private List<CustomItem> cultures;

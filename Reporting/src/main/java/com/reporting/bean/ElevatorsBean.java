@@ -31,7 +31,7 @@ public class ElevatorsBean extends AbstractReportBean {
 
     @PostConstruct
     public void init() {
-        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getCurrentUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setRegions(getReportService().getRegions());

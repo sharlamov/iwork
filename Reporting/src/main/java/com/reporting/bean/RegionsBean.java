@@ -21,7 +21,7 @@ public class RegionsBean extends AbstractReportBean {
     public void init() {
         contextPath = FacesContext.getCurrentInstance().getExternalContext().getRequestContextPath();
 
-        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getCurrentUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setCultures(getReportService().getCultures());

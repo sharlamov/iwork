@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 @ManagedBean(name = "managersBean")
 @ViewScoped
 public class ManagersBean extends AbstractReportBean {
@@ -32,7 +31,7 @@ public class ManagersBean extends AbstractReportBean {
 
     @PostConstruct
     public void init() {
-        setSeasons(getReportService().getSeasons(getAuthBean().getLoggedUser()));
+        setSeasons(getReportService().getSeasons(getAuthBean().getCurrentUser()));
         setSeason(Integer.valueOf(getSeasons().get(getSeasons().size() - 1).getLabel()));
 
         setRegions(getReportService().getRegions());
@@ -40,6 +39,7 @@ public class ManagersBean extends AbstractReportBean {
 
         setCultures(getReportService().getCultures());
         setCulture(getCultures().get(0));
+
         applyFilters();
     }
 

@@ -1,56 +1,35 @@
 package com.reporting.bean;
 
-import com.reporting.util.WebUtil;
-
 import javax.annotation.PostConstruct;
-import javax.faces.bean.ApplicationScoped;
 import javax.faces.bean.ManagedBean;
-import javax.faces.context.FacesContext;
-import java.util.ArrayList;
+import javax.faces.bean.ViewScoped;
 import java.util.List;
 
 @ManagedBean(name = "homeBean")
-@ApplicationScoped
-public class HomeBean {
+@ViewScoped
+public class HomeBean extends AbstractReportBean{
 
-    private List<Object[]> reportList;
-    private volatile int managersCount;
-    private volatile int elevatorsCount;
-    private volatile int regionsCount;
+    private List<Object> reportList;
 
     @PostConstruct
     public void init() {
-        reportList = new ArrayList<>();
+        applyFilters();
     }
 
-    public String increment(String rep) {
-        switch (rep) {
-            case "managers.xhtml":
-                managersCount++;
-                break;
-            case "elevators.xhtml":
-                elevatorsCount++;
-                break;
-            case "regions.xhtml":
-                regionsCount++;
-                break;
-        }
-        return rep + "?faces-redirect=true";
+    @Override
+    public void applyFilters() {
+        reportList = getReportService().getFirstLevelMenu();
     }
 
-    public int count(String rep) {
-        switch (rep) {
-            case "managers.xhtml":
-                return managersCount;
-            case "elevators.xhtml":
-                return elevatorsCount;
-            case "regions.xhtml":
-                return regionsCount;
-        }
-        return 0;
+    public List<Object> getReportList() {
+        return reportList;
     }
 
-    public List<Object[]> getReportList() {
+    public void setReportList(List<Object> reportList) {
+        this.reportList = reportList;
+    }
+
+  /*  public List<Object[]> getReportList() {
         AuthBean authBean = (AuthBean) FacesContext.getCurrentInstance().
                 getExternalContext().getSessionMap().get("authBean");
         reportList.clear();
@@ -62,5 +41,6 @@ public class HomeBean {
 
     public void setReportList(List<Object[]> reportList) {
         this.reportList = reportList;
-    }
+    }*/
+
 }

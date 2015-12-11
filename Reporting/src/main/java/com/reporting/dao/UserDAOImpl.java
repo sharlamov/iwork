@@ -6,11 +6,15 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.jdbc.Work;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Types;
 
 @Repository
 public class UserDAOImpl implements UserDAO {
@@ -23,8 +27,7 @@ public class UserDAOImpl implements UserDAO {
     }
 
     public Object loadUserByUsername(String username) {
-        String sql = "select id, username,nvl(admin,0) as admin, "
-                + "nvl(password, (select old_value  from a$act t where action='p' and  t.obj_id=a.obj_id and  stamp=(select max(t1.stamp) from a$act t1 where t1.action='p' and  t.obj_id=t1.obj_id))) as pass "
+        String sql = "select id, username,nvl(admin,0) as admin,nvl(encoded,a$util.encode(password)) as pass  "
                 + "from a$users$v a where enabled=1 and LOWER(username) = LOWER(:user_name)";
         return currentSession().createSQLQuery(sql)
                 .setString("user_name", username).uniqueResult();

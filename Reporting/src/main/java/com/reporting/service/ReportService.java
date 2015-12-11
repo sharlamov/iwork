@@ -49,4 +49,6 @@ public interface ReportService {
     List<Object> getComodityContractedByDate(Date d1, Date d2, CustomItem sc, CustomItem dep);
 
     List<Object> getComodityByElevator(Date d1, Date d2, CustomItem sc);
+
+    List<Object> getFirstLevelMenu();
 }

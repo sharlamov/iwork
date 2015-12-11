@@ -53,4 +53,6 @@ public interface ReportDAO {
     List<Object> getComodityContractedByDate(Date d1, Date d2, int sc, int dep);
 
     List<Object> getComodityByElevator(Date d1, Date d2, int sc);
+
+    List<Object> getFirstLevelMenu();
 }

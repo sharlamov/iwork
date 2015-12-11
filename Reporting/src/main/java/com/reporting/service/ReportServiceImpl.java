@@ -12,11 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
-import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 
 @Service
 @Transactional
@@ -33,10 +31,10 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<SelectItem> getSeasons(CustomUser user) {
+        int toYear = Calendar.getInstance().get(Calendar.YEAR);
         List<SelectItem> items = new ArrayList<>();
-        List<Object> lst = reportDAO.getSeasons(user.getDiv().getId().intValue());
-        for (Object s : lst) {
-            items.add(new SelectItem(s.toString()));
+        for (int i = 2014; i <= toYear ; i++) {
+            items.add(new SelectItem(i));
         }
         return items;
     }
@@ -253,7 +251,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<Object> getComodityByElevator(Date d1, Date d2, CustomItem sc){
         initLang();
-        return reportDAO.getComodityByElevator(d1,d2, sc.getId().intValue());
+        return reportDAO.getComodityByElevator(d1, d2, sc.getId().intValue());
+    }
+
+    public List<Object> getFirstLevelMenu(){
+        initLang();
+        return reportDAO.getFirstLevelMenu();
     }
 }
 

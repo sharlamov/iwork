@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view locale="#{authBean.localeCode}">
+    <h:head>
+        <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+        <h:outputStylesheet library="css" name="mainMenu.css"/>
+        <h:outputScript library="js" name="/home/home_layout.js"/>
+        <h:outputScript library="js" name="/home/home_scroll.js"/>
+        <h:outputScript library="js" name="/home/home_replink.js"/>
+    </h:head>
+
+    <body>
+
+    <div id="layout-topbar">
+        <a id="mobile-menu-button">
+            <span class="ButtonLine" id="ButtonLine1"/>
+            <span class="ButtonLine" id="ButtonLine2"/>
+            <span class="ButtonLine" id="ButtonLine3"/>
+        </a>
+
+        <span style="font-size: xx-large;font-weight: bold;color: white;margin-left: 10px; float: left">${msg['company']}</span>
+
+        <ul id="top-menu">
+            <li style="padding-top: 10px;padding-right: 10px">
+                <span style="font-weight: bold; color: white">${authBean.loggedUser.username}</span>
+            </li>
+            <li>
+                <a class="ripplelink"><i class="fa fa-language"/></a>
+                <ul>
+                    <li><a href="#"><i class="fa fa-flag"/>EN</a></li>
+                    <li><a href="#"><i class="fa fa-flag"/>RO</a></li>
+                    <li><a href="#"><i class="fa fa-flag"/>RU</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#{request.contextPath}/j_spring_security_logout" class="ripplelink">
+                    <i class="fa fa-power-off"/>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div id="wrapper">
+        <div id="wrapperIndent">
+            <div class="Animated05 ps-container ps-active-y" id="layout-menu-cover">
+                <ul class="layout-menu ShadowEffect modena-menu">
+                    <li role="menuitem">
+                        <a class="menulink ripplelink" href="/home.xhtml"><i class="fa fa-user"/>Home</a>
+                    </li>
+                    <li role="menuitem"><a href="#" class="menulink ripplelink">
+                        <i class="icon-null"/><i class="fa fa-user"/>Online reports</a>
+                        <ul role="menu">
+                            <li role="menuitem" class="active-menu-parent"><a
+                                    class="menulink ripplelink active-menu active-menu-restore" href="position.xhtml"><i
+                                    class="icon-null"/><i class="fa fa-user"/>Position</a></li>
+                        </ul>
+                    </li>
+                    <li role="menuitem"><a href="#" class="menulink ripplelink">
+                        <i class="icon-null"/><i class="fa fa-user"/>Analitic reports</a>
+                        <ul role="menu">
+                            <li role="menuitem"><a class="menulink ripplelink" href="managers.xhtml"><i
+                                    class="icon-null"/><i class="fa fa-user"/>Payments</a></li>
+                            <li role="menuitem"><a class="menulink ripplelink" href="elevators.xhtml"><i
+                                    class="icon-null"/><i class="fa fa-user"/>Elevators</a></li>
+                            <li role="menuitem"><a class="menulink ripplelink" href="regions.xhtml"><i
+                                    class="icon-null"/><i class="fa fa-user"/>Regions</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+    </body>
+</f:view>
+</html>

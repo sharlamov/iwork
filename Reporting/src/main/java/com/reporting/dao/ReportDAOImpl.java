@@ -434,5 +434,9 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 .list();
     }
 
-
+    @Override
+    public List<Object> getFirstLevelMenu() {
+        String sql = "select cod, pcod, name_en pname, desc_en pdesc, image, reference pref from web_tmenu where pcod is null";
+        return currentSession().createSQLQuery(sql).list();
+    }
 }

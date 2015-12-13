@@ -6,7 +6,7 @@
         <h:outputStylesheet library="css" name="dash.css"/>
         <div class="tiles_board">
             <ui:repeat value="#{homeBean.reportList}" var="menu">
-                <a href="#{menu[5]}" class="ebox">
+                <a href="#{request.contextPath}/#{menu[5]}" class="ebox">
                     <i class="fa #{menu[4]} Fs48 orange" style="text-align: center;"/>
                     <div class="Fs16 title">${menu[2]}</div>
                     <div class="Fs10 desc">${menu[3]}</div>

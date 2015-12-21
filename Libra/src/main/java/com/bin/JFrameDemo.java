@@ -1,10 +1,11 @@
 package com.bin;
 
-import com.driver.AScalesDriver;
-import com.driver.Alex9600;
-import com.driver.R320;
-import com.driver.Rinstrum320;
-import jssc.*;
+import com.driver.CommonScalesDriver;
+import com.driver.ScalesManager;
+import jssc.SerialPort;
+import jssc.SerialPortEvent;
+import jssc.SerialPortEventListener;
+import jssc.SerialPortException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,13 +20,15 @@ public class JFrameDemo extends JFrame implements ActionListener {
 
     SerialPort serialPort;
     JComboBox<String> comList;
-    JComboBox<AScalesDriver> driverList;
+
+    ScalesManager sm = new ScalesManager();
 
     JButton btn1 = new JButton("Start listening");
     JButton btn2 = new JButton("Stop listening");
-    JButton btn3 = new JButton("Read weight");
-    JButton btn4 = new JButton("Read stable weight");
+
     JButton btn5 = new JButton("Save");
+    JButton btn6 = new JButton("Clear");
+    JButton btn7 = new JButton("Init scales");
 
     JTextField tf1 = new JTextField("2400");
     JTextField tf2 = new JTextField("8");
@@ -35,9 +38,13 @@ public class JFrameDemo extends JFrame implements ActionListener {
 
     Dimension editSize = new Dimension(50, 20);
 
+    JTabbedPane tabbedPane = new JTabbedPane();
+    JPanel mainPanel = new JPanel();
+
     public JFrameDemo(String title) throws HeadlessException {
         super(title);
-        setLayout(new FlowLayout());
+        mainPanel.setLayout(new FlowLayout());
+
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -45,37 +52,34 @@ public class JFrameDemo extends JFrame implements ActionListener {
             }
         });
 
-        comList = new JComboBox<String>(SerialPortList.getPortNames());
-        add(comList);
-
-        driverList = new JComboBox<AScalesDriver>();
-        driverList.addItem(new Rinstrum320("Consales r320", "rinstrum320", (String) comList.getSelectedItem()));
-        driverList.addItem(new Alex9600("Alex Causani", "alex9600", (String) comList.getSelectedItem()));
-        driverList.addItem(new R320("Consales new", "rinstrum320", (String) comList.getSelectedItem()));
-        add(driverList);
+        comList = new JComboBox<String>(sm.getPortList());
+        mainPanel.add(comList);
 
         tf1.setPreferredSize(editSize);
-        add(tf1);
+        mainPanel.add(tf1);
         tf2.setPreferredSize(editSize);
-        add(tf2);
+        mainPanel.add(tf2);
         tf3.setPreferredSize(editSize);
-        add(tf3);
+        mainPanel.add(tf3);
         tf4.setPreferredSize(editSize);
-        add(tf4);
+        mainPanel.add(tf4);
 
         btn1.addActionListener(this);
-        add(btn1);
+        mainPanel.add(btn1);
         btn2.addActionListener(this);
-        add(btn2);
-        btn3.addActionListener(this);
-        add(btn3);
-        btn4.addActionListener(this);
-        add(btn4);
+        mainPanel.add(btn2);
         btn5.addActionListener(this);
-        add(btn5);
+        mainPanel.add(btn5);
+        btn6.addActionListener(this);
+        mainPanel.add(btn6);
+        btn7.addActionListener(this);
+        mainPanel.add(btn7);
 
         JScrollPane scroll = new JScrollPane(ta, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        add(scroll);
+        mainPanel.add(scroll);
+
+        tabbedPane.addTab("Main", mainPanel);
+        add(tabbedPane, BorderLayout.CENTER);
 
         setSize(600, 500);
         setLocationRelativeTo(null);
@@ -86,7 +90,7 @@ public class JFrameDemo extends JFrame implements ActionListener {
         ta.append(text + "\n");
     }
 
-    public void print(java.util.List<String> list){
+    public void print(java.util.List<String> list) {
         for (String s : list) print(s);
     }
 
@@ -109,32 +113,6 @@ public class JFrameDemo extends JFrame implements ActionListener {
             } catch (Exception ex) {
                 print(ex.toString());
             }
-        } else if (e.getSource().equals(btn3)) {
-            AScalesDriver dr = (AScalesDriver) driverList.getSelectedItem();
-            dr.setComPort((String) comList.getSelectedItem());
-            long t = System.currentTimeMillis();
-            try {
-                int d = dr.getWeight();
-                print((System.currentTimeMillis() - t) + "");
-                print(dr.list);
-                JOptionPane.showMessageDialog(this, d);
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                print(e1.getMessage());
-            }
-        } else if (e.getSource().equals(btn4)) {
-            AScalesDriver dr = (AScalesDriver) driverList.getSelectedItem();
-            dr.setComPort((String) comList.getSelectedItem());
-            long t = System.currentTimeMillis();
-            try {
-                int d = dr.getStableWeight();
-                print((System.currentTimeMillis() - t) + "");
-                print(dr.list);
-                JOptionPane.showMessageDialog(this, d);
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                print(e1.toString());
-            }
         } else if (e.getSource().equals(btn5)) {
             try {
                 FileWriter fw = new FileWriter("com" + System.currentTimeMillis() + ".log", false);
@@ -145,6 +123,19 @@ public class JFrameDemo extends JFrame implements ActionListener {
                 e1.printStackTrace();
             }
 
+        } else if (e.getSource().equals(btn6)) {
+            ta.setText("");
+        } else if (e.getSource().equals(btn7)) {
+            sm.defineScales();
+            if(sm.getScales().isEmpty()){
+                JOptionPane.showMessageDialog(this, "Scales weren't found!");
+            }else{
+                for (CommonScalesDriver sd : sm.getScales()) {
+                    tabbedPane.addTab(sd.toString(), new ScalesPanel(sd));
+                }
+                tabbedPane.revalidate();
+                tabbedPane.repaint();
+            }
         }
     }
 
@@ -153,8 +144,7 @@ public class JFrameDemo extends JFrame implements ActionListener {
         public void serialEvent(SerialPortEvent event) {
             if (event.isRXCHAR() && event.getEventValue() > 0) {
                 try {
-                    String receivedData = serialPort.readString(event.getEventValue());
-                    print(event.getEventValue() + ": data " + receivedData);
+                    print(serialPort.readString(event.getEventValue()));
                 } catch (SerialPortException ex) {
                     print("Error in receiving string from COM-port: " + ex);
                 }

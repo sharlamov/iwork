@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--suppress ALL -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.0.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+    <context:component-scan base-package="com"/>
+    <context:annotation-config/>
+    <context:spring-configured/>
+
+    <!-- Data Source Declaration -->
+    <bean id="DataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.hib.driver}"/>
+        <property name="url" value="${jdbc.hib.url}"/>
+        <property name="username" value="${jdbc.hib.login}"/>
+        <property name="password" value="${jdbc.hib.pass}"/>
+    </bean>
+
+    <!-- Session Factory Declaration -->
+    <bean id="SessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="DataSource"/>
+        <property name="packagesToScan">
+            <list>
+                <value>net.scales.model</value>
+            </list>
+        </property>
+
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${jdbc.hib.dialect}</prop>
+                <prop key="hibernate.hbm2ddl.auto">${jdbc.hib.hbm2ddl}</prop>
+                <prop key="hibernate.show_sql">${jdbc.hib.show.sql}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- Transaction Manager is defined -->
+    <bean id="txManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="SessionFactory"/>
+    </bean>
+
+    <bean id="databasePropertyPlaceholderConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>database-settings.properties</value>
+            </list>
+        </property>
+    </bean>
+</beans>
+

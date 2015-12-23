@@ -1,27 +1,37 @@
 package com.bin;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.dao.JdbcDAO;
 
 import javax.swing.*;
 import java.awt.*;
+import java.sql.SQLException;
 
 public class AppFrame extends JFrame {
 
-    ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext.xml");
+    JdbcDAO dao = new JdbcDAO();
 
     public AppFrame() {
         super("Libra");
-        add(new LibraMenu(), BorderLayout.NORTH);
-        add(new LibraPanel(ctx), BorderLayout.CENTER);
 
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                dao.closeConnection();
+                System.exit(0);
+            }
+        });
+
+        //ctx = new ClassPathXmlApplicationContext("classpath*:**/applicationContext*.xml");
+        add(new LibraMenu(), BorderLayout.NORTH);
+        add(new LibraPanel(dao), BorderLayout.CENTER);
+
         setSize(800, 500);
         setLocationRelativeTo(null);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         new AppFrame();
     }
 

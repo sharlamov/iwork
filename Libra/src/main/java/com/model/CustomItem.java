@@ -1,6 +1,5 @@
 package com.model;
 
-import com.util.WebUtil;
 
 import java.math.BigDecimal;
 
@@ -25,19 +24,6 @@ public class CustomItem {
         super();
         this.id = id;
         this.label = label;
-    }
-
-    public CustomItem(Object obj0, Object obj1, Object obj2) {
-        super();
-        this.id = (BigDecimal) obj0;
-        this.name = WebUtil.parse(obj1, String.class);
-        this.label = WebUtil.parse(obj2, String.class);
-    }
-
-    public CustomItem(Object obj0, Object obj1) {
-        super();
-        this.id = (BigDecimal) obj0;
-        this.label = WebUtil.parse(obj1, String.class);
     }
 
     public BigDecimal getId() {

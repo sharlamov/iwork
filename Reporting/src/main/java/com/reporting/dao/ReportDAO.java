@@ -55,4 +55,6 @@ public interface ReportDAO {
     List<Object> getComodityByElevator(Date d1, Date d2, int sc);
 
     List<Object> getFirstLevelMenu();
+
+    List<Object> getChildrenMenu(int pid);
 }

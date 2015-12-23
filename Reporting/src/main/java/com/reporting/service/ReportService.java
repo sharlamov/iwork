@@ -51,4 +51,6 @@ public interface ReportService {
     List<Object> getComodityByElevator(Date d1, Date d2, CustomItem sc);
 
     List<Object> getFirstLevelMenu();
+
+    List<Object> getChildrenMenu(int pid);
 }

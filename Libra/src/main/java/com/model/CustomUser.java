@@ -2,7 +2,7 @@ package com.model;
 
 import java.math.BigDecimal;
 
-public class CustomUser extends AbstractModel<CustomUser> {
+public class CustomUser {
 
     private static final long serialVersionUID = -8055629994460003294L;
 

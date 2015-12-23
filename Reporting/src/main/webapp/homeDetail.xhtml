@@ -5,21 +5,22 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <ui:define name="content">
-        <p:dataTable var="item" value="#{dtBasicView.cars}">
-            <p:column headerText="Id">
-                <h:outputText value="#{item.id}"/>
+        <p:dataTable var="item" value="#{homeBean.getDetailList(2)}">
+            <p:column headerText="Sign" style="width:32px;text-align: center;">
+                <i class="fa #{item[4]}" style="font-size: 24px;"/>
             </p:column>
 
-            <p:column headerText="Year">
-                <h:outputText value="#{item.year}"/>
+            <p:column headerText="Name">
+                <h:outputText value="#{item[2]}"/>
             </p:column>
 
-            <p:column headerText="Brand">
-                <h:outputText value="#{item.brand}"/>
+            <p:column headerText="Description">
+                <h:outputText value="#{item[3]}"/>
             </p:column>
 
-            <p:column headerText="Color">
-                <h:outputText value="#{item.color}"/>
+
+            <p:column headerText="Action" style="width:32px;text-align: center">
+                <p:button outcome="#{item[5]}" icon="ui-icon-search" />
             </p:column>
         </p:dataTable>
     </ui:define>

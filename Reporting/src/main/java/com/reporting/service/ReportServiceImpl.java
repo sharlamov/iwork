@@ -258,6 +258,11 @@ public class ReportServiceImpl implements ReportService {
         initLang();
         return reportDAO.getFirstLevelMenu();
     }
+
+    public List<Object> getChildrenMenu(int pid){
+        initLang();
+        return reportDAO.getChildrenMenu(pid);
+    }
 }
 
 

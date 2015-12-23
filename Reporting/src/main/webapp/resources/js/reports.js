@@ -7,6 +7,21 @@ $(document).ready(function () {
     colorSelectCulture();
 });
 
+function resizeRegionDetail() {
+    var title = $("#regionTitle");
+    var hSize = $(window).height();
+    var wSize = $(window).width();
+
+    hSize = hSize - title.height() - title.offset().top;
+    var table = $('#inputDataForm\\:detailTable');
+    var map = $('#inputDataForm\\:geoMap');
+    table.css('height', hSize + 'px');
+    table.css('width', (0.25 * wSize) + 'px');
+    map.css('height', hSize + 'px');
+    map.css('width', (0.70 * wSize) + 'px');
+    PF('geoMap')._render();
+}
+
 function colorSelectCulture() {
 
     $('ul.ui-selectonemenu-items.ui-selectonemenu-list.ui-widget-content.ui-widget.ui-corner-all.ui-helper-reset li').each(function (ind, el) {
@@ -17,7 +32,7 @@ function colorSelectCulture() {
             var name = text.substring(0, ind);
             $(el).text(name);
 
-            $(el).attr('data-icon','ui-icon-play');
+            $(el).attr('data-icon', 'ui-icon-play');
             $(el).attr('data-label', name);
 
             var span = document.createElement('span')
@@ -125,11 +140,11 @@ function horizontalBarExt() {
         linePattern: 'dotted'
     };
 
-    this.cfg.highlighter= {
+    this.cfg.highlighter = {
         show: true,
         useAxesFormatters: false,
         formatString: "<div style='background-color:white; border:1px #ddd solid; font-size:14px;'>%.3f</div>"
-    }
+    };
 
     this.cfg.axes.xaxis.tickOptions.labelPosition = 'end';
     this.cfg.axes.xaxis.tickOptions.formatter = tickAxisFormat;

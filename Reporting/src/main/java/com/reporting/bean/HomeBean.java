@@ -3,6 +3,7 @@ package com.reporting.bean;
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
+import java.math.BigDecimal;
 import java.util.List;
 
 @ManagedBean(name = "homeBean")
@@ -23,6 +24,10 @@ public class HomeBean extends AbstractReportBean{
 
     public List<Object> getReportList() {
         return reportList;
+    }
+
+    public List<Object> getDetailList(BigDecimal pid){
+        return getReportService().getChildrenMenu(pid.intValue());
     }
 
     public void setReportList(List<Object> reportList) {

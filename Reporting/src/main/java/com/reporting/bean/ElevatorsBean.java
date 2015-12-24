@@ -22,7 +22,7 @@ import java.util.Map;
 public class ElevatorsBean extends AbstractReportBean {
 
     public final static String TRG = "Trans Oil Group";
-    public final static String OTHERS = "Straners siloses";
+    public final static String OTHERS = "Strangers siloses";
     private BarChartModel model;
     private List<Object> pageDataList;
     private List<Object[]> soldTable;

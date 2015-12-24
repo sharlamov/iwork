@@ -13,7 +13,8 @@
         <h:outputScript library="js" name="vmap/moldovaLow.js"/>
         <h:outputScript library="js" name="vmap/moldovaVMap.js"/>
 
-        <cmp:filterPanel id="filter" bean="#{regionsBean}" update="@form:dataMaster" showSeasons="true" showPoints="true" showCultures="true"/>
+        <cmp:filterPanel id="filter" bean="#{regionsBean}" update="@form:dataMaster" showSeasons="true"
+                         showPoints="true" showCultures="true" oncomplete="resizeRegions();"/>
 
         <p:outputPanel id="dataMaster">
 
@@ -52,6 +53,7 @@
                     </p:column>
                 </p:dataTable>
             </p:scrollPanel>
+
             <div id="mapdiv" class="noupdate" style="width: 69%;float: left;"></div>
         </p:outputPanel>
     </ui:define>

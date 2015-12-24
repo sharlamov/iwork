@@ -6,24 +6,23 @@ import java.math.BigDecimal;
 public class CustomItem {
 
     private BigDecimal id;
-    private String name;
     private String label;
 
     public CustomItem() {
         super();
     }
 
-    public CustomItem(BigDecimal id, String name, String label) {
-        super();
-        this.id = id;
-        this.name = name;
-        this.label = label;
-    }
-
     public CustomItem(BigDecimal id, String label) {
         super();
         this.id = id;
         this.label = label;
+    }
+
+    public CustomItem(Object id, Object label) {
+        if (id instanceof BigDecimal) {
+            this.id = (BigDecimal) id;
+            this.label = label == null ? " " :label.toString();
+        }
     }
 
     public BigDecimal getId() {
@@ -40,14 +39,6 @@ public class CustomItem {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String toStringValue() {

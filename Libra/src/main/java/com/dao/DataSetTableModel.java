@@ -24,19 +24,14 @@ public class DataSetTableModel extends AbstractTableModel {
     }
 
     public int getColumnCount() {
-        return dataSet.names.length;
+        return dataSet.names.size();
     }
 
     public String getColumnName(int column) {
-        return dataSet.names[column];
+        return dataSet.names.get(column);
     }
 
-    @Override
-    public Class<?> getColumnClass(int columnIndex) {
-        return dataSet.types[columnIndex];
-    }
-
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        return dataSet.list.get(rowIndex)[columnIndex];
+    public Object getValueAt(int row, int column) {
+        return dataSet.list.get(row)[column];
     }
 }

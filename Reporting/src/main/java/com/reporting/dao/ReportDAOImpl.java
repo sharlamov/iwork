@@ -134,7 +134,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
         String sql1 = "select sc, (select langtext from vms_univers_lang where cod = sc),\n" +
                 "elevator, (select langtext from vms_univers_lang where cod = elevator) clcelevatort, dep, sum(cant)\n" +
                 "from ( select sc,sc1 elevator,\n" +
-                "decode((select count(*) from vms_univers where tip = 'O' and gr1 = 'DIV' and codi = x.dep),0, 'Trans Oil Group', 'Straners siloses') dep,cant\n" +
+                "decode((select count(*) from vms_univers where tip = 'O' and gr1 = 'DIV' and codi = x.dep),0, 'Trans Oil Group', 'Strangers siloses') dep,cant\n" +
                 "from xsld x\n" +
                 "where id = 'E1'\n" +
                 "and exists (select * from vms_univers where cod = x.sc1 and gr1s = x.div)\n" +
@@ -272,7 +272,7 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 "and exists (select * from vms_univers where tip='O' and gr1 = 'DIV' and codi = dep_postav)\n" +
                 "and exists (select * from vms_syss where tip='S' and cod = 12 and cod1 = ppogruz_s_12 and number2 = :region)\n" +
                 "union all\n" +
-                "SELECT raion, dep_gruzootpr, cant_accves, null masac  FROM Ytrans_VMDB_MPFS_ttn where sezon_yyyy = :season and sc_mp = :sc and raion is not null\n" +
+                "SELECT raion, dep_gruzootpr, cant_accves, null masac  FROM ytrans_vmdb_mpfs_ttn where sezon_yyyy = :season and sc_mp = :sc and raion is not null\n" +
                 "and not exists (select * from vms_univers where tip='O' and gr1 = 'DIV' and codi in (dep_postav,dep_mp))\n" +
                 "and exists( select * from tmdb_docs where sysfid = 48315 and doccolor is null and cod=nrdoc)\n" +
                 "and exists (select * from vms_syss where tip='S' and cod = 12 and cod1 = raion and number2 = :region)\n" +

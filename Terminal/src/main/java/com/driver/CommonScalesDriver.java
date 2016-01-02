@@ -20,12 +20,14 @@ public class CommonScalesDriver {
     private String deviceName;
     private int rate;
     private Pattern pattern;
+    private int bits;
     private int deviation;
 
-    public CommonScalesDriver(String deviceName, String comPort, int rate, String format, int deviation) {
+    public CommonScalesDriver(String deviceName, String comPort, int rate, int bits, String format, int deviation) {
         this.deviceName = deviceName;
         this.rate = rate;
         this.deviation = deviation;
+        this.bits = bits;
 
         pattern = Pattern.compile(format);
         receivedData = new StringBuilder();
@@ -37,6 +39,7 @@ public class CommonScalesDriver {
         this.deviceName = type.toString();
         this.rate = type.getRate();
         this.deviation = type.getDeviation();
+        this.bits = type.getBits();
 
         pattern = Pattern.compile(type.getFormat());
         receivedData = new StringBuilder();
@@ -46,7 +49,7 @@ public class CommonScalesDriver {
 
     public void openPort() throws Exception {
         serialPort.openPort();//Open port
-        serialPort.setParams(rate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+        serialPort.setParams(rate, bits, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
         serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
         receivedData.setLength(0);
         list.clear();

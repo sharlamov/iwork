@@ -269,7 +269,6 @@ public class ReportDAOImpl extends AbstractDAOImpl implements ReportDAO {
                 "sum(masac) \n" +
                 "from (\n" +
                 "select ppogruz_s_12 raion, nvl(dep_hoz,dep_gruzootpr) agent, masa_netto, null masac  from vtf_prohodn_mpfs where sezon_yyyy = :season and sc_mp = :sc and priznak_arm = 1 \n" +
-                "and exists (select * from vms_univers where tip='O' and gr1 = 'DIV' and codi = dep_postav)\n" +
                 "and exists (select * from vms_syss where tip='S' and cod = 12 and cod1 = ppogruz_s_12 and number2 = :region)\n" +
                 "union all\n" +
                 "SELECT raion, dep_gruzootpr, cant_accves, null masac  FROM ytrans_vmdb_mpfs_ttn where sezon_yyyy = :season and sc_mp = :sc and raion is not null\n" +

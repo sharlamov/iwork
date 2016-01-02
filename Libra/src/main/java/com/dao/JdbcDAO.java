@@ -1,27 +1,43 @@
 package com.dao;
 
 import com.model.CustomItem;
+import com.model.CustomUser;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 public class JdbcDAO {
 
     public Connection connection;
 
-    public DataSet select(String query)
+    public DataSet select(String query, Object[] params)
             throws SQLException {
 
         long t = System.currentTimeMillis();
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         ResultSetMetaData metadata;
         List<Object[]> list = new ArrayList<Object[]>();
         List<String> names = new ArrayList<String>();
         List<Class> types = new ArrayList<Class>();
 
         try {
-            stmt = getConnection().createStatement();
-            ResultSet rs = stmt.executeQuery(query);
+            stmt = getConnection().prepareStatement(query);
+            for (int i = 0; i < params.length; i++) {
+
+                if(params[i] instanceof Date){
+                    stmt.setDate(i + 1, new java.sql.Date(((Date) params[i]).getTime()));
+                }else if(params[i] instanceof BigDecimal){
+                    stmt.setBigDecimal(i + 1, (BigDecimal) params[i]);
+                }else if(params[i] instanceof Integer){
+                    stmt.setInt(i + 1, (Integer) params[i]);
+                }else {
+                    stmt.setString(i + 1, params[i].toString());
+                }
+            }
+
+            ResultSet rs = stmt.executeQuery();
             metadata = rs.getMetaData();
             int numberOfColumns = metadata.getColumnCount();
 
@@ -70,6 +86,21 @@ public class JdbcDAO {
         return new DataSet(names, types, list);
     }
 
+    public CustomUser loginUser(String name, String pass) throws SQLException {
+        CallableStatement cstmt = getConnection().prepareCall("{? := un$userparams.RegisterUser(?, ?)}");
+        cstmt.registerOutParameter(1, Types.INTEGER);
+        cstmt.setString(2, name);
+        cstmt.setString(3, pass);
+        cstmt.execute();
+        int id = cstmt.getInt(1);
+
+        CustomUser customUser = new CustomUser();
+        customUser.setId(new BigDecimal(id));
+        customUser.setUsername(name);
+        customUser.setPassword(pass);
+        return customUser;
+    }
+
     public Connection getConnection() throws SQLException {
 
         Properties connectionProps = new Properties();
@@ -85,7 +116,7 @@ public class JdbcDAO {
 
     public void closeConnection() {
         try {
-            if (!connection.isClosed()) {
+            if (connection != null && !connection.isClosed()) {
                 System.out.println("Disconnected to database");
                 connection.close();
             }

@@ -10,7 +10,6 @@ import java.awt.*;
 public class ScaleLine extends JPanel{
 
     public ScaleLine() {
-        super(new FlowLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         add(new Scoreboard("Весы 1"));
         add(new Scoreboard("Весы 2"));

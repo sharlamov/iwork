@@ -20,7 +20,6 @@ public class JdbcDAO {
         ResultSetMetaData metadata;
         List<Object[]> list = new ArrayList<Object[]>();
         List<String> names = new ArrayList<String>();
-        List<Class> types = new ArrayList<Class>();
 
         try {
             stmt = getConnection().prepareStatement(query);
@@ -82,8 +81,8 @@ public class JdbcDAO {
                 stmt.close();
             }
         }
-        System.out.println(System.currentTimeMillis() - t);
-        return new DataSet(names, types, list);
+        System.out.println("select: " + (System.currentTimeMillis() - t));
+        return new DataSet(names, list);
     }
 
     public CustomUser loginUser(String name, String pass) throws SQLException {
@@ -117,7 +116,7 @@ public class JdbcDAO {
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
-                System.out.println("Disconnected to database");
+                System.out.println("Disconnected from database");
                 connection.close();
             }
 

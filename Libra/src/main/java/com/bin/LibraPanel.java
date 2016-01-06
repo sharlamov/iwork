@@ -16,6 +16,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Date;
@@ -38,7 +40,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private DataSetTableModel dtm;
     private Dimension btnSize = new Dimension(30, 30);
     private HistoryPanel detail;
-    private int armTipe;
+    private int armType;
     private String[] fieldNamesIn = new String[]{"sofer", "auto", "nr_remorca", "vin", "clcdep_postavt", "clcppogruz_s_12t", "clcsc_mpt"
             , "sezon_yyyy", "ttn_n", "ttn_data", "masa_ttn", "nr_analiz", "masa_brutto", "masa_tara", "masa_netto", "clcdep_gruzootpravitt", "clcdep_transpt"
             , "clcdep_hozt", "time_in", "time_out", "contract_nr", "contract_nrmanual", "contract_data", "nr_act_nedostaci"
@@ -47,22 +49,32 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             , "sezon_yyyy", "ttn_n", "ttn_data", "ttn_nn_perem", "nr_analiz", "masa_brutto", "masa_tara", "masa_netto", "prikaz_id", "prikaz_masa"
             , "print_chk", "nrdoc_out", "clcsklad_pogruzkit", "time_in", "time_out", "clcelevatort", "prparc_seria_nr", "prparc_data"};
 
-    public LibraPanel(LibraService service, int armTipe) {
+    public LibraPanel(final LibraService service, final int armType) {
         long t = System.currentTimeMillis();
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        this.armTipe = armTipe;
+        this.armType = armType;
         this.service = service;
         this.detail = new HistoryPanel(service);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
-        dtm = new DataSetTableModel(armTipe == 1 ? fieldNamesIn : fieldNamesOut);
+        dtm = new DataSetTableModel(armType == 1 ? fieldNamesIn : fieldNamesOut);
         tbl = new JTable(dtm);
         tbl.getSelectionModel().addListSelectionListener(this);
         tbl.getTableHeader().setReorderingAllowed(false);
         tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer());
         tbl.setFillsViewportHeight(true);
+        tbl.addMouseListener(new MouseAdapter() {
+            public void mousePressed(MouseEvent me) {
+                JTable table = (JTable) me.getSource();
+                Point p = me.getPoint();
+                int row = table.rowAtPoint(p);
+                if (me.getClickCount() == 2) {
+                    new EditScaleOut(armType == 1 ? "Приход" : "Расход" ,getDtm().getDataSetByRow(row));
+                }
+            }
+        });
 
         JScrollPane scrollPane = new JScrollPane(tbl);
         master.add(initToolBar(), BorderLayout.NORTH);
@@ -76,7 +88,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         add(splitPane, BorderLayout.CENTER);
 
         refreshMaster();
-        System.out.println(System.currentTimeMillis() - t);
+        System.out.println("draw libra panel:" + (System.currentTimeMillis() - t));
     }
 
     public JToolBar initToolBar() {
@@ -113,7 +125,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void refreshMaster() {
         try {
             getDtm().setData(
-                    armTipe == 1 ?
+                    armType == 1 ?
                             getService().getScaleIn((Date) datePicker.getModel().getValue(), (Date) datePicker.getModel().getValue(), AppFrame.loggedUser) :
                             getService().getScaleOut((Date) datePicker.getModel().getValue(), (Date) datePicker.getModel().getValue(), AppFrame.loggedUser)
             );
@@ -134,14 +146,16 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         if (e.getSource().equals(datePanel)) {
             refreshMaster();
         } else if (e.getSource().equals(addBtn)) {
-            new EditScaleOut();
+            new EditScaleOut(armType == 1 ? "Приход" : "Расход" ,getDtm().getDataSetByRow(-1));
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
         }
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        refreshDetail(tbl.getSelectedRow());
+        int n = tbl.getSelectedRow();
+        if( n != -1)
+            refreshDetail(n);
     }
 
     public DataSetTableModel getDtm() {

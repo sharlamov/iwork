@@ -51,7 +51,7 @@ public class AppFrame extends JFrame {
 
         setSize(800, 500);
         setLocationRelativeTo(null);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
     }
 

@@ -1,6 +1,6 @@
 package com.bin;
 
-import com.dao.DataSet;
+import com.model.DataSet;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -48,7 +48,7 @@ public class EditScaleOut extends JDialog implements ActionListener {
         fieldsPanel.setLayout(layout);
 
         for (int i = 0; i < dataSet.getColumnCount(); i++) {
-            fieldsPanel.add(new JField(dataSet.getColumnName(i), dataSet.getValue(0, i)));
+            fieldsPanel.add(new EditField(dataSet.getColumnName(i), dataSet.getValue(0, i)));
         }
 
         add(scrollPane, BorderLayout.CENTER);
@@ -68,8 +68,8 @@ public class EditScaleOut extends JDialog implements ActionListener {
         if (e.getSource().equals(bSave)) {
             for (int i = 0; i < fieldsPanel.getComponentCount(); i++) {
                 Component c = fieldsPanel.getComponent(i);
-                if (c instanceof JField) {
-                    JField f = ((JField) c);
+                if (c instanceof EditField) {
+                    EditField f = ((EditField) c);
                     dataSet.setValueByName(f.getTitle(), 0, f.getValue());
                 }
             }

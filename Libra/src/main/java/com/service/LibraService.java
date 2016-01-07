@@ -1,6 +1,6 @@
 package com.service;
 
-import com.dao.DataSet;
+import com.model.DataSet;
 import com.dao.JdbcDAO;
 import com.model.CustomUser;
 

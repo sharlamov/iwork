@@ -1,5 +1,7 @@
 package com.dao;
 
+import com.model.DataSet;
+
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 

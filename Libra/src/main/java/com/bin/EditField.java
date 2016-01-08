@@ -1,42 +1,34 @@
 package com.bin;
 
-import com.view.editor.DateEdit;
+import com.view.editor.ListEdit;
 import com.view.editor.NumberEdit;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
 
 public class EditField extends JPanel {
-    private JComponent fieldValue;
+    private Component comp;
     private String title;
-    private Object value;
 
-    public EditField(String title, Object value) {
+    public EditField(String title, JComponent comp) {
+
         setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        setPreferredSize(new Dimension(360, 28));
+        setPreferredSize(new Dimension(270, 27));
+        setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        this.title = title;
-        this.value = value;
-        JLabel labelName = new JLabel(title);
+        this.comp = comp;
+        this.comp.setPreferredSize(new Dimension(170, 25));
 
-        labelName.setPreferredSize(new Dimension(150, 25));
-
-        if (value instanceof BigDecimal) {
-            fieldValue = new NumberEdit(value);
-        }else if (value instanceof Timestamp) {
-            fieldValue = new DateEdit((Date) value);
-        } else {
-            fieldValue = new JTextField(value == null ? "" : value.toString());
+        if(title != null && !title.isEmpty()){
+            this.title = title;
+            JLabel labelName = new JLabel(title);
+            labelName.setPreferredSize(new Dimension(95, 25));
+            labelName.setLabelFor(comp);
+            add(labelName);
         }
-        fieldValue.setPreferredSize(new Dimension(200, 25));
-
-
-        labelName.setLabelFor(fieldValue);
-        add(labelName);
-        add(fieldValue);
+        add(comp);
     }
 
     public String getTitle() {
@@ -44,7 +36,12 @@ public class EditField extends JPanel {
     }
 
     public Object getValue() {
-        return value;
+        if(comp instanceof NumberEdit){
+            return new BigDecimal(((NumberEdit) comp).getText());
+        }else if(comp instanceof TextField){
+            return ((TextField) comp).getText();
+        }else
+            return null;
     }
 
 

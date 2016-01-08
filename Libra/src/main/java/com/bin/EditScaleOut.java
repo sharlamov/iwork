@@ -1,6 +1,8 @@
 package com.bin;
 
 import com.model.DataSet;
+import com.toedter.calendar.JDateChooser;
+import com.view.editor.NumberEdit;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -42,16 +44,38 @@ public class EditScaleOut extends JDialog implements ActionListener {
     public void initFieldsPanel() {
         fieldsPanel = new JPanel();
         fieldsPanel.setBorder(BorderFactory.createTitledBorder("Введите данные"));
-        JScrollPane scrollPane = new JScrollPane(fieldsPanel);
+        //JScrollPane scrollPane = new JScrollPane(fieldsPanel);
 
-        BoxLayout layout = new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS);
-        fieldsPanel.setLayout(layout);
+        fieldsPanel.add(new EditField("sofer", new JTextField()));
+        fieldsPanel.add(new EditField("auto", new JTextField()));
+        fieldsPanel.add(new EditField("nr_remorca", new JTextField()));
+        fieldsPanel.add(new EditField("vin", new JTextField()));
+        fieldsPanel.add(new EditField("clcdep_postavt", new JTextField("a")));
+        fieldsPanel.add(new EditField("clcppogruz_s_12t", new JTextField("a")));
+        fieldsPanel.add(new EditField("clcsc_mpt", new JTextField("a")));
+        fieldsPanel.add(new EditField("sezon_yyyy", new NumberEdit()));
+        fieldsPanel.add(new EditField("ttn_n", new JTextField()));
+        fieldsPanel.add(new EditField("ttn_data", new JDateChooser()));
+        fieldsPanel.add(new EditField("masa_ttn", new NumberEdit()));
+        fieldsPanel.add(new EditField("nr_analiz", new NumberEdit()));
+        fieldsPanel.add(new EditField("masa_brutto", new NumberEdit()));
+        fieldsPanel.add(new EditField("masa_tara", new NumberEdit()));
+        fieldsPanel.add(new EditField("masa_netto", new NumberEdit()));
+        fieldsPanel.add(new EditField("clcdep_gruzootpravitt", new JTextField()));
+        fieldsPanel.add(new EditField("clcdep_transpt", new JTextField()));
+        fieldsPanel.add(new EditField("clcdep_hozt", new JTextField()));
+        fieldsPanel.add(new EditField("contract_nr", new JTextField()));
+        fieldsPanel.add(new EditField("contract_nrmanual", new JTextField()));
+        fieldsPanel.add(new EditField("contract_data", new JDateChooser()));
+        fieldsPanel.add(new EditField("nr_act_nedostaci", new JTextField()));
+        fieldsPanel.add(new EditField("masa_return", new NumberEdit()));
+        fieldsPanel.add(new EditField("nr_act_nedovygruzki", new JTextField()));
+        fieldsPanel.add(new EditField("clcelevatort", new JTextField()));
 
-        for (int i = 0; i < dataSet.getColumnCount(); i++) {
-            fieldsPanel.add(new EditField(dataSet.getColumnName(i), dataSet.getValue(0, i)));
-        }
+        //fieldsPanel.add(new EditField(dataSet.getColumnName(i), dataSet.getValue(0, i)));
 
-        add(scrollPane, BorderLayout.CENTER);
+
+         add(fieldsPanel, BorderLayout.CENTER);
     }
 
     public void initStatusPanel() {

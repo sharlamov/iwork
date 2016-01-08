@@ -3,11 +3,8 @@ package com.bin;
 import com.dao.DataSetCellRenderer;
 import com.dao.DataSetTableModel;
 import com.service.LibraService;
-import com.util.DateLabelFormatter;
+import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
-import org.jdatepicker.impl.JDatePanelImpl;
-import org.jdatepicker.impl.JDatePickerImpl;
-import org.jdatepicker.impl.UtilDateModel;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -18,23 +15,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Properties;
 
-import static com.util.Libra.eMsg;
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener {
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener {
-
-    public JDatePickerImpl datePicker;
+    private JDateChooser dc1;
+    private JDateChooser dc2;
     private ImageIcon addIcon = Libra.createImageIcon("images/add.png");
     private ImageIcon refreshIcon = Libra.createImageIcon("images/reload.png");
     private JPanel master = new JPanel(new BorderLayout());
     private JButton addBtn = new JButton(addIcon);
     private JButton refreshBtn = new JButton(refreshIcon);
-    private UtilDateModel model;
-    private JDatePanelImpl datePanel;
     private LibraService service;
     private JTable tbl;
     private DataSetTableModel dtm;
@@ -71,7 +66,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 Point p = me.getPoint();
                 int row = table.rowAtPoint(p);
                 if (me.getClickCount() == 2) {
-                    new EditScaleOut(armType == 1 ? "Приход" : "Расход" ,getDtm().getDataSetByRow(row));
+                    new EditScaleOut(armType == 1 ? "Приход" : "Расход", getDtm().getDataSetByRow(row));
                 }
             }
         });
@@ -93,18 +88,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public JToolBar initToolBar() {
         /*date picker*/
-        model = new UtilDateModel();
-        model.setValue(new Date());
-        model.setSelected(true);
-        Properties p = new Properties();
-        p.put("text.today", "Today");
-        p.put("text.month", "Month");
-        p.put("text.year", "Year");
-        datePanel = new JDatePanelImpl(model, p);
-        datePicker = new JDatePickerImpl(datePanel, new DateLabelFormatter());
 
-        datePicker.setMaximumSize(new Dimension(200, 30));
-        datePicker.addActionListener(this);
+        dc1 = new JDateChooser(new Date());
+        dc1.setPreferredSize(new Dimension(200, 30));
+        dc1.addPropertyChangeListener(this);
+        dc2 = new JDateChooser(new Date());
+        dc2.setPreferredSize(new Dimension(200, 30));
+        dc2.addPropertyChangeListener(this);
         /*-------------*/
         addBtn.setMaximumSize(btnSize);
         addBtn.addActionListener(this);
@@ -113,7 +103,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         JToolBar toolBar = new JToolBar(SwingConstants.HORIZONTAL);
         toolBar.setFloatable(false);
         //toolBar.addSeparator();
-        toolBar.add(datePicker);
+        toolBar.add(dc1);
+        toolBar.add(dc2);
 
         toolBar.add(refreshBtn);
         toolBar.add(addBtn);
@@ -126,13 +117,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         try {
             getDtm().setData(
                     armType == 1 ?
-                            getService().getScaleIn((Date) datePicker.getModel().getValue(), (Date) datePicker.getModel().getValue(), AppFrame.loggedUser) :
-                            getService().getScaleOut((Date) datePicker.getModel().getValue(), (Date) datePicker.getModel().getValue(), AppFrame.loggedUser)
+                            getService().getScaleIn(dc1.getDate(), dc2.getDate(), AppFrame.loggedUser) :
+                            getService().getScaleOut(dc1.getDate(), dc2.getDate(), AppFrame.loggedUser)
             );
             refreshDetail(0);
         } catch (SQLException e) {
             e.printStackTrace();
-            eMsg(e.getMessage());
+            Libra.eMsg(e.getMessage());
         }
     }
 
@@ -143,18 +134,22 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(datePanel)) {
-            refreshMaster();
-        } else if (e.getSource().equals(addBtn)) {
-            new EditScaleOut(armType == 1 ? "Приход" : "Расход" ,getDtm().getDataSetByRow(-1));
+        if (e.getSource().equals(addBtn)) {
+            new EditScaleOut(armType == 1 ? "Приход" : "Расход", null);
         } else if (e.getSource().equals(refreshBtn)) {
+            refreshMaster();
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getSource().equals(dc1) || evt.getSource().equals(dc2)) {
             refreshMaster();
         }
     }
 
     public void valueChanged(ListSelectionEvent e) {
         int n = tbl.getSelectedRow();
-        if( n != -1)
+        if (n != -1)
             refreshDetail(n);
     }
 

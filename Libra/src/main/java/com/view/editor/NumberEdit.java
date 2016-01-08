@@ -9,11 +9,15 @@ import javax.swing.text.PlainDocument;
 /**
  * Created by sharlamov on 07.01.2016.
  */
-public class NumberEdit extends JTextField {
+public class NumberEdit extends JTextField{
 
-    public NumberEdit(Object value) {
+    public NumberEdit() {
         PlainDocument doc = (PlainDocument) getDocument();
         doc.setDocumentFilter(new MyDocFilter());
+    }
+
+    public NumberEdit(Object value) {
+        this();
         setText(value.toString());
     }
 

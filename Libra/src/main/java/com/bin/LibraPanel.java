@@ -2,38 +2,33 @@ package com.bin;
 
 import com.dao.DataSetCellRenderer;
 import com.dao.DataSetTableModel;
+import com.enums.SearchType;
+import com.model.DataSet;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
+import com.view.editor.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.*;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.Date;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener {
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener {
 
-    private JDateChooser dc1;
-    private JDateChooser dc2;
-    private ImageIcon addIcon = Libra.createImageIcon("images/add.png");
-    private ImageIcon refreshIcon = Libra.createImageIcon("images/reload.png");
-    private JPanel master = new JPanel(new BorderLayout());
-    private JButton addBtn = new JButton(addIcon);
-    private JButton refreshBtn = new JButton(refreshIcon);
-    private LibraService service;
+    private Date dc1 = new Date();
+    private Date dc2 = new Date();
+    private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
+    private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
+    private JButton filterBtn = new JButton(Libra.createImageIcon("images/filter.png"));
     private JTable tbl;
     private DataSetTableModel dtm;
     private Dimension btnSize = new Dimension(30, 30);
+    private Dimension dateSize = new Dimension(200, 25);
     private HistoryPanel detail;
     private int armType;
     private String[] fieldNamesIn = new String[]{"sofer", "auto", "nr_remorca", "vin", "clcdep_postavt", "clcppogruz_s_12t", "clcsc_mpt"
@@ -44,14 +39,12 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             , "sezon_yyyy", "ttn_n", "ttn_data", "ttn_nn_perem", "nr_analiz", "masa_brutto", "masa_tara", "masa_netto", "prikaz_id", "prikaz_masa"
             , "print_chk", "nrdoc_out", "clcsklad_pogruzkit", "time_in", "time_out", "clcelevatort", "prparc_seria_nr", "prparc_data"};
 
-    public LibraPanel(final LibraService service, final int armType) {
-        long t = System.currentTimeMillis();
+    public LibraPanel(final int armType) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         this.armType = armType;
-        this.service = service;
-        this.detail = new HistoryPanel(service);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        this.detail = new HistoryPanel(Libra.libraService);
+
 
         dtm = new DataSetTableModel(armType == 1 ? fieldNamesIn : fieldNamesOut);
         tbl = new JTable(dtm);
@@ -66,16 +59,19 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 Point p = me.getPoint();
                 int row = table.rowAtPoint(p);
                 if (me.getClickCount() == 2) {
-                    new EditScaleOut(armType == 1 ? "Приход" : "Расход", getDtm().getDataSetByRow(row));
+                    openEditDialog(dtm.getDataSetByRow(row));
                 }
             }
         });
 
+        tableKeyBindings(tbl);
+
         JScrollPane scrollPane = new JScrollPane(tbl);
+        JPanel master = new JPanel(new BorderLayout());
         master.add(initToolBar(), BorderLayout.NORTH);
         master.add(scrollPane, BorderLayout.CENTER);
 
-
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(master);
         splitPane.setRightComponent(detail);
         splitPane.setResizeWeight(0.8d);
@@ -83,45 +79,47 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         add(splitPane, BorderLayout.CENTER);
 
         refreshMaster();
-        System.out.println("draw libra panel:" + (System.currentTimeMillis() - t));
+    }
+
+    private void tableKeyBindings(JTable table) {
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "Enter");
+        table.getActionMap().put("Enter", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                int row = tbl.getSelectedRow();
+                if (row != -1)
+                    openEditDialog(dtm.getDataSetByRow(row));
+            }
+        });
     }
 
     public JToolBar initToolBar() {
-        /*date picker*/
-
-        dc1 = new JDateChooser(new Date());
-        dc1.setPreferredSize(new Dimension(200, 30));
-        dc1.addPropertyChangeListener(this);
-        dc2 = new JDateChooser(new Date());
-        dc2.setPreferredSize(new Dimension(200, 30));
-        dc2.addPropertyChangeListener(this);
-        /*-------------*/
         addBtn.setMaximumSize(btnSize);
         addBtn.addActionListener(this);
         refreshBtn.setMaximumSize(btnSize);
         refreshBtn.addActionListener(this);
+        filterBtn.setMaximumSize(btnSize);
+        filterBtn.addActionListener(this);
+
         JToolBar toolBar = new JToolBar(SwingConstants.HORIZONTAL);
         toolBar.setFloatable(false);
-        //toolBar.addSeparator();
-        toolBar.add(dc1);
-        toolBar.add(dc2);
 
-        toolBar.add(refreshBtn);
         toolBar.add(addBtn);
+        toolBar.add(refreshBtn);
         toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(filterBtn);
 
         return toolBar;
     }
 
     public void refreshMaster() {
         try {
-            getDtm().setData(
+            dtm.setData(
                     armType == 1 ?
-                            getService().getScaleIn(dc1.getDate(), dc2.getDate(), AppFrame.loggedUser) :
-                            getService().getScaleOut(dc1.getDate(), dc2.getDate(), AppFrame.loggedUser)
+                            Libra.libraService.getScaleIn(dc1, dc2, LibraService.user) :
+                            Libra.libraService.getScaleOut(dc1, dc2, LibraService.user)
             );
             refreshDetail(0);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
@@ -135,37 +133,75 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new EditScaleOut(armType == 1 ? "Приход" : "Расход", null);
+            openEditDialog(null);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
-        }
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource().equals(dc1) || evt.getSource().equals(dc2)) {
-            refreshMaster();
+        } else if (e.getSource().equals(filterBtn)) {
+            openFilterDialog();
         }
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        int n = tbl.getSelectedRow();
-        if (n != -1)
-            refreshDetail(n);
+        if(!e.getValueIsAdjusting()){
+            int n = tbl.getSelectedRow();
+            if (n != -1)
+                refreshDetail(n);
+        }
     }
 
-    public DataSetTableModel getDtm() {
-        return dtm;
+    private void openFilterDialog() {
+        JDateChooser date1 = new JDateChooser(dc1);
+        date1.setPreferredSize(dateSize);
+        JDateChooser date2 = new JDateChooser(dc2);
+        date2.setPreferredSize(dateSize);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(date1);
+        panel.add(date2);
+
+        int result = JOptionPane.showConfirmDialog(null, panel,
+                "Период", JOptionPane.OK_CANCEL_OPTION);
+        if (result == JOptionPane.OK_OPTION) {
+            if (dc1.compareTo(date1.getDate()) != 0 || dc2.compareTo(date2.getDate()) != 0) {
+                dc1 = date1.getDate();
+                dc2 = date2.getDate();
+                refreshMaster();
+            }
+        }
     }
 
-    public void setDtm(DataSetTableModel dtm) {
-        this.dtm = dtm;
-    }
+    public void openEditDialog(DataSet dataSet) {
+        String title = armType == 1 ? "Приход" : "Расход";
 
-    public LibraService getService() {
-        return service;
-    }
+        AbstractEdit[] edits = {
+                new StringEdit("sofer", dataSet),
+                new StringEdit("auto", dataSet),
+                new StringEdit("nr_remorca", dataSet),
+                new StringEdit("vin", dataSet),
+                new ListEdit("clcdep_postavt", dataSet, Libra.libraService, SearchType.CROPS),
+                new ListEdit("clcppogruz_s_12t", dataSet, Libra.libraService, SearchType.CROPS),
+                new ListEdit("clcsc_mpt", dataSet, Libra.libraService, SearchType.CROPS),
+                new NumberEdit("sezon_yyyy", dataSet),
+                new StringEdit("ttn_n", dataSet),
+                new DateEdit("ttn_data", dataSet),
+                new NumberEdit("masa_ttn", dataSet),
+                new NumberEdit("nr_analiz", dataSet),
+                new NumberEdit("masa_brutto", dataSet),
+                new NumberEdit("masa_tara", dataSet),
+                new StringEdit("masa_netto", dataSet, false),
+                new ListEdit("clcdep_gruzootpravitt", dataSet, Libra.libraService, SearchType.CROPS),
+                new ListEdit("clcdep_transpt", dataSet, Libra.libraService, SearchType.CROPS),
+                new ListEdit("clcdep_hozt", dataSet, Libra.libraService, SearchType.CROPS),
+                new StringEdit("contract_nr", dataSet),
+                new StringEdit("contract_nrmanual", dataSet),
+                new DateEdit("contract_data", dataSet),
+                new StringEdit("nr_act_nedostaci", dataSet),
+                new NumberEdit("masa_return", dataSet),
+                new StringEdit("nr_act_nedovygruzki", dataSet),
+                new ListEdit("clcelevatort", dataSet, Libra.libraService, SearchType.CROPS),
+        };
 
-    public void setService(LibraService service) {
-        this.service = service;
+        new EditScale(title, edits);
     }
 }

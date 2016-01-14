@@ -12,6 +12,14 @@ public class DataSet extends ArrayList<Object[]>{
         this.addAll(list);
     }
 
+    private int findField(String fieldName){
+        for (int i = 0; i < names.size(); i++) {
+            if(fieldName.equalsIgnoreCase(names.get(i)))
+                return i;
+        }
+        return -1;
+    }
+
     public String getColumnName(int col){
         return names.isEmpty() ? null : names.get(col);
     }
@@ -25,13 +33,12 @@ public class DataSet extends ArrayList<Object[]>{
     }
 
     public Object getValueByName(String fieldName, int row){
-        int col = names.indexOf(fieldName);
-        //System.out.println(fieldName + " : " + row + " : " + col);
+        int col = findField(fieldName);
         return col == -1 ? null : getValue(row, col);
     }
 
     public void setValueByName(String fieldName, int row, Object value){
-        int col = names.indexOf(fieldName);
+        int col = findField(fieldName);
         if(col != -1){
             get(row)[col] = value;
         }

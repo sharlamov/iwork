@@ -42,7 +42,7 @@ public class HistoryPanel extends JPanel{
     public void refreshData(BigDecimal id){
         try {
             dtm.setData(service.getHistory(id));
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             eMsg(ex.getMessage());
         }
     }

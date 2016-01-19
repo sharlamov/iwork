@@ -90,7 +90,7 @@ public class LibraService {
     }
 
     public DataSet getHistory(BigDecimal id) throws Exception {
-        String sql = "select * from vtf_prohodn_scales where id = ?";
+        String sql = "select br, dt,userid, (select username from vms_users u where u.cod=s.userid)clcuseridt, masa  from tf_prohodn_scales s where id = ?";
         return dao.select(sql, new Object[]{id});
     }
 

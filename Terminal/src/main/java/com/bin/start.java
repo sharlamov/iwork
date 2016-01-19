@@ -3,17 +3,39 @@ package com.bin;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by sharlamov on 12.12.2015.
- */
 public class start {
-
-    public static void main(String[] args) throws IOException {
+    static Integer weight = 50;
+    public static void main(String[] args) throws Exception {
         new JFrameDemo("COM terminal");
         //initTestData();
+        //testData();
+    }
+
+    public static Integer getStableWeight() throws InterruptedException {
+        int lastWeight = weight == null ? 0 : weight;
+        boolean isStable = false;
+        for (int i = 0, c = 0; i < 5 && !isStable && c < 10; i++) {
+            isStable = true;
+            for (int j = 0; j < 100 && c < 10; j++) {
+                TimeUnit.MILLISECONDS.sleep(10);
+                if (weight == null) {
+                    c++;
+                } else {
+                    if(Math.abs(weight - lastWeight) > 20){
+                        isStable = false;
+                        lastWeight = weight;
+                        break;
+                    }
+                }
+            }
+        }
+        return weight;
     }
 
     private static void initTestData() throws IOException {

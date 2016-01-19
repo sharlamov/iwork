@@ -28,18 +28,11 @@
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-
-
         <!-- JDBC -->
         <dependency>
             <groupId>com</groupId>
             <artifactId>driver</artifactId>
-            <version>1.0</version>
+            <version>3.0</version>
         </dependency>
 
     </dependencies>

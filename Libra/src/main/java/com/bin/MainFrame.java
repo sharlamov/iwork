@@ -4,7 +4,6 @@ import com.util.Libra;
 
 import javax.swing.*;
 import java.awt.*;
-import java.sql.SQLException;
 
 public class MainFrame extends JFrame {
 
@@ -20,7 +19,7 @@ public class MainFrame extends JFrame {
 
         add(new LibraMenu(), BorderLayout.NORTH);
 
-        add(new ScalePanel());
+        add(new LibraBoard());
         setSize(800, 500);
         setLocationRelativeTo(null);
         //setExtendedState(JFrame.MAXIMIZED_BOTH);

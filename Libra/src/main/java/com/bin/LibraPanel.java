@@ -2,6 +2,7 @@ package com.bin;
 
 import com.dao.DataSetCellRenderer;
 import com.dao.DataSetTableModel;
+import com.enums.ArmType;
 import com.enums.SearchType;
 import com.model.DataSet;
 import com.service.LibraService;
@@ -27,10 +28,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private JButton filterBtn = new JButton(Libra.createImageIcon("images/filter.png"));
     private JTable tbl;
     private DataSetTableModel dtm;
-    private Dimension btnSize = new Dimension(30, 30);
     private Dimension dateSize = new Dimension(200, 25);
     private HistoryPanel detail;
-    private int armType;
+    private ArmType armType;
     private String[] fieldNamesIn = new String[]{"sofer", "auto", "nr_remorca", "vin", "clcdep_postavt", "clcppogruz_s_12t", "clcsc_mpt"
             , "sezon_yyyy", "ttn_n", "ttn_data", "masa_ttn", "nr_analiz", "masa_brutto", "masa_tara", "masa_netto", "clcdep_gruzootpravitt", "clcdep_transpt"
             , "clcdep_hozt", "time_in", "time_out", "contract_nr", "contract_nrmanual", "contract_data", "nr_act_nedostaci"
@@ -39,14 +39,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             , "sezon_yyyy", "ttn_n", "ttn_data", "ttn_nn_perem", "nr_analiz", "masa_brutto", "masa_tara", "masa_netto", "prikaz_id", "prikaz_masa"
             , "print_chk", "nrdoc_out", "clcsklad_pogruzkit", "time_in", "time_out", "clcelevatort", "prparc_seria_nr", "prparc_data"};
 
-    public LibraPanel(final int armType) {
+    public LibraPanel(final ArmType armType) {
+        this.armType = armType;
+        this.detail = new HistoryPanel();
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        this.armType = armType;
-        this.detail = new HistoryPanel(Libra.libraService);
 
-
-        dtm = new DataSetTableModel(armType == 1 ? fieldNamesIn : fieldNamesOut);
+        dtm = new DataSetTableModel(armType == ArmType.IN ? fieldNamesIn : fieldNamesOut);
         tbl = new JTable(dtm);
         tbl.getSelectionModel().addListSelectionListener(this);
         tbl.getTableHeader().setReorderingAllowed(false);
@@ -79,6 +78,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         add(splitPane, BorderLayout.CENTER);
 
         refreshMaster();
+
     }
 
     private void tableKeyBindings(JTable table) {
@@ -93,11 +93,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public JToolBar initToolBar() {
-        addBtn.setMaximumSize(btnSize);
         addBtn.addActionListener(this);
-        refreshBtn.setMaximumSize(btnSize);
         refreshBtn.addActionListener(this);
-        filterBtn.setMaximumSize(btnSize);
         filterBtn.addActionListener(this);
 
         JToolBar toolBar = new JToolBar(SwingConstants.HORIZONTAL);
@@ -114,7 +111,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void refreshMaster() {
         try {
             dtm.setData(
-                    armType == 1 ?
+                    armType == ArmType.IN ?
                             Libra.libraService.getScaleIn(dc1, dc2, LibraService.user) :
                             Libra.libraService.getScaleOut(dc1, dc2, LibraService.user)
             );
@@ -142,7 +139,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        if(!e.getValueIsAdjusting()){
+        if (!e.getValueIsAdjusting()) {
             int n = tbl.getSelectedRow();
             if (n != -1)
                 refreshDetail(n);
@@ -172,7 +169,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public void openEditDialog(DataSet dataSet) {
-        String title = armType == 1 ? "Приход" : "Расход";
+
+        long t = System.currentTimeMillis();
+
+        String title = armType == ArmType.IN ? "Приход" : "Расход";
 
         AbstractEdit[] edits = {
                 new StringEdit("sofer", dataSet),
@@ -189,7 +189,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 new NumberEdit("nr_analiz", dataSet),
                 new NumberEdit("masa_brutto", dataSet),
                 new NumberEdit("masa_tara", dataSet),
-                new StringEdit("masa_netto", dataSet, false),
+                new NumberEdit("masa_netto", dataSet),
                 new ListEdit("clcdep_gruzootpravitt", dataSet, Libra.libraService, SearchType.CROPS),
                 new ListEdit("clcdep_transpt", dataSet, Libra.libraService, SearchType.CROPS),
                 new ListEdit("clcdep_hozt", dataSet, Libra.libraService, SearchType.CROPS),
@@ -202,6 +202,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 new ListEdit("clcelevatort", dataSet, Libra.libraService, SearchType.CROPS),
         };
 
-        new EditScale(title, edits);
+        new LibraEdit(title, dataSet, ArmType.IN);
+        System.out.println("Dialog opened: " + (System.currentTimeMillis() - t));
     }
+
+
 }

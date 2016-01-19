@@ -14,30 +14,22 @@ import java.math.BigDecimal;
 
 public class NumberEdit extends AbstractEdit{
 
-    public JTextField field;
-    private DataSet dataSet;
-
     public NumberEdit(String title, DataSet dataSet) {
-        super(title);
-        this.dataSet = dataSet;
-        field = new JTextField();
-        PlainDocument doc = (PlainDocument) field.getDocument();
+        super(title, new JTextField(), dataSet);
+        JTextField fld = (JTextField)getField();
+        PlainDocument doc = (PlainDocument) fld.getDocument();
         doc.setDocumentFilter(new NumberDocFilter());
-        setValue();
-        add(field, BorderLayout.CENTER);
+        fld.setHorizontalAlignment(JTextField.RIGHT);
     }
 
     @Override
-    public void setValue() {
-        if(dataSet != null && !dataSet.isEmpty()){
-            Object obj = dataSet.getValueByName(getTitle(), 0);
-            field.setText(obj == null ? "" : obj.toString());
-        }
+    public void setValue(Object obj) {
+        ((JTextField)getField()).setText(obj == null ? "" : obj.toString());
     }
 
     @Override
     public Object getValue() {
-        return new BigDecimal(field.getText());
+        return new BigDecimal(((JTextField)getField()).getText());
     }
 
     class NumberDocFilter extends DocumentFilter {

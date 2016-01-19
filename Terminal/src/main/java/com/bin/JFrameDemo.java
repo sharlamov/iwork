@@ -1,6 +1,6 @@
 package com.bin;
 
-import com.driver.CommonScalesDriver;
+import com.driver.ScalesDriver;
 import com.driver.ScalesManager;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
@@ -15,6 +15,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 public class JFrameDemo extends JFrame implements ActionListener {
 
@@ -90,7 +91,7 @@ public class JFrameDemo extends JFrame implements ActionListener {
         ta.append(text + "\n");
     }
 
-    public void print(java.util.List<String> list) {
+    public void print(List<String> list) {
         for (String s : list) print(s);
     }
 
@@ -99,17 +100,15 @@ public class JFrameDemo extends JFrame implements ActionListener {
             ta.setText("");
             serialPort = new SerialPort((String) comList.getSelectedItem());
             try {
-                serialPort.openPort();//Open port
+                serialPort.openPort();
                 serialPort.setParams(Integer.parseInt(tf1.getText()), Integer.parseInt(tf2.getText()), Integer.parseInt(tf3.getText()), Integer.parseInt(tf4.getText()));//Set params
-                serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);//Add SerialPortEventListener
-                print("port opened");
+                serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
             } catch (Exception ex) {
                 print(ex.toString());
             }
         } else if (e.getSource().equals(btn2)) {
             try {
                 serialPort.closePort();
-                print("port closed");
             } catch (Exception ex) {
                 print(ex.toString());
             }
@@ -122,15 +121,18 @@ public class JFrameDemo extends JFrame implements ActionListener {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-
         } else if (e.getSource().equals(btn6)) {
             ta.setText("");
         } else if (e.getSource().equals(btn7)) {
-            sm.defineScales();
-            if(sm.getScales().isEmpty()){
+            try {
+                sm.defineScales();
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            }
+            if (sm.getScales().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Scales weren't found!");
-            }else{
-                for (CommonScalesDriver sd : sm.getScales()) {
+            } else {
+                for (ScalesDriver sd : sm.getScales()) {
                     tabbedPane.addTab(sd.toString(), new ScalesPanel(sd));
                 }
                 tabbedPane.revalidate();

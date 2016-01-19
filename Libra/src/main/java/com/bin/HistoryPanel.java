@@ -1,49 +1,59 @@
 package com.bin;
 
-import com.dao.DataSetCellRenderer;
-import com.dao.DataSetTableModel;
-import com.service.LibraService;
+import com.model.CustomItem;
+import com.model.DataSet;
+import com.util.Libra;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.sql.SQLException;
+import java.util.Date;
 
 import static com.util.Libra.eMsg;
 
-public class HistoryPanel extends JPanel{
+public class HistoryPanel extends JPanel {
 
-    private LibraService service;
-    private DataSetTableModel dtm;
-    private String[] fieldNames = new String[]{"dt", "br", "userid", "clcsct", "masa"};
+    private ImageIcon loaded = Libra.createImageIcon("images/loaded.png");
+    private ImageIcon unloaded = Libra.createImageIcon("images/unloaded.png");
+    private Font sumaFont = new Font("Courier", Font.BOLD, 24);
 
-    public HistoryPanel(LibraService service) {
-        setLayout(new BorderLayout());
-        this.service = service;
-        JLabel title = new JLabel("История");
-        title.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        title.setOpaque(true);
-        title.setBackground(Color.lightGray);
-        title.setFont(new Font("Courier", Font.BOLD, 12));
-        title.setPreferredSize(new Dimension(30, 40));
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        add(title, BorderLayout.PAGE_START);
+    private Dimension dimension = new Dimension(Integer.MAX_VALUE, 90);
 
-        dtm = new DataSetTableModel(fieldNames);
-        JTable tbl = new JTable(dtm);
-        tbl.getTableHeader().setReorderingAllowed(false);
-        tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer());
-        JScrollPane scrollPane = new JScrollPane(tbl);
-        tbl.setFillsViewportHeight(true);
-        add(scrollPane, BorderLayout.CENTER);
+    public HistoryPanel() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
-    public void refreshData(BigDecimal id){
+    public void refreshData(BigDecimal id) {
+        removeAll();
         try {
-            dtm.setData(service.getHistory(id));
+            DataSet dataSet = Libra.libraService.getHistory(id);
+            for (Object[] objects : dataSet) {
+                addInfo((BigDecimal) objects[0], (Date) objects[1], (CustomItem) objects[2], (BigDecimal) objects[3]);
+            }
         } catch (Exception ex) {
             eMsg(ex.getMessage());
         }
+        revalidate();
     }
+
+
+    public void addInfo(BigDecimal direction, Date date, CustomItem user, BigDecimal weight) {
+        JPanel p = new JPanel(new BorderLayout());
+        p.setMaximumSize(dimension);
+        p.setPreferredSize(dimension);
+        p.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+        p.add(new JLabel(direction.intValue() == 1 ? loaded : unloaded), BorderLayout.WEST);
+        JLabel userLabel = new JLabel(user.toString(), SwingConstants.CENTER);
+        p.add(userLabel, BorderLayout.NORTH);
+        JLabel dateLabel = new JLabel(date.toString(), SwingConstants.CENTER);
+        p.add(dateLabel, BorderLayout.CENTER);
+        JLabel weightLabel = new JLabel(String.valueOf(weight), SwingConstants.CENTER);
+        p.add(weightLabel, BorderLayout.EAST);
+        weightLabel.setForeground(Color.green);
+        weightLabel.setFont(sumaFont);
+        add(p);
+    }
+
 }

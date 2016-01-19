@@ -5,133 +5,106 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 
 public class CommonScalesDriver {
 
     private final String numberFormat = "[^0-9]+";
-    public List<String> list;
-    StringBuilder receivedData;
+    private StringBuilder receivedData;
     private SerialPort serialPort;
     private String deviceName;
     private int rate;
     private Pattern pattern;
     private int bits;
     private int deviation;
-
-    public CommonScalesDriver(String deviceName, String comPort, int rate, int bits, String format, int deviation) {
-        this.deviceName = deviceName;
-        this.rate = rate;
-        this.deviation = deviation;
-        this.bits = bits;
-
-        pattern = Pattern.compile(format);
-        receivedData = new StringBuilder();
-        serialPort = new SerialPort(comPort);
-        list = new ArrayList<String>();
-    }
+    private String comPort;
 
     public CommonScalesDriver(ScaleType type, String comPort) {
         this.deviceName = type.toString();
         this.rate = type.getRate();
         this.deviation = type.getDeviation();
         this.bits = type.getBits();
+        this.comPort = comPort;
 
         pattern = Pattern.compile(type.getFormat());
-        receivedData = new StringBuilder();
         serialPort = new SerialPort(comPort);
-        list = new ArrayList<String>();
     }
 
-    public void openPort() throws Exception {
-        serialPort.openPort();//Open port
-        serialPort.setParams(rate, bits, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-        serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
-        receivedData.setLength(0);
-        list.clear();
-    }
-
-    public void closePort() {
-        try {
-            if (serialPort.isOpened())
-                serialPort.closePort();
-        } catch (Exception ignored) {
+    public void openPort() throws SerialPortException {
+        if (!serialPort.isOpened()) {
+            serialPort.openPort();//Open port
+            serialPort.setParams(rate, bits, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            serialPort.addEventListener(new PortReader(), SerialPort.MASK_RXCHAR);
         }
     }
 
-    public boolean checkDriver() {
-        try {
-            openPort();
-            for (int i = 0; i < 200; i++) {
-                Thread.sleep(5);
-                if (receivedData.length() > 0) {
-                    Matcher m = pattern.matcher(receivedData);
-                    if (m.find()) {
-                        return true;
-                    }
+    public void closePort() throws SerialPortException {
+        if (serialPort.isOpened())
+            serialPort.closePort();
+    }
+
+    public boolean checkDriver() throws Exception {
+        receivedData = new StringBuilder();
+        for (int i = 0; i < 100; i++) {
+            TimeUnit.MILLISECONDS.sleep(5);
+            if (receivedData.length() > 0) {
+                Matcher m = pattern.matcher(receivedData);
+                if (m.find()) {
+                    receivedData = null;
+                    return true;
                 }
             }
-
-        } catch (Exception ignored){
-        }finally {
-            closePort();
         }
+        receivedData = null;
         return false;
     }
 
     public int getWeight() throws Exception {
-        try {
-            openPort();
-
+        int weight = 0;
+        receivedData = new StringBuilder();
+        if (serialPort.isOpened()) {
             for (int i = 0; i < 200; i++) {
-                Thread.sleep(5);
-
+                TimeUnit.MILLISECONDS.sleep(5);
                 if (receivedData.length() > 0) {
                     Matcher m = pattern.matcher(receivedData);
                     if (m.find()) {
-                        return Integer.valueOf(m.group(0).replaceAll(numberFormat, ""));
+                        weight = Integer.valueOf(m.group(0).replaceAll(numberFormat, ""));
+                        break;
                     }
                 }
             }
-            return receivedData.length() > 0 ? -2 : -1;
-        } finally {
-            closePort();
         }
+        receivedData = null;
+        return weight;
     }
 
     public int getStableWeight() throws Exception {
         int weight = -1;
         boolean isStable;
 
-        try {
-            openPort();
+        receivedData = new StringBuilder();
+        for (int j = 0; j < 5; j++) {
+            TimeUnit.SECONDS.sleep(1);
+            Matcher m = pattern.matcher(receivedData);
+            isStable = false;
 
-            for (int j = 0; j < 5; j++) {
-                Thread.sleep(1000);
-                Matcher m = pattern.matcher(receivedData);
-                isStable = false;
-
-                while (m.find()) {
-                    int temp = Integer.valueOf(m.group().replaceAll(numberFormat, ""));
-                    if (weight > -1 && Math.abs(weight - temp) > deviation) {
-                        isStable = false;
-                        break;
-                    } else {
-                        isStable = true;
-                        weight = temp;
-                    }
-                }
-                if (isStable)
+            while (m.find()) {
+                int temp = Integer.valueOf(m.group().replaceAll(numberFormat, ""));
+                if (weight > -1 && Math.abs(weight - temp) > deviation) {
+                    isStable = false;
                     break;
+                } else {
+                    isStable = true;
+                    weight = temp;
+                }
             }
-        } finally {
-            closePort();
+            if (isStable)
+                break;
         }
 
+        receivedData = null;
         return weight;
     }
 
@@ -140,14 +113,18 @@ public class CommonScalesDriver {
         return deviceName;
     }
 
+    public String getComPort() {
+        return comPort;
+    }
+
     class PortReader implements SerialPortEventListener {
         public void serialEvent(SerialPortEvent event) {
             int count = event.getEventValue();
-            if (event.isRXCHAR() && count > 0) {
+            if (receivedData != null && event.isRXCHAR() && count > 0) {
                 try {
                     receivedData.append(serialPort.readString(count));
                 } catch (SerialPortException ex) {
-                    list.add("Error in receiving string from COM-port: " + ex);
+                    System.out.println("Error in receiving string from COM-port: " + ex);
                 }
             }
         }

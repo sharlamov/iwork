@@ -14,7 +14,6 @@ public class LoginView extends JFrame implements ActionListener {
     JTextField userText = new JTextField(20);
     JPasswordField passwordText = new JPasswordField(20);
     private JButton loginButton = new JButton("Войти");
-    //private JButton registerButton = new JButton("Настройки");
 
     public LoginView() throws HeadlessException {
         super(Libra.TITLE);
@@ -29,9 +28,9 @@ public class LoginView extends JFrame implements ActionListener {
         });
 
         initParams();
-        if(Libra.autoLogin == 1){
+        if (Libra.autoLogin == 1) {
             login(userText.getText(), passwordText.getPassword());
-        }else{
+        } else {
             JPanel panel = new JPanel();
             add(panel);
             placeComponents(panel);
@@ -40,19 +39,19 @@ public class LoginView extends JFrame implements ActionListener {
         }
     }
 
-    public void initParams(){
-        SettingsService setting = new SettingsService();
-        userText.setText((String) setting.getProp("user"));
-        passwordText.setText((String) setting.getProp("password"));
-
-        Libra.dbUrl = (String) setting.getProp("jdbc.url");
-        Libra.dbUser = (String) setting.getProp("jdbc.login");
-        Libra.dbPass = (String) setting.getProp("jdbc.pass");
-        Libra.autoLogin = Integer.valueOf(setting.getProp("auto.login").toString());
-    }
-
     public static void main(String[] args) {
         new LoginView();
+    }
+
+    public void initParams() {
+        SettingsService.init();
+        userText.setText(SettingsService.get("user.login"));
+        passwordText.setText(SettingsService.get("user.pass"));
+
+        Libra.dbUrl = SettingsService.get("jdbc.url");
+        Libra.dbUser = SettingsService.get("jdbc.login");
+        Libra.dbPass = SettingsService.get("jdbc.pass");
+        Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
     }
 
     private void placeComponents(JPanel panel) {
@@ -80,7 +79,7 @@ public class LoginView extends JFrame implements ActionListener {
         panel.add(registerButton);*/
     }
 
-    public void login(String login, char[] pass){
+    public void login(String login, char[] pass) {
         try {
             if (Libra.libraService.login(login, pass)) {
                 dispose();

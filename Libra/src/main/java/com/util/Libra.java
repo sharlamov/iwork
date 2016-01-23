@@ -7,6 +7,7 @@ import com.view.component.weightboard.WeightBoard;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,13 @@ public class Libra {
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
+    public static SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
+    public static DecimalFormat decimalFormat = new DecimalFormat("#,###.##");
+
     public static ScalesManager manager = new ScalesManager();
+
+    public static Integer LIMIT_DIFF_MPFS = -20;
 
     public static String dbUrl;
 

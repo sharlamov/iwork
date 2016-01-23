@@ -119,4 +119,10 @@ public class JdbcDAO {
         System.out.println("selectItems: " + (System.currentTimeMillis() - t));
         return items;
     }
+
+    public void exec(String query, Object[] params) throws Exception {
+        CallableStatement cs = getConnection().prepareCall(query);
+        initParams(cs, params);
+        cs.execute();
+    }
 }

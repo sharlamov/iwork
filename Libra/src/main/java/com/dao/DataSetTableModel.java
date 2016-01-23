@@ -3,7 +3,10 @@ package com.dao;
 import com.model.DataSet;
 
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.List;
 
 public class DataSetTableModel extends AbstractTableModel {
 
@@ -59,12 +62,30 @@ public class DataSetTableModel extends AbstractTableModel {
 
     public DataSet getDataSetByRow(int row) {
         List<Object[]> lst = new ArrayList<Object[]>();
-        Object[] line = new Object[names.length];
-        for (int i = 0; i < names.length; i++) {
-            line[i] = dataSet.isEmpty() || row == -1 ? null : getValueAt(row, i);
+        if (dataSet.isEmpty()) {
+            lst.add(new Object[dataSet.getNames().size()]);
+        } else {
+            lst.add(dataSet.get(row));
         }
-        lst.add(line);
-        return new DataSet(Arrays.asList(names), lst);
+        return new DataSet(dataSet.getNames(), lst);
     }
 
+    public Color getRowColor(int row) {
+        Object bd = dataSet.getValueByName("bgcolor", row);
+        Color clr = Color.white;
+        if (bd != null) {
+            switch (((BigDecimal) bd).intValue()) {
+                case 6711039:
+                    return Color.decode("#CC0000");
+                case 13421823:
+                    return Color.decode("#FF6699");
+                case 13434828:
+                    return Color.decode("#CCFFCC");
+                case 5635925:
+                    return Color.decode("#55FF55");
+                default:
+                    return Color.white;
+            }
+        } else return Color.white;
+    }
 }

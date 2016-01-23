@@ -82,6 +82,7 @@ public class LoginView extends JFrame implements ActionListener {
     public void login(String login, char[] pass) {
         try {
             if (Libra.libraService.login(login, pass)) {
+                Libra.libraService.initContext("YFSR_LIMIT_DIFF_MPFS", Libra.LIMIT_DIFF_MPFS.toString());
                 dispose();
                 new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": [" + LibraService.user.getElevator() + "]");
             }

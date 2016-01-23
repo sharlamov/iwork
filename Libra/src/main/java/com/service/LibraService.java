@@ -7,9 +7,9 @@ import com.model.CustomUser;
 import com.model.DataSet;
 import com.util.Libra;
 
+import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,9 +23,9 @@ public class LibraService {
     }
 
     public boolean login(String userName, char[] password) throws Exception {
-        if(userName == null || userName.isEmpty()){
+        if (userName == null || userName.isEmpty()) {
             throw new Exception("Доступ запрещен! Не указан логин!");
-        }else if(password == null || password.length == 0){
+        } else if (password == null || password.length == 0) {
             throw new Exception("Доступ запрещен! Не указан пароль!");
         }
 
@@ -53,16 +53,16 @@ public class LibraService {
         user.setDiv((CustomItem) dataSet.getValueByName("CLCDIVT", 0));
         user.setScaleType(new BigDecimal(dataSet.getValueByName("scaleType", 0).toString()).intValue());
 
-        if(user.getElevator() == null || user.getElevator().getId() == null || user.getElevator().getLabel().isEmpty()){
+        if (user.getElevator() == null || user.getElevator().getId() == null || user.getElevator().getLabel().isEmpty()) {
             throw new Exception("Доступ запрещен! Не указан элеватор!");
-        }else if(user.getDiv() == null || user.getDiv().getId() == null || user.getDiv().getLabel().isEmpty()){
+        } else if (user.getDiv() == null || user.getDiv().getId() == null || user.getDiv().getLabel().isEmpty()) {
             throw new Exception("Доступ запрещен! Не указан филиал!");
         }
         return true;
     }
 
-    public DataSet getScaleOut(Date d0, Date d1, CustomUser user) throws Exception {
-        String sql = "select * from ytrans_VTF_PROHODN_OUT a\n" +
+    public DataSet getScaleOut(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
+        String sql = "select a.*, clcdep_perevoz as clcdep_perevozt from ytrans_VTF_PROHODN_OUT a\n" +
                 "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD') \n" +
                 "and PRIZNAK_ARM=2\n" +
                 "and div = ?\n" +
@@ -71,12 +71,16 @@ public class LibraService {
                 "or (userid=?\n" +
                 "and elevator = a.elevator \n" +
                 "and trunc(sysdate) between datastart and dataend))";
+
+        if(useHalfFilter)
+            sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
+
         return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
     }
 
-    public DataSet getScaleIn(Date d0, Date d1, CustomUser user) throws Exception {
+    public DataSet getScaleIn(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
         String sql = "select * from (\n" +
-                "select * from VTF_PROHODN_MPFS a\n" +
+                "select a.*, dep_gruzootpr dep_gruzootpravit from VTF_PROHODN_MPFS a\n" +
                 "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD')\n" +
                 "and PRIZNAK_ARM=1\n" +
                 "and div = ?\n" +
@@ -86,6 +90,10 @@ public class LibraService {
                 "and elevator = a.elevator\n" +
                 "and trunc(sysdate) between datastart and dataend))\n" +
                 ")order by id desc";
+
+        if(useHalfFilter)
+            sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
+
         return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
     }
 
@@ -95,16 +103,15 @@ public class LibraService {
     }
 
     public List<CustomItem> searchItems(String query, SearchType type) throws Exception {
-        String sql = "select cod, denumirea ||', '|| codvechi as denumirea from vms_univers where tip = 'M' and gr1 in ('2161','2171','2173','2163')";
-        sql = "select * from (" + sql + ") " + "where lower(denumirea) like '%"
+        String sql = "select * from (" + type.getSql() + ") " + "where lower(denumirea) like '%"
                 + query.trim().toLowerCase()
                 + "%' and rownum < ? order by 2";
-        switch (type) {
-            case CROPS:
-                return dao.selectItems(sql, new Object[]{10});
-            default:
-                return new ArrayList<CustomItem>();
-        }
+        return dao.selectItems(sql, new Object[]{10});
+    }
+
+    public void initContext(String name, String value) throws Exception {
+        String sql = " begin envun4.envsetvalue(?,?); end; ";
+        dao.exec(sql, new Object[]{name, value});
     }
 
     public void close() {

@@ -11,17 +11,16 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.sql.SQLException;
 import java.util.Vector;
 
-public class AutoSuggestBox extends JComboBox<CustomItem> implements KeyListener, ItemListener {
+public class AutocompleteItem extends JComboBox<CustomItem> implements KeyListener, ItemListener {
 
     private final LibraService service;
     private final SearchType type;
     private JTextField field;
     private boolean shouldHide;
 
-    public AutoSuggestBox(LibraService service, SearchType type) {
+    public AutocompleteItem(LibraService service, SearchType type) {
         super();
         this.service = service;
         this.type = type;
@@ -32,6 +31,7 @@ public class AutoSuggestBox extends JComboBox<CustomItem> implements KeyListener
         field = (JTextField) getEditor().getEditorComponent();
         field.addKeyListener(this);
     }
+
 
     private void setSuggestionModel(ComboBoxModel<CustomItem> mdl, String str) {
         setModel(mdl);
@@ -48,16 +48,6 @@ public class AutoSuggestBox extends JComboBox<CustomItem> implements KeyListener
             Libra.eMsg(e.getMessage());
         }
         return new DefaultComboBoxModel<CustomItem>(founds);
-    }
-
-    private boolean exists(String query){
-        for (int i = 0; i < getItemCount(); i++) {
-            CustomItem item = getItemAt(i);
-            if (item.getLabel().toLowerCase().contains(query.toLowerCase())){
-                return true;
-            }
-        }
-        return false;
     }
 
     public void keyTyped(KeyEvent e) {
@@ -80,7 +70,6 @@ public class AutoSuggestBox extends JComboBox<CustomItem> implements KeyListener
     }
 
     public void keyPressed(KeyEvent e) {
-        String text = field.getText();
         shouldHide = false;
         switch (e.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
@@ -107,5 +96,9 @@ public class AutoSuggestBox extends JComboBox<CustomItem> implements KeyListener
                 setSelectedItem(null);
             }
         }
+    }
+
+    public JTextField getTextArea() {
+        return field;
     }
 }

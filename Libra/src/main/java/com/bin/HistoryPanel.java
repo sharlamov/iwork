@@ -47,7 +47,7 @@ public class HistoryPanel extends JPanel {
         p.add(new JLabel(direction.intValue() == 1 ? loaded : unloaded), BorderLayout.WEST);
         JLabel userLabel = new JLabel(user.toString(), SwingConstants.CENTER);
         p.add(userLabel, BorderLayout.NORTH);
-        JLabel dateLabel = new JLabel(date.toString(), SwingConstants.CENTER);
+        JLabel dateLabel = new JLabel(Libra.dateTimeFormat.format(date), SwingConstants.CENTER);
         p.add(dateLabel, BorderLayout.CENTER);
         JLabel weightLabel = new JLabel(String.valueOf(weight), SwingConstants.CENTER);
         p.add(weightLabel, BorderLayout.EAST);

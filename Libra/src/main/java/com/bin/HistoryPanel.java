@@ -22,6 +22,8 @@ public class HistoryPanel extends JPanel {
 
     public HistoryPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setMaximumSize(new Dimension(200, 300));
+        setPreferredSize(new Dimension(200, 300));
     }
 
     public void refreshData(BigDecimal id) {

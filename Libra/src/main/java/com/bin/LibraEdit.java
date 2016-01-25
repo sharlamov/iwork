@@ -13,6 +13,8 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ import java.util.List;
 public class LibraEdit extends JDialog implements ActionListener, ChangeEditListener {
 
     private final ArmType armType;
-    private final DataSet dataSet;
+    private DataSet dataSet;
     private final int stepDown = 27;
     private final int editHeight = 23;
     private JButton bSave = new JButton("Сохранить");
@@ -69,6 +71,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         else
             outForm();
 
+
+
 /*
         brutto = (NumberEdit) getFieldByName("masa_brutto");
         brutto.addChangeEditListener(this);
@@ -93,37 +97,43 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(bSave)) {
-            List<String> names = new ArrayList<String>();
-            List<Object[]> data = new ArrayList<Object[]>();
-            List<Object> row = new ArrayList<Object>();
-
-            for(int i = 0; i < fieldsPanel.getComponentCount(); i++){
-                JPanel comp = (JPanel) fieldsPanel.getComponent(i);
-                for (int j = 0; j < comp.getComponentCount(); j++) {
-                    Component c = comp.getComponent(j);
-                    if(c instanceof DbEdit){
-                        DbEdit edit = (DbEdit) c;
-                        names.add(edit.getFieldName());
-                        row.add(edit.getFieldValue());
+            if(dataSet != null){
+                for(int i = 0; i < fieldsPanel.getComponentCount(); i++){
+                    JPanel comp = (JPanel) fieldsPanel.getComponent(i);
+                    for (int j = 0; j < comp.getComponentCount(); j++) {
+                        Component c = comp.getComponent(j);
+                        if(c instanceof DbEdit){
+                            DbEdit edit = (DbEdit) c;
+                            dataSet.setValueByName(edit.getFieldName(), 0, edit.getFieldValue());
+                        }
                     }
                 }
-            }
-            data.add(row.toArray());
+            }else{
+                List<String> names = new ArrayList<String>();
+                List<Object[]> data = new ArrayList<Object[]>();
+                List<Object> row = new ArrayList<Object>();
 
-            DataSet dataSet = new DataSet(names, data);
+                for(int i = 0; i < fieldsPanel.getComponentCount(); i++){
+                    JPanel comp = (JPanel) fieldsPanel.getComponent(i);
+                    for (int j = 0; j < comp.getComponentCount(); j++) {
+                        Component c = comp.getComponent(j);
+                        if(c instanceof DbEdit){
+                            DbEdit edit = (DbEdit) c;
+                            names.add(edit.getFieldName());
+                            row.add(edit.getFieldValue());
+                        }
+                    }
+                }
+                data.add(row.toArray());
+
+                dataSet = new DataSet(names, data);
+            }
             dispose();
         } else if (e.getSource().equals(bCancel)) {
             dispose();
+        } else if(e.getSource().equals(brutto) || e.getSource().equals(tara)){
+            changeEdit(null);
         }
-    }
-
-    public DbEdit getFieldByName(String name) {
-        /*for (AbstractEdit edit : edits) {
-            if (name.equalsIgnoreCase(edit.getTitle())) {
-                return edit;
-            }
-        }*/
-        return null;
     }
 
     public void changeEdit(Object source) {

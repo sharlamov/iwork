@@ -3,7 +3,6 @@ package com.bin;
 import com.dao.DataSetCellRenderer;
 import com.dao.DataSetTableModel;
 import com.enums.ArmType;
-import com.model.DataSet;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
@@ -12,24 +11,23 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener {
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener {
 
-    private Date dc1 = new Date();
-    private Date dc2 = new Date();
+    private JDateChooser date1;
+    private JDateChooser date2;
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
     private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
-    private JButton filterBtn = new JButton(Libra.createImageIcon("images/filter.png"));
-    private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/142.png"));
-    private JTable tbl;
-    private TableRowSorter<DataSetTableModel> sorter;
+    private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png"));
+    public JTable tbl;
     private DataSetTableModel dtm;
-    private Dimension dateSize = new Dimension(200, 25);
+    private Dimension dateSize = new Dimension(100, 27);
     private Dimension btnSize = new Dimension(90, 25);
     private HistoryPanel detail;
     private ArmType armType;
@@ -48,7 +46,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         dtm = new DataSetTableModel(armType == ArmType.IN ? fieldNamesIn : fieldNamesOut);
-        sorter = new TableRowSorter<DataSetTableModel>(dtm);
         tbl = new JTable(dtm);
         tbl.setRowSelectionAllowed(true);
         tbl.getSelectionModel().addListSelectionListener(this);
@@ -62,7 +59,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 Point p = me.getPoint();
                 int row = table.rowAtPoint(p);
                 if (me.getClickCount() == 2) {
-                    openEditDialog(dtm.getDataSetByRow(row));
+                    new LibraEdit(dtm.getDataSetByRow(row), armType);
                 }
             }
         });
@@ -83,6 +80,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         refreshMaster();
 
+        tbl.requestFocus();
     }
 
     private void tableKeyBindings(JTable table) {
@@ -91,7 +89,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             public void actionPerformed(ActionEvent ae) {
                 int row = tbl.getSelectedRow();
                 if (row != -1)
-                    openEditDialog(dtm.getDataSetByRow(row));
+                    new LibraEdit(dtm.getDataSetByRow(row), armType);
+            }
+        });
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
+        table.getActionMap().put("Insert", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                new LibraEdit(null, armType);
             }
         });
     }
@@ -99,7 +104,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public JToolBar initToolBar() {
         addBtn.addActionListener(this);
         refreshBtn.addActionListener(this);
-        filterBtn.addActionListener(this);
 
         JToolBar toolBar = new JToolBar(SwingConstants.HORIZONTAL);
         toolBar.setFloatable(false);
@@ -124,8 +128,23 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
 
         toolBar.add(Box.createHorizontalGlue());
-        toolBar.add(filterBtn);
+        date1 = new JDateChooser(new Date());
+        date1.setMaximumSize(dateSize);
+        date1.setPreferredSize(dateSize);
+        date1.getDateEditor().addPropertyChangeListener(this);
 
+        toolBar.add(date1);
+        toolBar.add(new JLabel(" - "));
+
+        date2 = new JDateChooser(new Date());
+        date2.setMaximumSize(dateSize);
+        date2.setPreferredSize(dateSize);
+        date2.getDateEditor().addPropertyChangeListener(this);
+
+        toolBar.add(date2);
+
+        date1.setMaxSelectableDate(date2.getDate());
+        date2.setMinSelectableDate(date1.getDate());
         return toolBar;
     }
 
@@ -133,8 +152,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         try {
             dtm.setData(
                     armType == ArmType.IN ?
-                            Libra.libraService.getScaleIn(true, dc1, dc2, LibraService.user) :
-                            Libra.libraService.getScaleOut(true, dc1, dc2, LibraService.user)
+                            Libra.libraService.getScaleIn(true, date1.getDate(), date2.getDate(), LibraService.user) :
+                            Libra.libraService.getScaleOut(true, date1.getDate(), date2.getDate(), LibraService.user)
             );
             refreshDetail(0);
         } catch (Exception e) {
@@ -150,8 +169,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         try {
             dtm.setData(
                     armType == ArmType.IN ?
-                            Libra.libraService.getScaleIn(false, dc1, dc2, LibraService.user) :
-                            Libra.libraService.getScaleOut(false, dc1, dc2, LibraService.user)
+                            Libra.libraService.getScaleIn(false, date1.getDate(), date2.getDate(), LibraService.user) :
+                            Libra.libraService.getScaleOut(false, date1.getDate(), date2.getDate(), LibraService.user)
             );
             refreshDetail(0);
         } catch (Exception e) {
@@ -168,11 +187,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            openEditDialog(null);
+            new LibraEdit(null, armType);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
-        } else if (e.getSource().equals(filterBtn)) {
-            openFilterDialog();
         }
     }
 
@@ -184,33 +201,11 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    private void openFilterDialog() {
-        JDateChooser date1 = new JDateChooser(dc1);
-        date1.setPreferredSize(dateSize);
-        JDateChooser date2 = new JDateChooser(dc2);
-        date2.setPreferredSize(dateSize);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.add(date1);
-        panel.add(date2);
-
-        int result = JOptionPane.showConfirmDialog(null, panel,
-                "Период", JOptionPane.OK_CANCEL_OPTION);
-        if (result == JOptionPane.OK_OPTION) {
-            if (dc1.compareTo(date1.getDate()) != 0 || dc2.compareTo(date2.getDate()) != 0) {
-                dc1 = date1.getDate();
-                dc2 = date2.getDate();
-                refreshMaster();
-            }
+    public void propertyChange(PropertyChangeEvent evt) {
+        if ("date".equals(evt.getPropertyName())) {
+            refreshMaster();
+            date1.setMaxSelectableDate(date2.getDate());
+            date2.setMinSelectableDate(date1.getDate());
         }
-    }
-
-    public void openEditDialog(DataSet dataSet) {
-        new LibraEdit(dataSet, armType);
-    }
-
-    private void removeFilter() {
-        sorter.setRowFilter(null);
     }
 }

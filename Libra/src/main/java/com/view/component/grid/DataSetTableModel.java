@@ -1,29 +1,31 @@
-package com.dao;
+package com.view.component.grid;
 
 import com.model.DataSet;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataSetTableModel extends AbstractTableModel {
 
-    DataSet dataSet;
-    Map<Integer, Integer> columnMap;
-    String[] names;
-    int count;
+    private DataSet dataSet;
+    private Map<Integer, Integer> columnMap;
+    private GridField[] names;
+    private int count;
 
-    public DataSetTableModel(String[] names) {
+    public DataSetTableModel(GridField[] names) {
         columnMap = new HashMap<Integer, Integer>(names.length);
         this.names = names;
     }
 
-    public void setData(DataSet dataSet) {
+    public void publish(DataSet dataSet) {
         columnMap.clear();
         for (int i = 0; i < names.length; i++) {
-            int index = dataSet.getNames().indexOf(names[i].toUpperCase());
+            int index = dataSet.getNames().indexOf(names[i].getName().toUpperCase());
             if (index != -1)
                 columnMap.put(i, index);
         }
@@ -41,7 +43,7 @@ public class DataSetTableModel extends AbstractTableModel {
     }
 
     public String getColumnName(int column) {
-        return names[column];
+        return names[column].getName();
     }
 
     public Object getValueAt(int row, int column) {
@@ -72,7 +74,6 @@ public class DataSetTableModel extends AbstractTableModel {
 
     public Color getRowColor(int row) {
         Object bd = dataSet.getValueByName("bgcolor", row);
-        Color clr = Color.white;
         if (bd != null) {
             switch (((BigDecimal) bd).intValue()) {
                 case 6711039:

@@ -5,33 +5,32 @@ import com.enums.ArmType;
 import com.enums.SearchType;
 import com.model.DataSet;
 import com.util.Libra;
+import com.view.component.editors.*;
 import com.view.component.weightboard.WeightBoard;
-import com.view.dbeditors.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LibraEdit extends JDialog implements ActionListener, ChangeEditListener {
 
     private final ArmType armType;
-    private DataSet dataSet;
     private final int stepDown = 27;
     private final int editHeight = 23;
+    private DataSet dataSet;
     private JButton bSave = new JButton("Сохранить");
     private JButton bCancel = new JButton("Отмена");
-    private NumberDbEdit net;
-    private NumberDbEdit brutto;
-    private NumberDbEdit tara;
-    private Font sFont = new Font("Courier", Font.BOLD, 16);
+    private NumberEdit net;
+    private NumberEdit brutto;
+    private NumberEdit tara;
+    private Font sFont = new Font("Courier", Font.BOLD, 19);
     private JPanel fieldsPanel = new JPanel();
+    private Map<String, JComponent> editMap = new HashMap<String, JComponent>();
 
 
     public LibraEdit(DataSet dataSet, ArmType armType) {
@@ -72,16 +71,6 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             outForm();
 
 
-
-/*
-        brutto = (NumberEdit) getFieldByName("masa_brutto");
-        brutto.addChangeEditListener(this);
-        tara = (NumberEdit) getFieldByName("masa_tara");
-        tara.addChangeEditListener(this);
-        net = (NumberEdit) getFieldByName("masa_netto");
-        ((JTextField) net.getField()).setEditable(false);
-
-*/
         add(fieldsPanel, BorderLayout.CENTER);
     }
 
@@ -97,27 +86,27 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(bSave)) {
-            if(dataSet != null){
-                for(int i = 0; i < fieldsPanel.getComponentCount(); i++){
+           /* if (dataSet != null) {
+                for (int i = 0; i < fieldsPanel.getComponentCount(); i++) {
                     JPanel comp = (JPanel) fieldsPanel.getComponent(i);
                     for (int j = 0; j < comp.getComponentCount(); j++) {
                         Component c = comp.getComponent(j);
-                        if(c instanceof DbEdit){
+                        if (c instanceof DbEdit) {
                             DbEdit edit = (DbEdit) c;
                             dataSet.setValueByName(edit.getFieldName(), 0, edit.getFieldValue());
                         }
                     }
                 }
-            }else{
+            } else {
                 List<String> names = new ArrayList<String>();
                 List<Object[]> data = new ArrayList<Object[]>();
                 List<Object> row = new ArrayList<Object>();
 
-                for(int i = 0; i < fieldsPanel.getComponentCount(); i++){
+                for (int i = 0; i < fieldsPanel.getComponentCount(); i++) {
                     JPanel comp = (JPanel) fieldsPanel.getComponent(i);
                     for (int j = 0; j < comp.getComponentCount(); j++) {
                         Component c = comp.getComponent(j);
-                        if(c instanceof DbEdit){
+                        if (c instanceof DbEdit) {
                             DbEdit edit = (DbEdit) c;
                             names.add(edit.getFieldName());
                             row.add(edit.getFieldValue());
@@ -125,22 +114,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                     }
                 }
                 data.add(row.toArray());
-
                 dataSet = new DataSet(names, data);
-            }
+            }*/
             dispose();
         } else if (e.getSource().equals(bCancel)) {
             dispose();
-        } else if(e.getSource().equals(brutto) || e.getSource().equals(tara)){
+        } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
             changeEdit(null);
-        }
-    }
-
-    public void changeEdit(Object source) {
-        try {
-            BigDecimal bd = ((BigDecimal) brutto.getFieldValue()).subtract((BigDecimal) tara.getFieldValue());
-            net.setFieldValue(bd);
-        } catch (Exception ignored) {
         }
     }
 
@@ -164,109 +144,189 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         int stepDown = 27;
         int editHeight = 23;
         JPanel p0 = createPanel(fieldsPanel, 2);
-        StringDbEdit idEdit = new StringDbEdit("id", dataSet);
-        idEdit.setEditable(false);
-        addToPanel(8, 8, 150, p0, "№", idEdit);
-        addToPanel(8, 8 + stepDown, 100, p0, "№ анализа:", new NumberDbEdit("nr_analiz", dataSet));
+
+        NumberEdit id = new NumberEdit("id", Libra.decimalFormat);
+        id.setValue(dataSet.getValueByName("id", 0));
+        id.setChangable(false);
+        addToPanel(8, 8, 150, p0, "№", id);
+
+        NumberEdit nr_analiz = new NumberEdit("nr_analiz", Libra.decimalFormat);
+        nr_analiz.setValue(dataSet.getValueByName("nr_analiz", 0));
+        addToPanel(8, 8 + stepDown, 100, p0, "№ анализа:", nr_analiz);
 ////////////////////
         JPanel p2 = createPanel(fieldsPanel, 2);
-        addToPanel(8, 8, 150, p2, "№ авто:", new StringDbEdit("auto", dataSet));
-        addToPanel(8, 8 + stepDown, 150, p2, "№ прицепа:", new StringDbEdit("nr_remorca", dataSet));
-        addToPanel(370, 8, 150, p2, "VIN:", new StringDbEdit("vin", dataSet));
-        ListDbEdit soferEdit = new ListDbEdit("clcsofer_s_14t", dataSet, Libra.libraService, SearchType.DRIVER);
-        addToPanel(370, 8 + stepDown, 150, p2, "Водитель:", soferEdit);
+        CommonEdit auto = new CommonEdit("auto");
+        auto.setValue(dataSet.getValueByName("auto", 0));
+        addToPanel(8, 8, 150, p2, "№ авто:", auto);
+
+        CommonEdit nrRemorca = new CommonEdit("nr_remorca");
+        nrRemorca.setValue(dataSet.getValueByName("nr_remorca", 0));
+        addToPanel(8, 8 + stepDown, 150, p2, "№ прицепа:", nrRemorca);
+
+        CommonEdit vin = new CommonEdit("vin");
+        vin.setValue(dataSet.getValueByName("vin", 0));
+        addToPanel(370, 8, 150, p2, "VIN:", vin);
+
+        SearchEdit clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
+        clcsofer_s_14t.setValue(dataSet.getValueByName("clcsofer_s_14t", 0));
+        addToPanel(370, 8 + stepDown, 150, p2, "Водитель:", clcsofer_s_14t);
 //////////////////
         JPanel p3 = createPanel(fieldsPanel, 3);
-        ListDbEdit nrEdit5 = new ListDbEdit("clcdep_postavt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(8, 8, 200, p3, "Поставщик:", nrEdit5);
+        SearchEdit clcdep_postavt = new SearchEdit("clcdep_postavt", Libra.libraService, SearchType.DEP);
+        clcdep_postavt.setValue(dataSet.getValueByName("clcdep_postavt", 0));
+        addToPanel(8, 8, 200, p3, "Поставщик:", clcdep_postavt);
 
-        ListDbEdit nrEdit6 = new ListDbEdit("clcppogruz_s_12t", dataSet, Libra.libraService, SearchType.PLACES);
-        addToPanel(8, 8 + stepDown, 200, p3, "П-кт погрузки:", nrEdit6);
+        SearchEdit clcppogruz_s_12t = new SearchEdit("clcppogruz_s_12t", Libra.libraService, SearchType.PLACES);
+        clcppogruz_s_12t.setValue(dataSet.getValueByName("clcppogruz_s_12t", 0));
+        addToPanel(8, 8 + stepDown, 200, p3, "П-кт погрузки:", clcppogruz_s_12t);
 
-        ListDbEdit nrEdit7 = new ListDbEdit("clcsc_mpt", dataSet, Libra.libraService, SearchType.CROPS);
-        addToPanel(8, 8 + stepDown + stepDown, 200, p3, "Вид сырья:", nrEdit7);
+        SearchEdit clcsc_mpt = new SearchEdit("clcsc_mpt", Libra.libraService, SearchType.CROPS);
+        clcsc_mpt.setValue(dataSet.getValueByName("clcsc_mpt", 0));
+        addToPanel(8, 8 + stepDown + stepDown, 200, p3, "Вид сырья:", clcsc_mpt);
 
-        ListDbEdit nrEdit8 = new ListDbEdit("clcdep_transpt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(370, 8, 200, p3, "Перевозчик:", nrEdit8);
-        addToPanel(370, 8 + stepDown, 100, p3, "Сезон:", new NumberDbEdit("sezon_yyyy", dataSet));
-        ListDbEdit nrEdit9 = new ListDbEdit("clcdep_gruzootpravitt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(370, 8 + stepDown + stepDown, 200, p3, "Грузоотправитель:", nrEdit9);
+        SearchEdit clcdep_transpt = new SearchEdit("clcdep_transpt", Libra.libraService, SearchType.DEP);
+        clcdep_transpt.setValue(dataSet.getValueByName("clcdep_transpt", 0));
+        addToPanel(370, 8, 200, p3, "Перевозчик:", clcdep_transpt);
+
+        SearchEdit clcdep_gruzootpravitt = new SearchEdit("clcdep_gruzootpravitt", Libra.libraService, SearchType.DEP);
+        clcdep_gruzootpravitt.setValue(dataSet.getValueByName("clcdep_gruzootpravitt", 0));
+        addToPanel(370, 8 + stepDown, 200, p3, "Грузоотправитель:", clcdep_gruzootpravitt);
+
+        NumberEdit sezon_yyyy = new NumberEdit("sezon_yyyy", Libra.decimalFormat);
+        sezon_yyyy.setValue(dataSet.getValueByName("sezon_yyyy", 0));
+        addToPanel(370, 8 + stepDown + stepDown, 100, p3, "Сезон:", sezon_yyyy);
 //////////////////
         JPanel p4 = createPanel(fieldsPanel, 2);
 
-        addToPanel(8, 8, 100, p4, "Серия и № ТТН:", new StringDbEdit("ttn_n", dataSet));
-        addToPanel(8, 8 + stepDown, 100, p4, "Дата ТТН:", new DateDbEdit("ttn_data", dataSet));
-        addToPanel(370, 8, 100, p4, "Вес по ТТН:", new NumberDbEdit("masa_ttn", dataSet));
+        CommonEdit ttn_n = new CommonEdit("ttn_n");
+        ttn_n.setValue(dataSet.getValueByName("ttn_n", 0));
+        addToPanel(8, 8, 100, p4, "Серия и № ТТН:", ttn_n);
+
+        DateEdit ttn_data = new DateEdit("ttn_data", Libra.dateFormat);
+        ttn_data.setValue(dataSet.getValueByName("ttn_data", 0));
+        addToPanel(8, 8 + stepDown, 100, p4, "Дата ТТН:", ttn_data);
+
+        NumberEdit masa_ttn = new NumberEdit("masa_ttn", Libra.decimalFormat);
+        masa_ttn.setValue(dataSet.getValueByName("masa_ttn", 0));
+        addToPanel(370, 8, 100, p4, "Вес по ТТН:", masa_ttn);
 //////////////////
         JPanel p5 = createPanel(fieldsPanel, 2);
 
-        addToPanel(8, 8, 100, p5, "№ контракта:", new StringDbEdit("contract_nrmanual", dataSet));
-        ListDbEdit nrEdit10 = new ListDbEdit("clcdep_hozt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(8, 8 + stepDown, 200, p5, "Хозяйство:", nrEdit10);
-        addToPanel(370, 8, 100, p5, "Дата контракта:", new DateDbEdit("contract_data", dataSet));
+        CommonEdit contract_nrmanual = new CommonEdit("contract_nrmanual");
+        contract_nrmanual.setValue(dataSet.getValueByName("contract_nrmanual", 0));
+        addToPanel(8, 8, 100, p5, "№ контракта:", contract_nrmanual);
+
+        SearchEdit clcdep_hozt = new SearchEdit("clcdep_hozt", Libra.libraService, SearchType.DEP);
+        clcdep_hozt.setValue(dataSet.getValueByName("clcdep_hozt", 0));
+        addToPanel(8, 8 + stepDown, 200, p5, "Хозяйство:", clcdep_hozt);
+
+        DateEdit contract_data = new DateEdit("contract_data", Libra.dateFormat);
+        contract_data.setValue(dataSet.getValueByName("contract_data", 0));
+        addToPanel(370, 8, 100, p5, "Дата контракта:", contract_data);
 //////////////////
         JPanel p6 = createPanel(fieldsPanel, 2);
 
         JLabel nrActNedLabel = new JLabel("№ акта недостачи:");
         nrActNedLabel.setBounds(8, 8, 200, editHeight);
         p6.add(nrActNedLabel);
-        NumberDbEdit nrActNedostaci = new NumberDbEdit("nr_act_nedostaci", dataSet);
-        nrActNedostaci.setBounds(8 + 210, 8, 100, editHeight);
-        p6.add(nrActNedostaci);
+
+        NumberEdit nr_act_nedostaci = new NumberEdit("nr_act_nedostaci", Libra.decimalFormat);
+        nr_act_nedostaci.setValue(dataSet.getValueByName("nr_act_nedostaci", 0));
+        nr_act_nedostaci.setBounds(8 + 210, 8, 100, editHeight);
+        p6.add(nr_act_nedostaci);
 
         JLabel masaReturnLabel = new JLabel("Кол-во возвратного товара:");
         masaReturnLabel.setBounds(8, 8 + stepDown, 200, editHeight);
         p6.add(masaReturnLabel);
-        NumberDbEdit masaReturn = new NumberDbEdit("masa_return", dataSet);
-        masaReturn.setBounds(8 + 210, 8 + stepDown, 100, editHeight);
-        p6.add(masaReturn);
+
+        NumberEdit masa_return = new NumberEdit("masa_return", Libra.decimalFormat);
+        masa_return.setValue(dataSet.getValueByName("masa_return", 0));
+        masa_return.setBounds(8 + 210, 8 + stepDown, 100, editHeight);
+        p6.add(masa_return);
 
         JLabel nrActNedovigrLabel = new JLabel("№ приказа недовыгрузки:");
         nrActNedovigrLabel.setBounds(370, 8, 200, editHeight);
         p6.add(nrActNedovigrLabel);
-        NumberDbEdit nrActNedovigr = new NumberDbEdit("nr_act_nedovygruzki", dataSet);
-        nrActNedovigr.setBounds(370 + 160, 8, 100, editHeight);
-        p6.add(nrActNedovigr);
+
+        NumberEdit nr_act_nedovygruzki = new NumberEdit("nr_act_nedovygruzki", Libra.decimalFormat);
+        nr_act_nedovygruzki.setValue(dataSet.getValueByName("nr_act_nedovygruzki", 0));
+        nr_act_nedovygruzki.setBounds(370 + 160, 8, 100, editHeight);
+        p6.add(nr_act_nedovygruzki);
 
         createCalculationPanel();
     }
 
     public void outForm() {
         JPanel p0 = createPanel(fieldsPanel, 2);
-        StringDbEdit idEdit = new StringDbEdit("id", dataSet);
-        idEdit.setEditable(false);
-        addToPanel(8, 8, 150, p0, "№", idEdit);
-        addToPanel(8, 8 + stepDown, 100, p0, "№ анализа:", new NumberDbEdit("nr_analiz", dataSet));
-        addToPanel(370, 8, 150, p0, "№ приказа:", new StringDbEdit("prikaz_id", dataSet));
+
+        NumberEdit id = new NumberEdit("id", Libra.decimalFormat);
+        id.setValue(dataSet.getValueByName("id", 0));
+        id.setChangable(false);
+        addToPanel(8, 8, 150, p0, "№", id);
+
+        NumberEdit nr_analiz = new NumberEdit("nr_analiz", Libra.decimalFormat);
+        nr_analiz.setValue(dataSet.getValueByName("nr_analiz", 0));
+        addToPanel(8, 8 + stepDown, 100, p0, "№ анализа:", nr_analiz);
+
+        CommonEdit prikaz_id = new CommonEdit("prikaz_id");
+        prikaz_id.setValue(dataSet.getValueByName("prikaz_id", 0));
+        addToPanel(370, 8, 150, p0, "№ приказа:", prikaz_id);
 ////////////////////
         JPanel p2 = createPanel(fieldsPanel, 2);
-        addToPanel(8, 8, 150, p2, "№ авто:", new StringDbEdit("nr_vagon", dataSet));
-        addToPanel(8, 8 + stepDown, 150, p2, "№ прицепа:", new StringDbEdit("nr_remorca", dataSet));
-        addToPanel(370, 8, 150, p2, "VIN:", new StringDbEdit("vin", dataSet));
-        ListDbEdit soferEdit = new ListDbEdit("clcsofer_s_14t", dataSet, Libra.libraService, SearchType.DRIVER);
-        addToPanel(370, 8 + stepDown, 150, p2, "Водитель:", soferEdit);
+        CommonEdit nr_vagon = new CommonEdit("nr_vagon");
+        nr_vagon.setValue(dataSet.getValueByName("nr_vagon", 0));
+        addToPanel(8, 8, 150, p2, "№ авто:", nr_vagon);
+
+        CommonEdit nr_remorca = new CommonEdit("nr_remorca");
+        nr_remorca.setValue(dataSet.getValueByName("nr_remorca", 0));
+        addToPanel(8, 8 + stepDown, 150, p2, "№ прицепа:", nr_remorca);
+
+        CommonEdit vin = new CommonEdit("vin");
+        vin.setValue(dataSet.getValueByName("vin", 0));
+        addToPanel(370, 8, 150, p2, "VIN:", vin);
+
+        SearchEdit clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
+        clcsofer_s_14t.setValue(dataSet.getValueByName("clcsofer_s_14t", 0));
+        addToPanel(370, 8 + stepDown, 150, p2, "Водитель:", clcsofer_s_14t);
 //////////////////
         JPanel p3 = createPanel(fieldsPanel, 3);
-        ListDbEdit nrEdit5 = new ListDbEdit("clcdep_destinatt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(8, 8, 200, p3, "Получатель:", nrEdit5);
+        SearchEdit clcdep_destinatt = new SearchEdit("clcdep_destinatt", Libra.libraService, SearchType.DEP);
+        clcdep_destinatt.setValue(dataSet.getValueByName("clcdep_destinatt", 0));
+        addToPanel(8, 8, 200, p3, "Получатель:", clcdep_destinatt);
 
-        ListDbEdit nrEdit6 = new ListDbEdit("clcprazgruz_s_12t", dataSet, Libra.libraService, SearchType.PLACES);
-        addToPanel(8, 8 + stepDown, 200, p3, "П-кт разгрузки:", nrEdit6);
+        SearchEdit clcprazgruz_s_12t = new SearchEdit("clcprazgruz_s_12t", Libra.libraService, SearchType.PLACES);
+        clcprazgruz_s_12t.setValue(dataSet.getValueByName("clcprazgruz_s_12t", 0));
+        addToPanel(8, 8 + stepDown, 200, p3, "П-кт разгрузки:", clcprazgruz_s_12t);
 
-        ListDbEdit nrEdit7 = new ListDbEdit("clcsct", dataSet, Libra.libraService, SearchType.CROPS);
-        addToPanel(8, 8 + stepDown + stepDown, 200, p3, "Вид сырья:", nrEdit7);
+        SearchEdit clcsct = new SearchEdit("clcsct", Libra.libraService, SearchType.CROPS);
+        clcsct.setValue(dataSet.getValueByName("clcsct", 0));
+        addToPanel(8, 8 + stepDown + stepDown, 200, p3, "Вид сырья:", clcsct);
 
-        ListDbEdit nrEdit8 = new ListDbEdit("clcdep_perevozt", dataSet, Libra.libraService, SearchType.DEP);
-        addToPanel(370, 8, 200, p3, "Перевозчик:", nrEdit8);
-        addToPanel(370, 8 + stepDown, 100, p3, "Сезон:", new NumberDbEdit("sezon_yyyy", dataSet));
-        ListDbEdit nrEdit9 = new ListDbEdit("clcpunctto_s_12t", dataSet, Libra.libraService, SearchType.PLACES);
-        addToPanel(370, 8 + stepDown + stepDown, 200, p3, "Ст-ция назначения:", nrEdit9);
+        SearchEdit clcdep_perevozt = new SearchEdit("clcdep_perevozt", Libra.libraService, SearchType.DEP);
+        clcdep_perevozt.setValue(dataSet.getValueByName("clcdep_perevozt", 0));
+        addToPanel(370, 8, 200, p3, "Перевозчик:", clcdep_perevozt);
+
+        SearchEdit clcpunctto_s_12t = new SearchEdit("clcpunctto_s_12t", Libra.libraService, SearchType.PLACES);
+        clcpunctto_s_12t.setValue(dataSet.getValueByName("clcpunctto_s_12t", 0));
+        addToPanel(370, 8 + stepDown, 200, p3, "Ст-ция назначения:", clcpunctto_s_12t);
+
+        NumberEdit sezon_yyyy = new NumberEdit("sezon_yyyy", Libra.decimalFormat);
+        sezon_yyyy.setValue(dataSet.getValueByName("sezon_yyyy", 0));
+        addToPanel(370, 8 + stepDown + stepDown, 100, p3, "Сезон:", sezon_yyyy);
 //////////////////
         JPanel p4 = createPanel(fieldsPanel, 2);
 
-        addToPanel(8, 8, 100, p4, "Серия и № ТТН:", new StringDbEdit("ttn_n", dataSet));
-        addToPanel(8, 8 + stepDown, 100, p4, "Дата ТТН:", new DateDbEdit("ttn_data", dataSet));
-        addToPanel(370, 8, 100, p4, "ТТН на перемещение:", new NumberDbEdit("ttn_nn_perem", dataSet));
+        CommonEdit ttn_n = new CommonEdit("ttn_n");
+        ttn_n.setValue(dataSet.getValueByName("ttn_n", 0));
+        addToPanel(8, 8, 100, p4, "Серия и № ТТН:", ttn_n);
+
+        DateEdit ttn_data = new DateEdit("ttn_data", Libra.dateFormat);
+        ttn_data.setValue(dataSet.getValueByName("ttn_data", 0));
+        addToPanel(8, 8 + stepDown, 100, p4, "Дата ТТН:", ttn_data);
+
+        NumberEdit ttn_nn_perem = new NumberEdit("ttn_nn_perem", Libra.decimalFormat);
+        ttn_nn_perem.setValue(dataSet.getValueByName("ttn_nn_perem", 0));
+        addToPanel(370, 8, 100, p4, "ТТН на перемещение:", ttn_nn_perem);
 
         createCalculationPanel();
     }
@@ -292,27 +352,46 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         timeLabel.setBounds(8, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(timeLabel);
 
-        brutto = new NumberDbEdit("masa_brutto", dataSet);
+        brutto = new NumberEdit("masa_brutto", Libra.decimalFormat);
+        brutto.setValue(dataSet.getValueByName("masa_brutto", 0));
         brutto.setBounds(120, 4 + stepDown, 120, editHeight);
-        brutto.getField().setFont(sFont);
+        brutto.setFont(sFont);
+        brutto.addChangeEditListener(this);
         sumaPanel.add(brutto);
-        tara = new NumberDbEdit("masa_tara", dataSet);
+        tara = new NumberEdit("masa_tara", Libra.decimalFormat);
+        tara.setValue(dataSet.getValueByName("masa_tara", 0));
         tara.setBounds(260, 4 + stepDown, 120, editHeight);
-        tara.getField().setFont(sFont);
+        tara.setFont(sFont);
+        tara.addChangeEditListener(this);
         sumaPanel.add(tara);
-        net = new NumberDbEdit("masa_netto", dataSet);
-        net.setEditable(false);
+        net = new NumberEdit("masa_netto", Libra.decimalFormat);
+        net.setValue(dataSet.getValueByName("masa_netto", 0));
+        net.setChangable(false);
         net.setBounds(400, 4 + stepDown, 120, editHeight);
-        net.getField().setFont(sFont);
+        net.setFont(sFont);
         sumaPanel.add(net);
-        DateDbEdit timeIn = new DateDbEdit("time_in", dataSet, Libra.dateTimeFormat.toPattern());
-        timeIn.setEditable(false);
-        timeIn.setBounds(120, 8 + stepDown + stepDown, 120, editHeight);
-        sumaPanel.add(timeIn);
-        DateDbEdit timeOut = new DateDbEdit("time_out", dataSet, Libra.dateTimeFormat.toPattern());
-        timeOut.setEditable(false);
-        timeOut.setBounds(260, 8 + stepDown + stepDown, 120, editHeight);
-        sumaPanel.add(timeOut);
+
+        DateEdit time_in = new DateEdit("time_in", Libra.dateTimeFormat);
+        time_in.setValue(dataSet.getValueByName("time_in", 0));
+        time_in.setChangable(false);
+        time_in.setBounds(120, 8 + stepDown + stepDown, 120, editHeight);
+        sumaPanel.add(time_in);
+
+        DateEdit time_out = new DateEdit("time_out", Libra.dateTimeFormat);
+        time_out.setValue(dataSet.getValueByName("time_out", 0));
+        time_out.setChangable(false);
+        time_out.setBounds(260, 8 + stepDown + stepDown, 120, editHeight);
+        sumaPanel.add(time_out);
+    }
+
+    public void changeEdit(Object source) {
+        if (brutto.equals(source) || tara.equals(source)) {
+            Object b = brutto.getValue();
+            Object t = tara.getValue();
+            if (b != null && t != null) {
+                BigDecimal bd = (new BigDecimal(b.toString())).subtract(new BigDecimal(t.toString()));
+                net.setValue(bd);
+            }
+        }
     }
 }
-

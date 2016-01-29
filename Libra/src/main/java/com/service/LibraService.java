@@ -7,7 +7,6 @@ import com.model.CustomUser;
 import com.model.DataSet;
 import com.util.Libra;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Date;
@@ -72,7 +71,7 @@ public class LibraService {
                 "and elevator = a.elevator \n" +
                 "and trunc(sysdate) between datastart and dataend))";
 
-        if(useHalfFilter)
+        if (useHalfFilter)
             sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
 
         return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
@@ -91,7 +90,7 @@ public class LibraService {
                 "and trunc(sysdate) between datastart and dataend))\n" +
                 ")order by id desc";
 
-        if(useHalfFilter)
+        if (useHalfFilter)
             sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
 
         return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
@@ -107,6 +106,13 @@ public class LibraService {
                 + query.trim().toLowerCase()
                 + "%' and rownum < ? order by 2";
         return dao.selectItems(sql, new Object[]{10});
+    }
+
+    public DataSet searchDataSet(String query, SearchType type) throws Exception {
+        String sql = "select * from (" + type.getSql() + ") " + "where lower(clccodt) like '%"
+                + query.trim().toLowerCase()
+                + "%' and rownum < ? order by 2";
+        return dao.select(sql, new Object[]{11});
     }
 
     public void initContext(String name, String value) throws Exception {

@@ -15,9 +15,9 @@ public class LibraBoard extends JPanel {
         add(board, BorderLayout.NORTH);
         ImageIcon icon = Libra.createImageIcon("images/middle.gif");
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Приход", icon, new LibraPanel(ArmType.IN), "Весовая вьезд");
+        tabbedPane.addTab("<html><body width='150'>Приход</body></html>", icon, new LibraPanel(ArmType.IN), "Весовая вьезд");
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_F1);
-        tabbedPane.addTab("Расход", icon, new LibraPanel(ArmType.OUT), "Весовая выезд");
+        tabbedPane.addTab("<html><body width='150'>Расход</body></html>", icon, new LibraPanel(ArmType.OUT), "Весовая выезд");
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_F2);
         add(tabbedPane, BorderLayout.CENTER);
     }

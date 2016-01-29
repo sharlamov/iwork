@@ -1,25 +1,31 @@
 package com.bin;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-public class LibraMenu extends JMenuBar{
+public class LibraMenu extends JMenuBar implements ActionListener {
 
-    JMenu menuForms;
-    JMenu menuProps;
-    JMenuItem menuItem0;
-    JMenuItem menuItem1;
+    JMenu menuFile;
+
+    JMenuItem menuExit;
 
     public LibraMenu() {
-        menuForms = new JMenu("Формы");
-        menuProps = new JMenu("Настройки");
+        menuFile = new JMenu("Файл");
 
-        menuItem0 = new JMenuItem("Вьезд");
-        menuForms.add(menuItem0);
+        menuExit = new JMenuItem("Выход");
+        menuExit.addActionListener(this);
+        
+        menuFile.addSeparator();
+        menuFile.add(menuExit);
 
-        menuItem1 = new JMenuItem("Выезд");
-        menuForms.add(menuItem1);
+        add(menuFile);
 
-        add(menuForms);
-        add(menuProps);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource().equals(menuExit)) {
+            MainFrame.exit();
+        }
     }
 }

@@ -12,8 +12,7 @@ public class MainFrame extends JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                Libra.libraService.close();
-                System.exit(0);
+                exit();
             }
         });
 
@@ -22,7 +21,13 @@ public class MainFrame extends JFrame {
         add(new LibraBoard());
         setSize(800, 500);
         setLocationRelativeTo(null);
-        //setExtendedState(JFrame.MAXIMIZED_BOTH);
+        if (Libra.autoLogin != 1)
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
+    }
+
+    public static void exit() {
+        Libra.libraService.close();
+        System.exit(0);
     }
 }

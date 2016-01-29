@@ -1,19 +1,32 @@
 package com.bin;
 
+import com.enums.SearchType;
+import com.util.Libra;
+import com.view.component.editors.ChangeEditListener;
+import com.view.component.editors.DateEdit;
+import com.view.component.editors.NumberEdit;
+import com.view.component.editors.SearchEdit;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-public class Test extends JFrame implements ActionListener {
+public class Test extends JFrame implements ActionListener, ChangeEditListener {
 
     JLabel t = new JLabel("Test");
     JButton b = new JButton("start");
-    PrimeNumbersTask pt;
+    SearchEdit edit;
+    NumberEdit edit1;
+    DateEdit edit2;
+
+
+    //insert into glosary list
 
     public Test() {
+        Libra.dbUser = "TRANSOIL";
+        Libra.dbPass = "TRANSOIL";
+        Libra.dbUrl = "jdbc:oracle:thin:@192.168.1.221:1521:TRANSOIL";
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setBounds(100, 100, 621, 400);
         setLayout(new FlowLayout());
@@ -22,10 +35,21 @@ public class Test extends JFrame implements ActionListener {
         add(t);
         add(b);
 
-        pt = new PrimeNumbersTask(t,12);
-
+        edit = new SearchEdit("clcdep_postavt", Libra.libraService, SearchType.CROPS);
+        edit.setPreferredSize(new Dimension(200, 27));
+        edit.addChangeEditListener(this);
+        add(edit);
+        edit1 = new NumberEdit("masa_brutto", Libra.decimalFormat);
+        edit1.setPreferredSize(new Dimension(200, 27));
+        edit1.addChangeEditListener(this);
+        add(edit1);
+        edit2 = new DateEdit("date_ttn", Libra.dateFormat);
+        edit2.setPreferredSize(new Dimension(200, 27));
+        //edit2.setValue(new Date());
+        //edit2.setValue("01.01.1901");
+        edit2.addChangeEditListener(this);
+        add(edit2);
     }
-
 
 
     public static void main(String[] args) {
@@ -42,40 +66,19 @@ public class Test extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e) {
-        if(pt.getState() == SwingWorker.StateValue.STARTED){
-            pt.cancel(false);
-        }else{
-            pt.execute();
-
-        }
-
-    }
-}
-
-class PrimeNumbersTask extends SwingWorker<Integer, Integer> {
-    private JLabel textArea;
-
-    PrimeNumbersTask(JLabel textArea, int numbersToFind) {
-        this.textArea = textArea;
+        System.out.println(edit.getValue());
+        System.out.println(edit1.getValue());
+        System.out.println(edit2.getValue());
     }
 
-    @Override
-    public Integer doInBackground() throws InterruptedException {
-        int number = 0;
-        while (!isCancelled()) {
-            publish(number++);
-            TimeUnit.MILLISECONDS.sleep(200);
-
-            //setProgress(100 * numbers.size() / numbersToFind);
-        }
-
-    return 0;
-    }
-
-    @Override
-    protected void process(List<Integer> chunks) {
-        for (int number : chunks) {
-            textArea.setText(number + "\n");
+    public void changeEdit(Object source) {
+        if (source.equals(edit)) {
+            System.out.println(edit.getValue());
+        } else if (source.equals(edit1)) {
+            System.out.println(edit1.getValue());
+        } else if (source.equals(edit2)) {
+            System.out.println(edit2.getValue());
         }
     }
 }
+

@@ -47,7 +47,7 @@
                     <finalName>Libra</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>com.bin.MainFrame</mainClass>
+                            <mainClass>com.bin.LoginView</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

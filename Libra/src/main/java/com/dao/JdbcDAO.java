@@ -83,7 +83,7 @@ public class JdbcDAO {
     }
 
     public Connection getConnection() throws Exception {
-        if(Libra.dbUser == null || Libra.dbPass == null || Libra.dbUrl == null){
+        if (Libra.dbUser == null || Libra.dbPass == null || Libra.dbUrl == null) {
             throw new Exception("Проверьте параметры подключения к базе!");
         }
         Properties connectionProps = new Properties();

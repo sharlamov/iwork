@@ -47,4 +47,11 @@ public class DataSet extends ArrayList<Object[]>{
     public List<String> getNames() {
         return names;
     }
+
+    @Override
+    public String toString() {
+        return "DataSet{" +
+                "names=" + names +
+                '}';
+    }
 }

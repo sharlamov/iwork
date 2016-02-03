@@ -14,8 +14,8 @@ import static com.util.Libra.eMsg;
 
 public class HistoryPanel extends JPanel {
 
-    private ImageIcon loaded = Libra.createImageIcon("images/loaded.png");
-    private ImageIcon unloaded = Libra.createImageIcon("images/unloaded.png");
+    private ImageIcon loaded = Libra.createImageIcon("images/loaded.png", 100, 80);
+    private ImageIcon unloaded = Libra.createImageIcon("images/unloaded.png", 100, 80);
     private Font sumaFont = new Font("Courier", Font.BOLD, 24);
 
     private Dimension dimension = new Dimension(Integer.MAX_VALUE, 90);
@@ -45,8 +45,9 @@ public class HistoryPanel extends JPanel {
         p.setMaximumSize(dimension);
         p.setPreferredSize(dimension);
         p.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-
-        p.add(new JLabel(direction.intValue() == 1 ? loaded : unloaded), BorderLayout.WEST);
+        JLabel l = new JLabel(direction.intValue() == 1 ? loaded : unloaded);
+       // l.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        p.add(l, BorderLayout.WEST);
         JLabel userLabel = new JLabel(user.toString(), SwingConstants.CENTER);
         p.add(userLabel, BorderLayout.NORTH);
         JLabel dateLabel = new JLabel(Libra.dateTimeFormat.format(date), SwingConstants.CENTER);

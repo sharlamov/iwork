@@ -64,7 +64,7 @@ public class DataSetTableModel extends AbstractTableModel {
 
     public DataSet getDataSetByRow(int row) {
         List<Object[]> lst = new ArrayList<Object[]>();
-        if (dataSet.isEmpty()) {
+        if (row == -1 || dataSet.isEmpty()) {
             lst.add(new Object[dataSet.getNames().size()]);
         } else {
             lst.add(dataSet.get(row));

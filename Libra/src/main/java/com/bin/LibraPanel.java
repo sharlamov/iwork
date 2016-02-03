@@ -18,16 +18,15 @@ import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener {
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
 
     private JDateChooser date1;
     private JDateChooser date2;
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
     private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
-    private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png"));
+    private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png", 100, 30));
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
-    private Dimension btnSize = new Dimension(90, 25);
     private HistoryPanel detail;
     private ArmType armType;
 
@@ -76,7 +75,15 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
         table.getAMap().put("Insert", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                new LibraEdit(dataGrid.getDataSetByRow(0), armType);
+                new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
+            }
+        });
+
+        table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK), "Find");
+        table.getAMap().put("Find", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                //new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
+
             }
         });
     }
@@ -91,24 +98,16 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         toolBar.add(addBtn);
         toolBar.add(refreshBtn);
 
-        halfBtn.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent ev) {
-                if (ev.getStateChange() == ItemEvent.SELECTED) {
-                    filterMaster();
-                    System.out.println("button is selected");
-                } else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-                    refreshMaster();
-                    System.out.println("button is not selected");
-                }
-            }
-        });
+
         toolBar.addSeparator();
-        halfBtn.setPreferredSize(btnSize);
+        halfBtn.addItemListener(this);
         toolBar.add(halfBtn);
 
+        Date cDate = Libra.truncDate(null);
 
         toolBar.add(Box.createHorizontalGlue());
-        date1 = new JDateChooser(new Date());
+        date1 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
+        date1.setDate(cDate);
         date1.setMaximumSize(dateSize);
         date1.setPreferredSize(dateSize);
         date1.getDateEditor().addPropertyChangeListener(this);
@@ -116,7 +115,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         toolBar.add(date1);
         toolBar.add(new JLabel(" - "));
 
-        date2 = new JDateChooser(new Date());
+        date2 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
+        date2.setDate(cDate);
         date2.setMaximumSize(dateSize);
         date2.setPreferredSize(dateSize);
         date2.getDateEditor().addPropertyChangeListener(this);
@@ -143,8 +143,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public void refreshMaster() {
-        if (halfBtn.isSelected())
+        if (halfBtn.isSelected()) {
             halfBtn.setSelected(false);
+        }
 
         try {
             dataGrid.publish(
@@ -167,7 +168,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new LibraEdit(dataGrid.getDataSetByRow(0), armType);
+            new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
         }
@@ -175,9 +176,11 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void propertyChange(PropertyChangeEvent evt) {
         if ("date".equals(evt.getPropertyName())) {
-            refreshMaster();
-            date1.setMaxSelectableDate(date2.getDate());
-            date2.setMinSelectableDate(date1.getDate());
+            if (evt.getNewValue() != evt.getOldValue()) {
+                refreshMaster();
+                date1.setMaxSelectableDate(date2.getDate());
+                date2.setMinSelectableDate(date1.getDate());
+            }
         }
     }
 
@@ -250,4 +253,15 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("prparc_data", 50)};
         }
     }
+
+    public void itemStateChanged(ItemEvent e) {
+        if (e.getSource().equals(halfBtn)) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                filterMaster();
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                refreshMaster();
+            }
+        }
+    }
+
 }

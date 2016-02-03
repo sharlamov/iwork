@@ -8,28 +8,41 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 
-public class DateEdit extends JDateChooser implements FocusListener {
+public class DateEdit extends JDateChooser implements FocusListener, IEdit {
 
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
 
     public DateEdit(String name, SimpleDateFormat format) {
         setDateFormatString(format.toPattern());
+        initDateEdit(name);
+    }
+
+    public DateEdit(String name) {
+        super("dd.MM.yyyy", "##.##.####", '_');
+        initDateEdit(name);
+    }
+
+    private void initDateEdit(String name) {
         setName(name);
         getDateEditor().getUiComponent().addFocusListener(this);
+
+        Set<AWTKeyStroke> set = new HashSet<AWTKeyStroke>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        set.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
     }
 
     public void addChangeEditListener(ChangeEditListener listener) {
         listeners.add(listener);
     }
 
-    protected void fireChangeEditEvent() {
+    public void fireChangeEditEvent() {
         if (listeners != null) {
             for (ChangeEditListener hl : listeners)
                 hl.changeEdit(this);

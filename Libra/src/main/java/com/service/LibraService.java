@@ -9,12 +9,17 @@ import com.util.Libra;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LibraService {
 
     public static CustomUser user;
+    private final Pattern paramsPattern = Pattern.compile("([:][a-zA-Z0-9_$]+)");
     private JdbcDAO dao;
 
     public LibraService() {
@@ -34,8 +39,6 @@ public class LibraService {
                 ",(select elevator from vms_user_elevator where userid = a.id) elevator\n" +
                 ",(select clcelevatort from vms_user_elevator where userid = a.id) clcelevatort\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
-                ",(select to_number(nvl(max(value),0)) from A$ADP$v v where v.obj_id=a.obj_id and KEY='DIVDEFAULT') div \n" +
-                ",(select denumirea from vms_univers where cod = (select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='DIVDEFAULT')) clcdivt \n" +
                 "from a$users$v a \n" +
                 "where enabled=1 \n" +
                 "and LOWER(username) = LOWER(?)\n" +
@@ -49,19 +52,31 @@ public class LibraService {
         user.setUsername((String) dataSet.getValueByName("USERNAME", 0));
         user.setAdminLevel(new BigDecimal(dataSet.getValueByName("ADMIN", 0).toString()).intValue());
         user.setElevator((CustomItem) dataSet.getValueByName("CLCELEVATORT", 0));
-        user.setDiv((CustomItem) dataSet.getValueByName("CLCDIVT", 0));
         user.setScaleType(new BigDecimal(dataSet.getValueByName("scaleType", 0).toString()).intValue());
+
+        String sqlDiv = "select to_number(div) div, (select denumirea from vms_univers where cod = div and tip='O' and gr1='DIV') clcdivt from "
+                + "(SELECT TRIM(SYS_CONNECT_BY_PATH ( (select value from a$adp$v p WHERE key = 'DIVDEFAULT' and obj_id = a.obj_id), ' ' )) div "
+                + "FROM a$adm a "
+                + "CONNECT BY obj_id = PRIOR parent_id START WITH obj_id = (select obj_id from a$adp$v p where key='ID' and value=:userId) order by level "
+                + ") where div is not null and rownum = 1";
+        DataSet dataDiv = dao.select(sqlDiv, new Object[]{user.getId().toString()});
+        CustomItem div = (CustomItem) dataDiv.getValueByName("CLCDIVT", 0);
+
+        if (div != null) {
+            user.setDiv((CustomItem) dataDiv.getValueByName("CLCDIVT", 0));
+        } else {
+            throw new Exception("Доступ запрещен! Не указана компания по умолчанию!");
+        }
 
         if (user.getElevator() == null || user.getElevator().getId() == null || user.getElevator().getLabel().isEmpty()) {
             throw new Exception("Доступ запрещен! Не указан элеватор!");
-        } else if (user.getDiv() == null || user.getDiv().getId() == null || user.getDiv().getLabel().isEmpty()) {
-            throw new Exception("Доступ запрещен! Не указан филиал!");
         }
         return true;
     }
 
     public DataSet getScaleOut(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
-        String sql = "select a.*, clcdep_perevoz as clcdep_perevozt from ytrans_VTF_PROHODN_OUT a\n" +
+        String sql = "select a.*, clcdep_perevoz as clcdep_perevozt\n" +
+                "from ytrans_VTF_PROHODN_OUT a\n" +
                 "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD') \n" +
                 "and PRIZNAK_ARM=2\n" +
                 "and div = ?\n" +
@@ -79,7 +94,9 @@ public class LibraService {
 
     public DataSet getScaleIn(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
         String sql = "select * from (\n" +
-                "select a.*, dep_gruzootpr dep_gruzootpravit from VTF_PROHODN_MPFS a\n" +
+                "select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
+                "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t\n" +
+                "from VTF_PROHODN_MPFS a\n" +
                 "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD')\n" +
                 "and PRIZNAK_ARM=1\n" +
                 "and div = ?\n" +
@@ -101,18 +118,14 @@ public class LibraService {
         return dao.select(sql, new Object[]{id});
     }
 
-    public List<CustomItem> searchItems(String query, SearchType type) throws Exception {
-        String sql = "select * from (" + type.getSql() + ") " + "where lower(denumirea) like '%"
-                + query.trim().toLowerCase()
-                + "%' and rownum < ? order by 2";
-        return dao.selectItems(sql, new Object[]{10});
-    }
-
-    public DataSet searchDataSet(String query, SearchType type) throws Exception {
-        String sql = "select * from (" + type.getSql() + ") " + "where lower(clccodt) like '%"
-                + query.trim().toLowerCase()
-                + "%' and rownum < ? order by 2";
-        return dao.select(sql, new Object[]{11});
+    public DataSet searchDataSet(SearchType type, Map<String, Object> params) throws Exception {
+        Matcher m = paramsPattern.matcher(type.getSql());
+        List<Object> objects = new ArrayList<Object>();
+        while (m.find()) {
+            objects.add(params.get(m.group().toLowerCase()));
+        }
+        String sql = m.replaceAll("?");
+        return dao.select(sql, objects.toArray());
     }
 
     public void initContext(String name, String value) throws Exception {

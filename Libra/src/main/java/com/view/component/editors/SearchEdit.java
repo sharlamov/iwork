@@ -1,6 +1,7 @@
 package com.view.component.editors;
 
 import com.enums.SearchType;
+import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LibraService;
 import com.view.component.grid.DataGrid;
@@ -14,6 +15,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SearchEdit extends CommonEdit {
 
@@ -21,11 +24,13 @@ public class SearchEdit extends CommonEdit {
     private final GridField[] fields;
     private final LibraService service;
     private final SearchType searchType;
+    private IEdit[] iEdits;
     private DataSet selectedDataSet;
     private PopupFactory factory;
     private Popup popup;
     private DataGrid dataGrid;
     private boolean shouldHide;
+    private boolean shouldClear = true;
 
     public SearchEdit(String name, String sourceName, GridField[] fields, LibraService service, SearchType searchType) {
         super(name);
@@ -35,13 +40,16 @@ public class SearchEdit extends CommonEdit {
         this.searchType = searchType;
         factory = PopupFactory.getSharedInstance();
         initGridPanel();
-
-
         installAncestorListener();
     }
 
     public SearchEdit(String name, LibraService service, SearchType searchType) {
         this(name, "clccodt", new GridField[]{new GridField("clccodt", 250)}, service, searchType);
+    }
+
+    public SearchEdit(String name, String sourceName, GridField[] fields, LibraService service, SearchType searchType, IEdit[] iEdits) {
+        this(name, sourceName, fields, service, searchType);
+        this.iEdits = iEdits;
     }
 
     public void initGridPanel() {
@@ -56,11 +64,6 @@ public class SearchEdit extends CommonEdit {
                 }
             }
         });
-    }
-
-    private Point findLocation() {
-        Point p = getLocationOnScreen();
-        return new Point(p.x, p.y + getHeight());
     }
 
     protected void installAncestorListener() {
@@ -81,8 +84,8 @@ public class SearchEdit extends CommonEdit {
 
     public void showPopup() {
         if (popup == null) {
-            Point location = findLocation();
-            popup = factory.getPopup(this, dataGrid, location.x, location.y);
+            Point p = getLocationOnScreen();
+            popup = factory.getPopup(this, dataGrid, p.x, p.y + getHeight());
             popup.show();
         }
     }
@@ -96,8 +99,18 @@ public class SearchEdit extends CommonEdit {
 
     public int search(String text) {
         int cnt = 0;
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(":findquery", "%" + text.trim().toLowerCase() + "%");
+
+        if (iEdits != null) {
+            for (IEdit iEdit : iEdits) {
+                Object val = iEdit.getValue() instanceof CustomItem ? ((CustomItem) iEdit.getValue()).getId() : iEdit.getValue();
+                params.put(":" + iEdit.getName().toLowerCase(), val);
+            }
+        }
+
         try {
-            DataSet dataSet = service.searchDataSet(text, searchType);
+            DataSet dataSet = service.searchDataSet(searchType, params);
             cnt = dataSet.size();
             dataGrid.publish(dataSet);
         } catch (Exception e) {
@@ -126,6 +139,7 @@ public class SearchEdit extends CommonEdit {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        super.keyPressed(e);
         shouldHide = false;
         switch (e.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
@@ -157,8 +171,8 @@ public class SearchEdit extends CommonEdit {
     public void focusLost(FocusEvent e) {
         super.focusLost(e);
         hidePopup();
-        if (getValue() == null) {
-            setText("");
+        if (shouldClear && getValue() == null) {
+            setText(null);
         }
     }
 
@@ -188,7 +202,7 @@ public class SearchEdit extends CommonEdit {
     private void removeValue() {
         setValue(null);
         selectedDataSet = null;
-        setText("");
+        setText(null);
     }
 
     private void selectValue() {
@@ -203,5 +217,9 @@ public class SearchEdit extends CommonEdit {
 
     public DataSet getSelectedDataSet() {
         return selectedDataSet;
+    }
+
+    public void setShouldClear(boolean shouldClear) {
+        this.shouldClear = shouldClear;
     }
 }

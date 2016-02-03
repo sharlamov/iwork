@@ -2,15 +2,17 @@ package com.util;
 
 import com.driver.ScalesManager;
 import com.service.LibraService;
-import com.view.component.weightboard.WeightBoard;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class Libra {
 
@@ -36,6 +38,8 @@ public class Libra {
 
     public static int autoLogin;
 
+    public static Dimension buttonSize = new Dimension(100, 25);
+
     public static void eMsg(String str) {
         Toolkit.getDefaultToolkit().beep();
         JOptionPane.showMessageDialog(null, str, "Error", JOptionPane.ERROR_MESSAGE);
@@ -50,6 +54,20 @@ public class Libra {
             return null;
         }
     }
+
+    public static ImageIcon createImageIcon(String path, int x, int y) {
+        java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
+        try {
+            assert imgURL != null;
+            Image img = ImageIO.read(imgURL);
+            Image newImg = img.getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH);
+            return new ImageIcon(newImg);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     public static Object encodePass(char[] pass) {
         BigDecimal TEN = new BigDecimal(10);
@@ -69,5 +87,23 @@ public class Libra {
             v_defval = v_defval.add(new BigDecimal((int) (text.charAt(i))));
         }
         return v_defval;
+    }
+
+    public static int defineSeason() {
+        Calendar current = Calendar.getInstance();
+        int cYear = current.get(Calendar.YEAR);
+        Calendar start = new GregorianCalendar(cYear, 7, 1);
+        return current.before(start) ? cYear - 1 : cYear;
+    }
+
+    public static Date truncDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        if (date != null)
+            cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 }

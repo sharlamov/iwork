@@ -12,10 +12,11 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.Format;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommonEdit extends JFormattedTextField implements KeyListener, FocusListener, PropertyChangeListener {
+public class CommonEdit extends JFormattedTextField implements KeyListener, FocusListener, PropertyChangeListener, IEdit {
 
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
@@ -37,7 +38,7 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
         listeners.add(listener);
     }
 
-    protected void fireChangeEditEvent() {
+    public void fireChangeEditEvent() {
         for (ChangeEditListener hl : listeners)
             hl.changeEdit(this);
     }
@@ -45,6 +46,7 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
     public void setChangable(boolean isChangable) {
         setEnabled(isChangable);
         setDisabledTextColor(Color.black);
+        setFocusable(isChangable);
     }
 
     public void focusGained(FocusEvent e) {
@@ -61,7 +63,9 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
     }
 
     public void keyPressed(KeyEvent e) {
-
+        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD) {
+            transferFocus();
+        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -70,9 +74,19 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
 
     public void propertyChange(PropertyChangeEvent evt) {
         if ("value".equals(evt.getPropertyName())) {
-            if(evt.getOldValue() != null || evt.getNewValue() != null){
+            if (evt.getOldValue() != null || evt.getNewValue() != null) {
                 fireChangeEditEvent();
             }
+        }
+    }
+
+    @Override
+    public void commitEdit() throws ParseException {
+        super.commitEdit();
+        if (getFormatter() == null) {
+            String str = getText();
+            if (!str.isEmpty())
+                setValue(str);
         }
     }
 }

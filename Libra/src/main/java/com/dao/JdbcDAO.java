@@ -21,8 +21,14 @@ public class JdbcDAO {
                 stmt.setBigDecimal(i + 1, (BigDecimal) params[i]);
             } else if (params[i] instanceof Integer) {
                 stmt.setInt(i + 1, (Integer) params[i]);
+            } else if (params[i] instanceof Long) {
+                stmt.setLong(i + 1, (Long) params[i]);
             } else {
-                stmt.setString(i + 1, params[i].toString());
+                if (params[i] == null)
+                    stmt.setNull(i + 1, Types.NULL);
+                else {
+                    stmt.setString(i + 1, params[i].toString());
+                }
             }
         }
     }

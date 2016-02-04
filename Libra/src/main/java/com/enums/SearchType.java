@@ -12,6 +12,30 @@ public enum SearchType {
     DRIVER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     AUTO("select * from (select distinct NMB1T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB1T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
     REMORCA("select * from (select distinct NMB2T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB2T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
+    SCALEIN("select * from (select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
+            "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t\n" +
+            "from VTF_PROHODN_MPFS a\n" +
+            "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(:date1),'DD') and TRUNC(to_date(:date2),'DD')\n" +
+            "and PRIZNAK_ARM=1\n" +
+            "and div = :div\n" +
+            "and exists (\n" +
+            "select 1 from vms_user_elevator where :admin='1'\n" +
+            "or (userid=:userid\n" +
+            "and elevator = a.elevator\n" +
+            "and trunc(sysdate) between datastart and dataend))\n" +
+            ")order by id desc"),
+    SCALEOUT("select * from (select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
+            "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t\n" +
+            "from VTF_PROHODN_MPFS a\n" +
+            "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(:date1),'DD') and TRUNC(to_date(:date2),'DD')\n" +
+            "and PRIZNAK_ARM=1\n" +
+            "and div = :userid\n" +
+            "and exists (\n" +
+            "select 1 from vms_user_elevator where :admin='1'\n" +
+            "or (userid=:userid\n" +
+            "and elevator = a.elevator\n" +
+            "and trunc(sysdate) between datastart and dataend))\n" +
+            ")order by id desc"),
     FINDCONTRACT("select * from (\n" +
             "SELECT nrdoc1,nr_manual,data_alccontr,sc_mp,clcsc_mpt\n" +
             ",(select denumirea from vms_univers u where u.cod=div) clcdivt\n" +

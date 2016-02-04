@@ -1,6 +1,7 @@
 package com.bin;
 
 import com.enums.ArmType;
+import com.enums.SearchType;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
@@ -17,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
 
@@ -36,7 +39,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        dataGrid = new DataGrid(getFieldNames(armType), armType == ArmType.IN);
+        dataGrid = new DataGrid(Libra.libraService, armType == ArmType.IN ? SearchType.SCALEIN : SearchType.SCALEOUT, getFieldNames(armType), armType == ArmType.IN);
         dataGrid.addListSelectionListener(this);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
@@ -79,11 +82,22 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             }
         });
 
-        table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK), "Find");
+        table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK), "Find");
         table.getAMap().put("Find", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                //new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
+                try {
+                    table.filter();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Libra.eMsg(e.getMessage());
+                }
+            }
+        });
 
+        table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "Refresh");
+        table.getAMap().put("Refresh", new AbstractAction() {
+            public void actionPerformed(ActionEvent ae) {
+                refreshMaster();
             }
         });
     }
@@ -130,11 +144,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void filterMaster() {
         try {
-            dataGrid.publish(
-                    armType == ArmType.IN ?
-                            Libra.libraService.getScaleIn(true, date1.getDate(), date2.getDate(), LibraService.user) :
-                            Libra.libraService.getScaleOut(true, date1.getDate(), date2.getDate(), LibraService.user)
-            );
+            dataGrid.filter("(nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)");
             refreshDetail(0);
         } catch (Exception e) {
             e.printStackTrace();
@@ -148,11 +158,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
 
         try {
-            dataGrid.publish(
-                    armType == ArmType.IN ?
-                            Libra.libraService.getScaleIn(false, date1.getDate(), date2.getDate(), LibraService.user) :
-                            Libra.libraService.getScaleOut(false, date1.getDate(), date2.getDate(), LibraService.user)
-            );
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(":date1", date1.getDate());
+            params.put(":date2", date2.getDate());
+            params.put(":div", LibraService.user.getDiv().getId());
+            params.put(":admin", LibraService.user.getAdminLevel());
+            params.put(":userid", LibraService.user.getId());
+            dataGrid.select(params);
             refreshDetail(0);
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,7 +10,6 @@ import com.util.Libra;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -74,58 +73,36 @@ public class LibraService {
         return true;
     }
 
-    public DataSet getScaleOut(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
-        String sql = "select a.*, clcdep_perevoz as clcdep_perevozt\n" +
-                "from ytrans_VTF_PROHODN_OUT a\n" +
-                "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD') \n" +
-                "and PRIZNAK_ARM=2\n" +
-                "and div = ?\n" +
-                "and exists (\n" +
-                "select 1 from vms_user_elevator where ?='1' \n" +
-                "or (userid=?\n" +
-                "and elevator = a.elevator \n" +
-                "and trunc(sysdate) between datastart and dataend))";
-
-        if (useHalfFilter)
-            sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
-
-        return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
-    }
-
-    public DataSet getScaleIn(boolean useHalfFilter, Date d0, Date d1, CustomUser user) throws Exception {
-        String sql = "select * from (\n" +
-                "select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
-                "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t\n" +
-                "from VTF_PROHODN_MPFS a\n" +
-                "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(?),'DD') and TRUNC(to_date(?),'DD')\n" +
-                "and PRIZNAK_ARM=1\n" +
-                "and div = ?\n" +
-                "and exists (\n" +
-                "select 1 from vms_user_elevator where ?='1'\n" +
-                "or (userid=?\n" +
-                "and elevator = a.elevator\n" +
-                "and trunc(sysdate) between datastart and dataend))\n" +
-                ")order by id desc";
-
-        if (useHalfFilter)
-            sql = "select * from (" + sql + ") where (nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)";
-
-        return dao.select(sql, new Object[]{d0, d1, user.getDiv().getId(), user.getAdminLevel(), user.getId()});
-    }
-
     public DataSet getHistory(BigDecimal id) throws Exception {
         String sql = "select br, dt,userid, (select username from vms_users u where u.cod=s.userid)clcuseridt, masa  from tf_prohodn_scales s where id = ?";
         return dao.select(sql, new Object[]{id});
     }
 
-    public DataSet searchDataSet(SearchType type, Map<String, Object> params) throws Exception {
-        Matcher m = paramsPattern.matcher(type.getSql());
+    public DataSet selectDataSet(SearchType type, Map<String, Object> params) throws Exception {
+        return selectDataSet(type.getSql(), params);
+    }
+
+    public DataSet selectDataSet(String query, Map<String, Object> params) throws Exception {
+        Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
         while (m.find()) {
             objects.add(params.get(m.group().toLowerCase()));
         }
         String sql = m.replaceAll("?");
         return dao.select(sql, objects.toArray());
+    }
+
+    public DataSet filterDataSet(SearchType searchType, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
+        StringBuilder query = new StringBuilder("select * from (" + searchType.getSql() + ") where 1 = 1");
+        for (Map.Entry<String, String> entry : filterMap.entrySet()) {
+            query.append(" and lower(").append(entry.getKey()).append(") like :").append(entry.getKey());
+            params.put(":" + entry.getKey(), entry.getValue());
+        }
+        return selectDataSet(query.toString(), params);
+    }
+
+    public DataSet filterDataSet(SearchType searchType, Map<String, Object> params, String filterString) throws Exception {
+        return selectDataSet("select * from (" + searchType.getSql() + ") where 1 = 1 and " + filterString, params);
     }
 
     public void initContext(String name, String value) throws Exception {

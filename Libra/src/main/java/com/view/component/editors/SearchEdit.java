@@ -4,6 +4,7 @@ import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LibraService;
+import com.util.Libra;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.GridField;
 
@@ -53,7 +54,7 @@ public class SearchEdit extends CommonEdit {
     }
 
     public void initGridPanel() {
-        dataGrid = new DataGrid(fields, false);
+        dataGrid = new DataGrid(Libra.libraService, searchType, fields, false);
         dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 200));
         dataGrid.setFocusable(false);
         dataGrid.addMouseListener(new MouseAdapter() {
@@ -110,9 +111,9 @@ public class SearchEdit extends CommonEdit {
         }
 
         try {
-            DataSet dataSet = service.searchDataSet(searchType, params);
-            cnt = dataSet.size();
-            dataGrid.publish(dataSet);
+            //DataSet dataSet = service.selectDataSet(searchType, params);
+            cnt = dataGrid.select(params);
+            //publish(dataSet);
         } catch (Exception e) {
             e.printStackTrace();
         }

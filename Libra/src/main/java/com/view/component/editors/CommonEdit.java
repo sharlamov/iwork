@@ -80,6 +80,10 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
         }
     }
 
+    public boolean isEmpty() {
+        return getValue() == null;
+    }
+
     @Override
     public void commitEdit() throws ParseException {
         super.commitEdit();

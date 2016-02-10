@@ -38,6 +38,7 @@ public class LibraService {
                 ",(select elevator from vms_user_elevator where userid = a.id) elevator\n" +
                 ",(select clcelevatort from vms_user_elevator where userid = a.id) clcelevatort\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
+                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_HAND_EDITABLE') handEditable\n" +
                 "from a$users$v a \n" +
                 "where enabled=1 \n" +
                 "and LOWER(username) = LOWER(?)\n" +
@@ -52,6 +53,7 @@ public class LibraService {
         user.setAdminLevel(new BigDecimal(dataSet.getValueByName("ADMIN", 0).toString()).intValue());
         user.setElevator((CustomItem) dataSet.getValueByName("CLCELEVATORT", 0));
         user.setScaleType(new BigDecimal(dataSet.getValueByName("scaleType", 0).toString()).intValue());
+        user.setHandEditable(dataSet.getValueByName("handeditable", 0).toString().equals("true"));
 
         String sqlDiv = "select to_number(div) div, (select denumirea from vms_univers where cod = div and tip='O' and gr1='DIV') clcdivt from "
                 + "(SELECT TRIM(SYS_CONNECT_BY_PATH ( (select value from a$adp$v p WHERE key = 'DIVDEFAULT' and obj_id = a.obj_id), ' ' )) div "
@@ -70,6 +72,16 @@ public class LibraService {
         if (user.getElevator() == null || user.getElevator().getId() == null || user.getElevator().getLabel().isEmpty()) {
             throw new Exception("Доступ запрещен! Не указан элеватор!");
         }
+
+        String runSQL = "select d val from (\n" +
+                "SELECT (select value from a$adp$v p WHERE key = 'RUNSQL' and obj_id = a.obj_id) d \n" +
+                " FROM a$adm a CONNECT BY obj_id = PRIOR parent_id START WITH obj_id = (select obj_id from a$adp$v p where key='ID' and value=:userId) order by level\n" +
+                ") where d is not null and rownum = 1";
+        DataSet dataSQL = dao.select(runSQL, new Object[]{user.getId().toString()});
+        Object str = dataSQL.getValueByName("val", 0);
+        if (str != null)
+            dao.exec(str.toString(), null);
+
         return true;
     }
 
@@ -105,9 +117,15 @@ public class LibraService {
         return selectDataSet("select * from (" + searchType.getSql() + ") where 1 = 1 and " + filterString, params);
     }
 
-    public void initContext(String name, String value) throws Exception {
-        String sql = " begin envun4.envsetvalue(?,?); end; ";
-        dao.exec(sql, new Object[]{name, value});
+    public void initContext(String adminLevel, String userID, String limit, String elevator, String div) throws Exception {
+        String sql = " begin\n" +
+                "envun4.envsetvalue('INIPARAM_ADMINLEVEL', ?);\n" +
+                "envun4.envsetvalue('PARAM_USERID', ?);\n" +
+                "envun4.envsetvalue('YFSR_LIMIT_DIFF_MPFS', ?);\n" +
+                "envun4.envsetvalue('DEF_ELEVATOR', ?);\n" +
+                "un$div.set_def(?);\n" +
+                "end; ";
+        dao.exec(sql, new Object[]{adminLevel, userID, limit, elevator, div});
     }
 
     public void close() {
@@ -117,5 +135,22 @@ public class LibraService {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
+    }
+
+    public void execute(SearchType searchType, DataSet dataSet) throws Exception {
+        Matcher m = paramsPattern.matcher(searchType.getSql());
+        List<Object> objects = new ArrayList<Object>();
+        while (m.find()) {
+            Object val = dataSet.getValueByName(m.group().substring(1), 0);
+            objects.add(val instanceof CustomItem ? ((CustomItem) val).getId() : val);
+        }
+        String sql = m.replaceAll("?");
+        dao.exec(sql, objects.toArray());
+    }
+
+    public CustomItem insertItem(String name, String fiskcod, String tip, String gr1) throws Exception {
+        String sql = "{call insert into vms_univers (cod, denumirea, codvechi, tip, gr1) values (id_tms_univers.nextval, ?, ?, ?, ?) RETURNING cod INTO ? }";
+        int n = dao.insertListItem(sql, new Object[]{name, fiskcod, tip, gr1});
+        return new CustomItem(new BigDecimal(n), name + ", " + fiskcod);
     }
 }

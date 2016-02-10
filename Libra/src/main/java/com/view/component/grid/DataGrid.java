@@ -46,6 +46,10 @@ public class DataGrid extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
+    public void setHeaderFont(Font font) {
+        tbl.getTableHeader().setFont(font);
+    }
+
     public void addListSelectionListener(ListSelectionListener listener) {
         tbl.getSelectionModel().addListSelectionListener(listener);
     }
@@ -111,7 +115,7 @@ public class DataGrid extends JPanel {
         int r = tbl.getSelectedRow();
         int c = tbl.getSelectedColumn();
         if (r != -1 && c != -1) {
-            String columnName = dtm.getColumnName(c);
+            String columnName = dtm.getFieldName(c);
             Object val = dtm.getValueAt(r, c);
             String textVal = "";
 
@@ -132,7 +136,7 @@ public class DataGrid extends JPanel {
                 dtm.publish(d);
                 if (!d.isEmpty()) {
                     setSelectedRow(0);
-                    tbl.setColumnSelectionInterval(c,c);
+                    tbl.setColumnSelectionInterval(c, c);
                     return d.size();
                 }
             }

@@ -13,4 +13,6 @@ public interface IEdit {
     void setValue(Object value);
 
     String getName();
+
+    boolean isEmpty();
 }

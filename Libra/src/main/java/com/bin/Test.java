@@ -1,63 +1,42 @@
 package com.bin;
 
-import com.enums.SearchType;
-import com.util.Libra;
-import com.view.component.editors.ChangeEditListener;
-import com.view.component.editors.DateEdit;
-import com.view.component.editors.NumberEdit;
-import com.view.component.editors.SearchEdit;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class Test extends JFrame implements ActionListener, ChangeEditListener {
-
-    JLabel t = new JLabel("Test");
-    JButton b = new JButton("start");
-    SearchEdit edit;
-    NumberEdit edit1;
-    DateEdit edit2;
-
-
-    //insert into glosary list
+public class Test  {
 
     public Test() {
-        Libra.dbUser = "TRANSOIL";
-        Libra.dbPass = "TRANSOIL";
-        Libra.dbUrl = "jdbc:oracle:thin:@192.168.1.221:1521:TRANSOIL";
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setBounds(100, 100, 621, 400);
-        setLayout(new FlowLayout());
-        setLocationRelativeTo(null);
-        b.addActionListener(this);
-        add(t);
-        add(b);
 
-        edit = new SearchEdit("clcdep_postavt", Libra.libraService, SearchType.CROPS);
-        edit.setPreferredSize(new Dimension(200, 27));
-        edit.addChangeEditListener(this);
-        add(edit);
-        edit1 = new NumberEdit("masa_brutto", Libra.decimalFormat);
-        edit1.setPreferredSize(new Dimension(200, 27));
-        edit1.addChangeEditListener(this);
-        add(edit1);
-        edit2 = new DateEdit("date_ttn", Libra.dateFormat);
-        edit2.setPreferredSize(new Dimension(200, 27));
-        //edit2.setValue(new Date());
-        //edit2.setValue("01.01.1901");
-        edit2.addChangeEditListener(this);
-        add(edit2);
+        try {
+            File file = new File("D:/dev/iwork/Libra/src/main/resources/message_ru.properties");
+            FileReader fileReader = new FileReader(file);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String str = translate(line);
+                System.out.println(str);
+            }
+            fileReader.close();
+        } catch (Exception ignored) {
+
+        }
     }
-
 
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
                     Test frame = new Test();
-                    frame.setVisible(true);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -65,20 +44,34 @@ public class Test extends JFrame implements ActionListener, ChangeEditListener {
         });
     }
 
-    public void actionPerformed(ActionEvent e) {
-        System.out.println(edit.getValue());
-        System.out.println(edit1.getValue());
-        System.out.println(edit2.getValue());
+    public String translate(String src) {
+        final CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+        final StringBuilder result = new StringBuilder();
+        for (final Character character : src.toCharArray()) {
+            if (asciiEncoder.canEncode(character)) {
+                result.append(character);
+            } else {
+                result.append("\\u");
+                result.append(Integer.toHexString(0x10000 | character).substring(1).toUpperCase());
+            }
+        }
+        return result.toString();
     }
 
-    public void changeEdit(Object source) {
-        if (source.equals(edit)) {
-            System.out.println(edit.getValue());
-        } else if (source.equals(edit1)) {
-            System.out.println(edit1.getValue());
-        } else if (source.equals(edit2)) {
-            System.out.println(edit2.getValue());
+    public String retranslate(String src) {
+        try {
+            byte[] ascii = src.getBytes();
+            StringBuilder string = new StringBuilder();
+            for (byte b : ascii) {
+                int hexVal = Integer.parseInt(String.valueOf(b), 16);
+                string.append((char)hexVal);
+            }
+            return string.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
+
     }
 }
 

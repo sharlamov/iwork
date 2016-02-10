@@ -10,9 +10,13 @@ public class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
         this.order = new ArrayList<Component>();
     }
 
-    public void addComponent(Component aComponent) {
+    public void add(Component aComponent) {
         if (aComponent != null)
             order.add(aComponent);
+    }
+
+    public void remove(Component aComponent) {
+        order.remove(aComponent);
     }
 
     public Component getComponentAfter(Container focusCycleRoot,

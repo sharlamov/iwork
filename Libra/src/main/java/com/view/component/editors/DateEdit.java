@@ -77,6 +77,10 @@ public class DateEdit extends JDateChooser implements FocusListener, IEdit {
         setDate((Date) value);
     }
 
+    public boolean isEmpty() {
+        return getValue() == null;
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if ("date".equals(evt.getPropertyName())) {

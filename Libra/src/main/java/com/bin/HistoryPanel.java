@@ -37,6 +37,7 @@ public class HistoryPanel extends JPanel {
             eMsg(ex.getMessage());
         }
         revalidate();
+        repaint();
     }
 
 
@@ -46,7 +47,6 @@ public class HistoryPanel extends JPanel {
         p.setPreferredSize(dimension);
         p.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         JLabel l = new JLabel(direction.intValue() == 1 ? loaded : unloaded);
-       // l.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         p.add(l, BorderLayout.WEST);
         JLabel userLabel = new JLabel(user.toString(), SwingConstants.CENTER);
         p.add(userLabel, BorderLayout.NORTH);

@@ -8,12 +8,13 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 public class WeightBoard extends JPanel implements ActionListener, ScaleEventListener {
 
+    public JButton btnAdd;
     private JLabel score = new JLabel();
     private JButton btnUpd;
-    private JButton btnAdd;
     private ScalesDriver driver;
 
     public WeightBoard(final ScalesDriver driver, boolean isOnline) {
@@ -44,6 +45,7 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
             btnUpd = new JButton("Обновить");
             btnAdd = new JButton("Взвесить");
             btnUpd.addActionListener(this);
+            btnAdd.addActionListener(this);
             JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));
             buttonsPanel.add(btnUpd);
             buttonsPanel.add(btnAdd);
@@ -51,8 +53,9 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
         }
     }
 
-    public void addBtnListener(ActionListener listener) {
-        btnAdd.addActionListener(listener);
+    public void setBlock(boolean isBlock) {
+        btnUpd.setEnabled(!isBlock);
+        btnAdd.setEnabled(!isBlock);
     }
 
     public void stableWeight() {
@@ -63,7 +66,11 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
         } catch (Exception e) {
             e.printStackTrace();
         }
-        setWeight(newWeight);
+
+        if (newWeight == null || newWeight == 0)
+            setWeight((new Random()).nextInt(50000));
+        else
+            setWeight(newWeight);
     }
 
     public Integer getWeight() {

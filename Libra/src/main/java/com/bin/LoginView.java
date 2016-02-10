@@ -1,5 +1,6 @@
 package com.bin;
 
+import com.model.CustomUser;
 import com.service.LibraService;
 import com.service.SettingsService;
 import com.util.Libra;
@@ -8,12 +9,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public class LoginView extends JFrame implements ActionListener {
 
     JTextField userText = new JTextField(20);
     JPasswordField passwordText = new JPasswordField(20);
-    private JButton loginButton = new JButton("Войти");
+    private JButton loginButton;
 
     public LoginView() throws HeadlessException {
         super(Libra.TITLE);
@@ -28,6 +31,8 @@ public class LoginView extends JFrame implements ActionListener {
         });
 
         initParams();
+        loginButton = new JButton(Libra.translate("enter"));
+
         if (Libra.autoLogin == 1) {
             login(userText.getText(), passwordText.getPassword());
         } else {
@@ -52,19 +57,22 @@ public class LoginView extends JFrame implements ActionListener {
         Libra.dbUser = SettingsService.get("jdbc.login");
         Libra.dbPass = SettingsService.get("jdbc.pass");
         Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
+        Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang", "en").toLowerCase()));
+        UIManager.put("OptionPane.yesButtonText", Libra.translate("yes"));
+        UIManager.put("OptionPane.noButtonText", Libra.translate("no"));
     }
 
     private void placeComponents(JPanel panel) {
         panel.setLayout(null);
 
-        JLabel userLabel = new JLabel("Логин");
+        JLabel userLabel = new JLabel(Libra.translate("login"));
         userLabel.setBounds(10, 10, 80, 25);
         panel.add(userLabel);
 
         userText.setBounds(100, 10, 160, 25);
         panel.add(userText);
 
-        JLabel passwordLabel = new JLabel("Пароль");
+        JLabel passwordLabel = new JLabel(Libra.translate("pass"));
         passwordLabel.setBounds(10, 40, 80, 25);
         panel.add(passwordLabel);
 
@@ -82,7 +90,14 @@ public class LoginView extends JFrame implements ActionListener {
     public void login(String login, char[] pass) {
         try {
             if (Libra.libraService.login(login, pass)) {
-                Libra.libraService.initContext("YFSR_LIMIT_DIFF_MPFS", Libra.LIMIT_DIFF_MPFS.toString());
+                CustomUser cUser = LibraService.user;
+                Libra.libraService.initContext(
+                        cUser.getAdminLevel().toString(),
+                        cUser.getId().toString(),
+                        Libra.LIMIT_DIFF_MPFS.toString(),
+                        cUser.getElevator().getId().toString(),
+                        cUser.getDiv().getId().toString()
+                );
                 dispose();
                 new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": [" + LibraService.user.getElevator() + "]");
             }

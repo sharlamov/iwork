@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.ResourceBundle;
 
 public class Libra {
 
@@ -38,7 +39,17 @@ public class Libra {
 
     public static int autoLogin;
 
+    public static ResourceBundle messages;
+
     public static Dimension buttonSize = new Dimension(100, 25);
+
+    public static String translate(String key) {
+        try {
+            return messages.getString(key);
+        } catch (java.util.MissingResourceException e) {
+            return key;
+        }
+    }
 
     public static void eMsg(String str) {
         Toolkit.getDefaultToolkit().beep();

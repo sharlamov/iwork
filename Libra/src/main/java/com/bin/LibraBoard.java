@@ -15,11 +15,14 @@ public class LibraBoard extends JPanel {
         add(board, BorderLayout.NORTH);
         ImageIcon icon = Libra.createImageIcon("images/middle.gif");
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("<html><body width='150'>Приход</body></html>", icon, new LibraPanel(ArmType.IN), "Весовая вьезд");
+        tabbedPane.addTab(getHtmlTitle("tabName0"), icon, new LibraPanel(ArmType.IN));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_F1);
-        tabbedPane.addTab("<html><body width='150'>Расход</body></html>", icon, new LibraPanel(ArmType.OUT), "Весовая выезд");
+        tabbedPane.addTab(getHtmlTitle("tabName1"), icon, new LibraPanel(ArmType.OUT));
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_F2);
         add(tabbedPane, BorderLayout.CENTER);
     }
 
+    public String getHtmlTitle(String title) {
+        return "<html><body width='150'>" + Libra.translate(title) + "</body></html>";
+    }
 }

@@ -1,6 +1,5 @@
 package com.bin;
 
-import com.driver.ScaleEventListener;
 import com.driver.ScalesDriver;
 import com.service.SettingsService;
 import com.util.Libra;
@@ -14,7 +13,7 @@ import java.awt.event.ActionListener;
 
 public class ScaleOnlinePanel extends JPanel implements ActionListener {
 
-    private JButton find = new JButton("Поиск весов", Libra.createImageIcon("images/find.png"));
+    private JButton find = new JButton(Libra.translate("findScales"), Libra.createImageIcon("images/find.png"));
 
     public ScaleOnlinePanel() {
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));

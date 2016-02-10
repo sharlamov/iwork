@@ -13,6 +13,7 @@ public class CustomUser {
     private CustomItem div;
     private Integer scaleType;
     private Integer adminLevel;
+    private boolean isHandEditable;
 
     public String getPassword() {
         return password;
@@ -73,5 +74,13 @@ public class CustomUser {
 
     public void setAdminLevel(Integer adminLevel) {
         this.adminLevel = adminLevel;
+    }
+
+    public boolean isHandEditable() {
+        return isHandEditable;
+    }
+
+    public void setHandEditable(boolean isHandEditable) {
+        this.isHandEditable = isHandEditable;
     }
 }

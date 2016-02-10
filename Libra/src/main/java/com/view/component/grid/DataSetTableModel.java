@@ -1,6 +1,7 @@
 package com.view.component.grid;
 
 import com.model.DataSet;
+import com.util.Libra;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
@@ -15,16 +16,23 @@ public class DataSetTableModel extends AbstractTableModel {
     private DataSet dataSet;
     private Map<Integer, Integer> columnMap;
     private GridField[] names;
+    private String[] labels;
     private int count;
 
     public DataSetTableModel(GridField[] names) {
         columnMap = new HashMap<Integer, Integer>(names.length);
         this.names = names;
+        labels = new String[names.length];
+        for (int i = 0; i < names.length; i++) {
+            labels[i] = Libra.translate(names[i].getName());
+        }
     }
 
     public void publish(DataSet dataSet) {
         columnMap.clear();
+        labels = new String[names.length];
         for (int i = 0; i < names.length; i++) {
+            labels[i] = Libra.translate(names[i].getName());
             int index = dataSet.getNames().indexOf(names[i].getName().toUpperCase());
             if (index != -1)
                 columnMap.put(i, index);
@@ -43,6 +51,10 @@ public class DataSetTableModel extends AbstractTableModel {
     }
 
     public String getColumnName(int column) {
+        return labels[column];
+    }
+
+    public String getFieldName(int column) {
         return names[column].getName();
     }
 

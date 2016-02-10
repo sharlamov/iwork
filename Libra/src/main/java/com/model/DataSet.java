@@ -12,6 +12,10 @@ public class DataSet extends ArrayList<Object[]> {
         this.addAll(list);
     }
 
+    public DataSet(List<String> names) {
+        this.names = names;
+    }
+
     private int findField(String fieldName) {
         for (int i = 0; i < names.size(); i++) {
             if (fieldName.equalsIgnoreCase(names.get(i)))
@@ -46,6 +50,19 @@ public class DataSet extends ArrayList<Object[]> {
         int col = findField(fieldName);
         if (col != -1) {
             get(row)[col] = value;
+        }
+    }
+
+    public void addField(String fieldName, Object value) {
+        if (findField(fieldName) == -1) {
+            names.add(fieldName);
+            for (int i = 0; i < size(); i++) {
+                Object[] src = get(i);
+                Object[] dest = new Object[src.length + 1];
+                System.arraycopy(src, 0, dest, 0, src.length);
+                dest[src.length] = value;
+                set(i, dest);
+            }
         }
     }
 

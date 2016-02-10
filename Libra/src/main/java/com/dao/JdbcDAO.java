@@ -14,20 +14,24 @@ public class JdbcDAO {
     public Connection connection;
 
     private void initParams(PreparedStatement stmt, Object[] params) throws SQLException {
-        for (int i = 0; i < params.length; i++) {
-            if (params[i] instanceof Date) {
-                stmt.setDate(i + 1, new java.sql.Date(((Date) params[i]).getTime()));
-            } else if (params[i] instanceof BigDecimal) {
-                stmt.setBigDecimal(i + 1, (BigDecimal) params[i]);
-            } else if (params[i] instanceof Integer) {
-                stmt.setInt(i + 1, (Integer) params[i]);
-            } else if (params[i] instanceof Long) {
-                stmt.setLong(i + 1, (Long) params[i]);
-            } else {
-                if (params[i] == null)
-                    stmt.setNull(i + 1, Types.NULL);
-                else {
-                    stmt.setString(i + 1, params[i].toString());
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                if (params[i] instanceof Timestamp) {
+                    stmt.setTimestamp(i + 1, (Timestamp) params[i]);
+                } else if (params[i] instanceof Date) {
+                    stmt.setDate(i + 1, new java.sql.Date(((Date) params[i]).getTime()));
+                } else if (params[i] instanceof BigDecimal) {
+                    stmt.setBigDecimal(i + 1, (BigDecimal) params[i]);
+                } else if (params[i] instanceof Integer) {
+                    stmt.setInt(i + 1, (Integer) params[i]);
+                } else if (params[i] instanceof Long) {
+                    stmt.setLong(i + 1, (Long) params[i]);
+                } else {
+                    if (params[i] == null)
+                        stmt.setNull(i + 1, Types.NULL);
+                    else {
+                        stmt.setString(i + 1, params[i].toString());
+                    }
                 }
             }
         }
@@ -110,25 +114,19 @@ public class JdbcDAO {
         }
     }
 
-    public List<CustomItem> selectItems(String query, Object[] params) throws Exception {
-        long t = System.currentTimeMillis();
-        List<CustomItem> items = new ArrayList<CustomItem>();
-        PreparedStatement stmt = getConnection().prepareStatement(query);
-        initParams(stmt, params);
-
-        ResultSet rs = stmt.executeQuery();
-        while (rs.next()) {
-            items.add(new CustomItem(rs.getObject(1), rs.getObject(2)));
-        }
-
-        stmt.close();
-        System.out.println("selectItems: " + (System.currentTimeMillis() - t));
-        return items;
-    }
-
     public void exec(String query, Object[] params) throws Exception {
         CallableStatement cs = getConnection().prepareCall(query);
         initParams(cs, params);
         cs.execute();
+        getConnection().commit();
+    }
+
+    public int insertListItem(String query, Object[] params) throws Exception {
+        int n = params != null ? params.length + 1 : 1;
+        CallableStatement stmt = getConnection().prepareCall(query);
+        initParams(stmt, params);
+        stmt.registerOutParameter(n, Types.NUMERIC);
+        stmt.executeUpdate();
+        return stmt.getInt(n);
     }
 }

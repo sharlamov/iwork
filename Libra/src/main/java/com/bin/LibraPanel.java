@@ -32,10 +32,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
     private ArmType armType;
+    private LibraPanel pan;
 
     public LibraPanel(final ArmType armType) {
         this.armType = armType;
         this.detail = new HistoryPanel();
+        this.pan = this;
+
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
@@ -46,7 +49,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 JTable table = (JTable) me.getSource();
                 int row = table.rowAtPoint(me.getPoint());
                 if (me.getClickCount() == 2 && row != -1) {
-                    new LibraEdit(dataGrid.getDataSetByRow(row), armType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), armType);
                 }
             }
         });
@@ -54,7 +57,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         tableKeyBindings(dataGrid);
 
         dataGrid.addToolBar(initToolBar());
-
+        dataGrid.setHeaderFont(new Font("Courier", Font.BOLD, 12));
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(dataGrid);
         splitPane.setRightComponent(detail);
@@ -71,14 +74,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             public void actionPerformed(ActionEvent ae) {
                 int row = table.getSelectedRow();
                 if (row != -1)
-                    new LibraEdit(dataGrid.getDataSetByRow(row), armType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), armType);
             }
         });
 
         table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
         table.getAMap().put("Insert", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
+                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), armType);
             }
         });
 
@@ -180,7 +183,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new LibraEdit(dataGrid.getDataSetByRow(-1), armType);
+            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), armType);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
         }
@@ -275,5 +278,4 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             }
         }
     }
-
 }

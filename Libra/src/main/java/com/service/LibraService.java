@@ -35,8 +35,6 @@ public class LibraService {
         String sql = "select id\n" +
                 ",username\n" +
                 ",nvl(admin,0) as admin\n" +
-                ",(select elevator from vms_user_elevator where userid = a.id) elevator\n" +
-                ",(select clcelevatort from vms_user_elevator where userid = a.id) clcelevatort\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_HAND_EDITABLE') handEditable\n" +
                 "from a$users$v a \n" +
@@ -44,41 +42,30 @@ public class LibraService {
                 "and LOWER(username) = LOWER(?)\n" +
                 "and nvl(encoded,a$util.encode(password)) = ?";
         DataSet dataSet = dao.select(sql, new Object[]{userName, Libra.encodePass(password)});
-        if (dataSet.isEmpty()) {
+        if (dataSet.isEmpty())
             throw new Exception("Доступ запрещен! Пользователь не найден!");
-        }
+
         user = new CustomUser();
         user.setId(new BigDecimal(dataSet.getValueByName("ID", 0).toString()));
         user.setUsername((String) dataSet.getValueByName("USERNAME", 0));
         user.setAdminLevel(new BigDecimal(dataSet.getValueByName("ADMIN", 0).toString()).intValue());
-        user.setElevator((CustomItem) dataSet.getValueByName("CLCELEVATORT", 0));
         user.setScaleType(new BigDecimal(dataSet.getValueByName("scaleType", 0).toString()).intValue());
         user.setHandEditable(dataSet.getValueByName("handeditable", 0).toString().equals("true"));
 
-        String sqlDiv = "select to_number(div) div, (select denumirea from vms_univers where cod = div and tip='O' and gr1='DIV') clcdivt from "
-                + "(SELECT TRIM(SYS_CONNECT_BY_PATH ( (select value from a$adp$v p WHERE key = 'DIVDEFAULT' and obj_id = a.obj_id), ' ' )) div "
-                + "FROM a$adm a "
-                + "CONNECT BY obj_id = PRIOR parent_id START WITH obj_id = (select obj_id from a$adp$v p where key='ID' and value=:userId) order by level "
-                + ") where div is not null and rownum = 1";
-        DataSet dataDiv = dao.select(sqlDiv, new Object[]{user.getId().toString()});
-        CustomItem div = (CustomItem) dataDiv.getValueByName("CLCDIVT", 0);
 
-        if (div != null) {
-            user.setDiv((CustomItem) dataDiv.getValueByName("CLCDIVT", 0));
+        DataSet dataElevator = dao.select(SearchType.GETSILOSBYUSER.getSql(), new Object[]{user.getId()});
+        if (dataElevator.isEmpty()) {
+            throw new Exception(Libra.translate("error.notfoundelevator"));
         } else {
-            throw new Exception("Доступ запрещен! Не указана компания по умолчанию!");
+            List<CustomItem> items = new ArrayList<CustomItem>();
+            for (int i = 0; i < dataElevator.size(); i++) {
+                items.add((CustomItem) dataElevator.get(i)[0]);
+            }
+            user.setElevators(items);
         }
 
-        if (user.getElevator() == null || user.getElevator().getId() == null || user.getElevator().getLabel().isEmpty()) {
-            throw new Exception("Доступ запрещен! Не указан элеватор!");
-        }
-
-        String runSQL = "select d val from (\n" +
-                "SELECT (select value from a$adp$v p WHERE key = 'RUNSQL' and obj_id = a.obj_id) d \n" +
-                " FROM a$adm a CONNECT BY obj_id = PRIOR parent_id START WITH obj_id = (select obj_id from a$adp$v p where key='ID' and value=:userId) order by level\n" +
-                ") where d is not null and rownum = 1";
-        DataSet dataSQL = dao.select(runSQL, new Object[]{user.getId().toString()});
-        Object str = dataSQL.getValueByName("val", 0);
+        DataSet dataSQL = dao.select(SearchType.GETUSERPROP.getSql(), new Object[]{"RUNSQL", user.getId().toString()});
+        Object str = dataSQL.getValueByName("PROP", 0);
         if (str != null)
             dao.exec(str.toString(), null);
 
@@ -98,7 +85,13 @@ public class LibraService {
         Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
         while (m.find()) {
-            objects.add(params.get(m.group().toLowerCase()));
+            String param = m.group().toLowerCase();
+            Object obj = params.get(param);
+            if (obj instanceof CustomItem) {
+                objects.add(((CustomItem) obj).getId());
+            } else {
+                objects.add(obj);
+            }
         }
         String sql = m.replaceAll("?");
         return dao.select(sql, objects.toArray());
@@ -117,15 +110,13 @@ public class LibraService {
         return selectDataSet("select * from (" + searchType.getSql() + ") where 1 = 1 and " + filterString, params);
     }
 
-    public void initContext(String adminLevel, String userID, String limit, String elevator, String div) throws Exception {
+    public void initContext(String adminLevel, String userID, String limit) throws Exception {
         String sql = " begin\n" +
                 "envun4.envsetvalue('INIPARAM_ADMINLEVEL', ?);\n" +
                 "envun4.envsetvalue('PARAM_USERID', ?);\n" +
                 "envun4.envsetvalue('YFSR_LIMIT_DIFF_MPFS', ?);\n" +
-                "envun4.envsetvalue('DEF_ELEVATOR', ?);\n" +
-                "un$div.set_def(?);\n" +
                 "end; ";
-        dao.exec(sql, new Object[]{adminLevel, userID, limit, elevator, div});
+        dao.exec(sql, new Object[]{adminLevel, userID, limit});
     }
 
     public void close() {

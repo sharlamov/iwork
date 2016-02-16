@@ -6,6 +6,7 @@ import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LibraService;
+import com.service.ReportService;
 import com.util.CustomFocusTraversalPolicy;
 import com.util.Libra;
 import com.view.component.editors.*;
@@ -19,9 +20,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 public class LibraEdit extends JDialog implements ActionListener, ChangeEditListener {
 
@@ -50,6 +49,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private int currentSeason;
     private CustomFocusTraversalPolicy policy;
     private DataSet historySet;
+    private PrintPanel printPanel;
+    private IEdit clcelevatort;
+    private IEdit clcdivt;
 
 
     public LibraEdit(LibraPanel libraPanel, DataSet dataSet, ArmType armType) {
@@ -60,7 +62,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         policy = new CustomFocusTraversalPolicy();
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(940, 600);
+        setSize(940, 650);
         setResizable(false);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
@@ -74,7 +76,12 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     }
 
     public void initBoard() {
-        initFieldsPanel();
+        try {
+            initFieldsPanel();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.eMsg(e.getMessage());
+        }
 
         board.setPreferredSize(new Dimension(220, 70));
         for (ScalesDriver driver : Libra.manager.getScales()) {
@@ -99,7 +106,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         initStatusPanel();
     }
 
-    public void initFieldsPanel() {
+    public void initFieldsPanel() throws Exception {
         fieldsPanel.removeAll();
         policy = new CustomFocusTraversalPolicy();
 
@@ -116,7 +123,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(Libra.translate("enterData"), fieldsPanel);
-        tabbedPane.addTab(Libra.translate("printData"), new PrintPanel());
+        if (armType == ArmType.OUT) {
+            printPanel = new PrintPanel(net.isEmpty());
+            tabbedPane.addTab(Libra.translate("printData"), printPanel);
+        }
         add(tabbedPane, BorderLayout.CENTER);
     }
 
@@ -186,19 +196,14 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(bSave)) {
-            for (int i = 0; i < fieldsPanel.getComponentCount(); i++) {
-                JPanel comp = (JPanel) fieldsPanel.getComponent(i);
-                for (int j = 0; j < comp.getComponentCount(); j++) {
-                    Component c = comp.getComponent(j);
-                    if (c instanceof IEdit) {
-                        IEdit edit = (IEdit) c;
-                        dataSet.setValueByName(edit.getName(), 0, edit.getValue());
-                    }
-                }
-            }
+            updateDataSet(dataSet);
 
             try {
                 if (LibraService.user.getScaleType() == 5) {
+                    if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
+                        throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
+                    }
+
                     dataSet.setValueByName("time_in", 0, new Timestamp(time_in.isEmpty() ? System.currentTimeMillis() : time_in.getDate().getTime()));
                     dataSet.setValueByName("time_out", 0, new Timestamp(time_out.isEmpty() ? System.currentTimeMillis() : time_out.getDate().getTime()));
                     Object historyCod = null;
@@ -221,11 +226,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                         else
                             Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEOUT : SearchType.UPDSCALEOUT, dataSet);
 
-                        if(historyCod != null){
+                        if (historyCod != null) {
                             historySet.setValueByName("id", 0, historyCod);
                             Libra.libraService.execute(SearchType.INSHISTORY, historySet);
                         }
-
 
                         libraPanel.refreshMaster();
                         dispose();
@@ -240,7 +244,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             if (n == 0)
                 dispose();
         } else if (e.getSource().equals(bPrint)) {
-            System.out.println("Print");
+            printTTN();
         } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
             changeEdit(null);
         }
@@ -288,9 +292,12 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         return p0;
     }
 
-    public void inForm() {
+    public void inForm() throws Exception {
         int stepDown = 27;
         int editHeight = 23;
+
+        createHeadPanel();
+
         JPanel p0 = createPanel(fieldsPanel, 2);
 
         id = new NumberEdit("id", Libra.decimalFormat);
@@ -434,7 +441,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         createCalculationPanel();
     }
 
-    public void outForm() {
+    public void outForm() throws Exception {
+        createHeadPanel();
+
         JPanel p0 = createPanel(fieldsPanel, 2);
 
         id = new NumberEdit("id", Libra.decimalFormat);
@@ -532,6 +541,38 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         createCalculationPanel();
     }
 
+    public void createHeadPanel() throws Exception {
+        JPanel headPanel = createPanel(fieldsPanel, 1);
+
+        clcelevatort = new ComboEdit("clcelevatort", LibraService.user.getElevators());
+        addToPanel(8, 8, 200, headPanel, (JComponent) clcelevatort);
+
+        clcdivt = new ComboEdit("clcdivt", new ArrayList<CustomItem>());
+        addToPanel(370, 8, 200, headPanel, (JComponent) clcdivt);
+
+        Object idVal = dataSet.getValueByName("id", 0);
+        if (idVal == null) {
+            clcelevatort.addChangeEditListener(this);
+            policy.add((JComponent) clcelevatort);
+        } else {
+            clcelevatort.setValue(dataSet.getValueByName("clcelevatort", 0));
+            clcelevatort.setChangable(false);
+        }
+
+
+        if (idVal == null) {
+            if (!clcelevatort.isEmpty()) {
+                DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
+                ((ComboEdit) clcdivt).changeData(divSet);
+                policy.add((JComponent) clcdivt);
+            }
+        } else {
+            clcdivt.setValue(dataSet.getValueByName("clcdivt", 0));
+            clcdivt.setChangable(false);
+        }
+
+    }
+
     public void createCalculationPanel() {
         JPanel sumaPanel = createPanel(fieldsPanel, 3);
 
@@ -607,6 +648,14 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         } else if (source.equals(net)) {
             checkWeightField(brutto);
             checkWeightField(tara);
+        } else if (source.equals(clcelevatort)) {
+            try {
+                DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
+                ((ComboEdit) clcdivt).changeData(divSet);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Libra.eMsg(e.getMessage());
+            }
         }
     }
 
@@ -617,6 +666,42 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         } else {
             edit.setChangable(false);
             policy.remove(edit);
+        }
+    }
+
+    public DataSet updateDataSet(DataSet data) {
+        for (int i = 0; i < fieldsPanel.getComponentCount(); i++) {
+            JPanel comp = (JPanel) fieldsPanel.getComponent(i);
+            for (int j = 0; j < comp.getComponentCount(); j++) {
+                Component c = comp.getComponent(j);
+                if (c instanceof IEdit) {
+                    IEdit edit = (IEdit) c;
+                    data.setValueByName(edit.getName(), 0, edit.getValue());
+                }
+            }
+        }
+        return data;
+    }
+
+    public void printTTN() {
+        try {
+            DataSet repData = new DataSet();
+            repData.addDataSet(updateDataSet(dataSet));
+            if (printPanel != null) {
+                repData.addDataSet(printPanel.getDataSet());
+            }
+
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(":exped", 3966);
+            params.put(":dest", dataSet.getValueByName("clcdep_destinatt", 0));
+            params.put(":sc", dataSet.getValueByName("clcsct", 0));
+
+            DataSet dataSet2 = Libra.libraService.selectDataSet(SearchType.PRINTTTN, params);
+            repData.addDataSet(dataSet2);
+            ReportService.openForm("templates/TTN.xls", repData);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            Libra.eMsg(e1.getMessage());
         }
     }
 }

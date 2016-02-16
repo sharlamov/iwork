@@ -1,16 +1,14 @@
 package com.model;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class CustomUser {
-
-    private static final long serialVersionUID = -8055629994460003294L;
 
     private BigDecimal id;
     private String username;
     private String password;
-    private CustomItem elevator;
-    private CustomItem div;
+    private List<CustomItem> elevators;
     private Integer scaleType;
     private Integer adminLevel;
     private boolean isHandEditable;
@@ -36,28 +34,12 @@ public class CustomUser {
         return true;
     }
 
-    public CustomItem getElevator() {
-        return elevator;
-    }
-
-    public void setElevator(CustomItem elevator) {
-        this.elevator = elevator;
-    }
-
     public Integer getScaleType() {
         return scaleType;
     }
 
     public void setScaleType(Integer scaleType) {
         this.scaleType = scaleType;
-    }
-
-    public CustomItem getDiv() {
-        return div;
-    }
-
-    public void setDiv(CustomItem div) {
-        this.div = div;
     }
 
     public BigDecimal getId() {
@@ -74,6 +56,14 @@ public class CustomUser {
 
     public void setAdminLevel(Integer adminLevel) {
         this.adminLevel = adminLevel;
+    }
+
+    public List<CustomItem> getElevators() {
+        return elevators;
+    }
+
+    public void setElevators(List<CustomItem> elevators) {
+        this.elevators = elevators;
     }
 
     public boolean isHandEditable() {

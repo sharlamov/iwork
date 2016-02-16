@@ -1,6 +1,7 @@
 package com.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DataSet extends ArrayList<Object[]> {
@@ -14,6 +15,11 @@ public class DataSet extends ArrayList<Object[]> {
 
     public DataSet(List<String> names) {
         this.names = names;
+    }
+
+    public DataSet() {
+        this.names = new ArrayList<String>();
+        add(new Object[0]);
     }
 
     private int findField(String fieldName) {
@@ -63,6 +69,12 @@ public class DataSet extends ArrayList<Object[]> {
                 dest[src.length] = value;
                 set(i, dest);
             }
+        }
+    }
+
+    public void addDataSet(DataSet d1){
+        for (int i = 0; i < d1.names.size(); i++) {
+            addField(d1.names.get(i), d1.get(0)[i]);
         }
     }
 

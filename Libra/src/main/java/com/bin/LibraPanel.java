@@ -164,8 +164,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(":date1", date1.getDate());
             params.put(":date2", date2.getDate());
-            params.put(":div", LibraService.user.getDiv().getId());
-            params.put(":admin", LibraService.user.getAdminLevel());
+            //params.put(":div", LibraService.user.getDiv().getId());
+            //params.put(":admin", LibraService.user.getAdminLevel());
             params.put(":userid", LibraService.user.getId());
             dataGrid.select(params);
             refreshDetail(0);
@@ -210,16 +210,16 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private GridField[] getFieldNames(ArmType type) {
         if (type == ArmType.IN) {
             return new GridField[]{
-                    new GridField("sofer", 50),
-                    new GridField("auto", 50),
+                    new GridField("sofer", 75),
+                    new GridField("auto", 75),
                     new GridField("nr_remorca", 50),
                     new GridField("vin", 50),
                     new GridField("clcdep_postavt", 150),
-                    new GridField("clcppogruz_s_12t", 150),
-                    new GridField("clcsc_mpt", 150),
-                    new GridField("sezon_yyyy", 50),
-                    new GridField("ttn_n", 50),
-                    new GridField("ttn_data", 50),
+                    new GridField("clcppogruz_s_12t", 112),
+                    new GridField("clcsc_mpt", 100),
+                    new GridField("sezon_yyyy", 35),
+                    new GridField("ttn_n", 100),
+                    new GridField("ttn_data", 100),
                     new GridField("masa_ttn", 50),
                     new GridField("nr_analiz", 50),
                     new GridField("masa_brutto", 50),
@@ -239,26 +239,25 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("clcelevatort", 150)};
         } else {
             return new GridField[]{
-                    new GridField("clcsofer_s_14t", 150),
-                    new GridField("nr_vagon", 50),
+                    new GridField("clcsofer_s_14t", 100),
+                    new GridField("nr_vagon", 100),
                     new GridField("nr_remorca", 50),
                     new GridField("vin", 50),
-                    new GridField("clcdep_perevoz", 150),
+                    new GridField("clcdep_perevozt", 150),
                     new GridField("clcdep_destinatt", 150),
-                    new GridField("clcprazgruz_s_12t", 150),
-                    new GridField("clcpunctto_s_12t", 150),
-                    new GridField("clcsct", 150),
+                    new GridField("clcprazgruz_s_12t", 112),
+                    new GridField("clcpunctto_s_12t", 112),
+                    new GridField("clcsct", 100),
                     new GridField("sezon_yyyy", 50),
-                    new GridField("ttn_n", 50),
-                    new GridField("ttn_data", 50),
-                    new GridField("ttn_nn_perem", 50),
+                    new GridField("ttn_n", 100),
+                    new GridField("ttn_data", 100),
+                    new GridField("ttn_nn_perem", 100),
                     new GridField("nr_analiz", 50),
                     new GridField("masa_brutto", 50),
                     new GridField("masa_tara", 50),
                     new GridField("masa_netto", 50),
                     new GridField("prikaz_id", 50),
                     new GridField("prikaz_masa", 50),
-                    new GridField("print_chk", 50),
                     new GridField("nrdoc_out", 50),
                     new GridField("clcsklad_pogruzkit", 150),
                     new GridField("time_in", 50),

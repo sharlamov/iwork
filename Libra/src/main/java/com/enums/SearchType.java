@@ -13,27 +13,24 @@ public enum SearchType {
     AUTO("select * from (select distinct NMB1T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB1T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
     REMORCA("select * from (select distinct NMB2T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB2T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
     SCALEIN("select * from (select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
-            "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t\n" +
+            "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t,\n" +
+            "(select denumirea from vms_univers u where u.cod = div) clcdivt\n" +
             "from VTF_PROHODN_MPFS a\n" +
             "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(:date1),'DD') and TRUNC(to_date(:date2),'DD')\n" +
             "and PRIZNAK_ARM=1\n" +
-            "and div = :div\n" +
             "and exists (\n" +
-            "select 1 from vms_user_elevator where :admin='1'\n" +
-            "or (userid=:userid\n" +
+            "select 1 from vms_user_elevator where (userid=:userid\n" +
             "and elevator = a.elevator\n" +
             "and trunc(sysdate) between datastart and dataend))\n" +
             ")order by id desc"),
-    SCALEOUT("select a.*, clcdep_perevoz as clcdep_perevozt\n" +
+    SCALEOUT("select a.*, clcdep_perevoz as clcdep_perevozt,\n" +
+            "(select denumirea from vms_univers u where u.cod = div) clcdivt\n" +
             "from ytrans_VTF_PROHODN_OUT a\n" +
             "where TRUNC(TIME_IN,'DD') between TRUNC(to_date(:date1),'DD') and TRUNC(to_date(:date2),'DD') \n" +
             "and PRIZNAK_ARM=2\n" +
-            "and div = :div\n" +
-            "and exists (\n" +
-            "select 1 from vms_user_elevator where :admin='1' \n" +
-            "or (userid=:userid\n" +
+            "and exists (select 1 from vms_user_elevator where userid=:userid\n" +
             "and elevator = a.elevator \n" +
-            "and trunc(sysdate) between datastart and dataend))"),
+            "and trunc(sysdate) between datastart and dataend)"),
     FINDCONTRACT("select * from (\n" +
             "SELECT nrdoc1,nr_manual,data_alccontr,sc_mp,clcsc_mpt\n" +
             ",(select denumirea from vms_univers u where u.cod=div) clcdivt\n" +
@@ -77,9 +74,9 @@ public enum SearchType {
             "   :clcdep_gruzootpravitt, :clcsc_mpt,:masa_brutto, :masa_netto,:masa_tara,\n" +
             "   :clcsofer_s_14t, :sofer, :auto, :sezon_yyyy,\n" +
             "   :nr_analiz, :masa_ttn, :clcppogruz_s_12t,1,\n" +
-            "   :nr_remorca, :clcdep_transpt, :cant_diff_ttn,:div\n" +
+            "   :nr_remorca, :clcdep_transpt, :cant_diff_ttn,:clcdivt\n" +
             "  ,:contract_nrmanual,:contract_data,:contract_nr,:vin\n" +
-            "  ,:masa_return, :nr_act_nedovygruzki, :clcdep_hozt, SYS_CONTEXT('ENVUN4', 'DEF_ELEVATOR'))"),
+            "  ,:masa_return, :nr_act_nedovygruzki, :clcdep_hozt, :clcelevatort)"),
     UPDSCALEIN("update vtf_prohodn_mpfs set\n" +
             "  time_in = :time_in,\n" +
             "  time_out = nvl(:time_out,sysdate),\n" +
@@ -112,12 +109,12 @@ public enum SearchType {
     INSSCALEOUT("insert into ytrans_vtf_prohodn_out\n" +
             "  (id, nr_vagon, time_in, time_out, sc, masa_brutto, masa_netto, masa_tara, priznak_arm, commentarii, \n" +
             "  ttn_n, ttn_data, sofer_s_14, nr_remorca, prazgruz_s_12, prikaz_masa, prikaz_masa_max, \n" +
-            "  prikaz_id, nrdoc_out, dep_destinat, nr_analiz, sezon_yyyy, print_chk, dep_perevoz, vin,punctto_s_12, sklad_pogruzki, ttn_nn_perem, elevator)\n" +
+            "  prikaz_id, nrdoc_out, dep_destinat, nr_analiz, sezon_yyyy, print_chk, dep_perevoz, vin,punctto_s_12, sklad_pogruzki, ttn_nn_perem, elevator, div)\n" +
             "VALUES\n" +
             "  (:id, :nr_vagon, :time_in, :time_out, :clcsct, :masa_brutto,:masa_netto, :masa_tara, 2, :commentarii, \n" +
             "  :ttn_n, :ttn_data, :clcsofer_s_14t, :nr_remorca, :clcprazgruz_s_12t, :prikaz_masa, :prikaz_masa_max, \n" +
             "  :prikaz_id, :nrdoc_out, :clcdep_destinatt, :nr_analiz, :sezon_yyyy, :print_chk, :clcdep_perevozt, :vin, :clcpunctto_s_12t, :clcsklad_pogruzkit, " +
-            "  :ttn_nn_perem, sys_context('ENVUN4', 'DEF_ELEVATOR'))"),
+            "  :ttn_nn_perem, :clcelevatort, :clcdivt)"),
     UPDSCALEOUT("update ytrans_vtf_prohodn_out set\n" +
             "   nr_vagon = :nr_vagon,\n" +
             "   time_in = :time_in,\n" +
@@ -149,7 +146,30 @@ public enum SearchType {
             "   ttn_nn_perem = :ttn_nn_perem\n" +
             "where id = :id"),
     INSHISTORY("insert into vtf_prohodn_scales (tip,id,nr,dt,br,userid,sc,masa) values (:tip,:id,id_tmdb_cm.nextval,:dt,:br,:userid,:sc,:masa)"),
-    NEXTVAL("select ID_MP_VESY.NEXTVAL from dual");
+    NEXTVAL("select ID_MP_VESY.NEXTVAL from dual"),
+    PRINTTTN("select\n" +
+            " (SELECT denumirea FROM vms_univers WHERE cod=:exped)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :exped=U1.COD(+))\n" +
+            ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:exped))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
+            ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:exped and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
+            ",(select clccod_bankt1 from  vms_org_accounts where cod_org=:exped and rownum=1))||', '||nvl((select clcmfo_bankt from  vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
+            ",(select clcmfo_bankt from  vms_org_accounts where cod_org=:exped and rownum=1))\n" +
+            "expeditor,(select codfiscal from vms_org where cod = :exped) expedFisc \n" +
+            ",(SELECT denumirea FROM vms_univers WHERE cod=:dest)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :dest=U1.COD(+))\n" +
+            ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:dest))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
+            ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
+            ",(select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clcmfo_bankt from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
+            ",(select clcmfo_bankt from  vms_org_accounts where cod_org=:dest and rownum=1))\n" +
+            "destinatar ,(select codfiscal from vms_org where cod = :dest) destFisc\n" +
+            ",(select codvechi from vms_univers where cod = :sc )sccodvechi\n" +
+            ",(select um from vms_univers where cod = :sc )scum \n" +
+            "from dual"),
+    GETDIVFIRM("select cod div,denumirea clcdivt, codi cod, denumirea_parent clccodt from vms_univers where tip='O' and gr1='DIV' and codi is not null and isarhiv is null and cod = ?"),
+    GETUSERPROP("select prop from (\n" +
+            "      select trim((select value from a$adp$v p where key = ? and obj_id = a.obj_id)) prop \n" +
+            "      from a$adm a connect by obj_id = prior parent_id start with obj_id = (select obj_id from a$adp$v p where key='ID' and value=?) order by level\t\n" +
+            ")where prop is not null and rownum = 1"),
+    GETSILOSBYUSER("select elevator, clcelevatort from vms_user_elevator where userid = ?"),
+    GETDIVBYSILOS("select distinct div_id, clcdiv_idt from vms_elevator_company where elevator_id = :elevator_id");
 
     private String sql;
 

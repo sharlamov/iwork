@@ -1,31 +1,32 @@
 package com.bin;
 
+import com.model.DataSet;
 import com.util.Libra;
 import com.view.component.editors.CommonEdit;
 import com.view.component.editors.DateEdit;
-import com.view.component.editors.NumberEdit;
+import com.view.component.editors.IEdit;
 
 import javax.swing.*;
 import java.awt.*;
 
 public class PrintPanel extends JPanel {
 
-    public PrintPanel() {
+    public PrintPanel(boolean isBlocked) {
         super(null);
 
         JLabel pl0 = new JLabel(Libra.translate("print.p0"));
         addToPanel(10, 10, 100, pl0);
         JLabel pl1 = new JLabel(Libra.translate("print.p1"));
         addToPanel(150, 10, 70, pl1);
-        CommonEdit plc0 = new CommonEdit("plc0");
+        CommonEdit plc0 = new CommonEdit("pl1c");
         addToPanel(200, 10, 100, plc0);
         JLabel pl2 = new JLabel(Libra.translate("print.p2"));
         addToPanel(320, 10, 30, pl2);
-        NumberEdit pln0 = new NumberEdit("pln0", Libra.decimalFormat);
+        CommonEdit pln0 = new CommonEdit("pl2c");
         addToPanel(340, 10, 100, pln0);
         JLabel pl3 = new JLabel(Libra.translate("print.p3"));
         addToPanel(460, 10, 50, pl3);
-        DateEdit pld0 = new DateEdit("pld0", Libra.dateFormat);
+        DateEdit pld0 = new DateEdit("pl3c", Libra.dateFormat);
         addToPanel(500, 10, 100, pld0);
 
 
@@ -39,7 +40,7 @@ public class PrintPanel extends JPanel {
         addToPanel(150, 70, 200, pl5c);
         JLabel pl6 = new JLabel(Libra.translate("print.p6"));
         addToPanel(360, 40, 100, pl6);
-        DateEdit pl6d = new DateEdit("pl6d", Libra.dateFormat);
+        DateEdit pl6d = new DateEdit("pl6c", Libra.dateFormat);
         addToPanel(460, 40, 200, pl6d);
         JLabel pl7 = new JLabel(Libra.translate("print.p7"));
         addToPanel(360, 70, 100, pl7);
@@ -104,10 +105,34 @@ public class PrintPanel extends JPanel {
         addToPanel(10, 370, 150, pl19);
         CommonEdit pl19c = new CommonEdit("pl19c");
         addToPanel(150, 370, 510, pl19c);
+
+        blockPanel(isBlocked);
     }
 
     public void addToPanel(int x, int y, int width, Component comp) {
         comp.setBounds(x, y, width, 27);
         add(comp);
+    }
+
+    public void blockPanel(boolean blocked) {
+        for (int j = 0; j < getComponentCount(); j++) {
+            Component c = getComponent(j);
+            if (c instanceof IEdit) {
+                ((IEdit) c).setChangable(blocked);
+            }
+        }
+    }
+
+    public DataSet getDataSet() {
+        DataSet dataSet = new DataSet();
+        for (int j = 0; j < getComponentCount(); j++) {
+            Component c = getComponent(j);
+            if (c instanceof IEdit) {
+                String name = c.getName();
+                Object val = ((IEdit) c).getValue();
+                dataSet.addField(name, val);
+            }
+        }
+        return dataSet;
     }
 }

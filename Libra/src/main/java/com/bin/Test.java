@@ -1,5 +1,7 @@
 package com.bin;
 
+import com.service.ReportService;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +11,8 @@ import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,17 +35,11 @@ public class Test  {
         }
     }
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    Test frame = new Test();
+    public static void main(String[] args) throws Exception {
+        new Test();
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+
+        //ReportService.openForm("templates/TTN.xls", map);
     }
 
     public String translate(String src) {

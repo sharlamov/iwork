@@ -94,12 +94,10 @@ public class LoginView extends JFrame implements ActionListener {
                 Libra.libraService.initContext(
                         cUser.getAdminLevel().toString(),
                         cUser.getId().toString(),
-                        Libra.LIMIT_DIFF_MPFS.toString(),
-                        cUser.getElevator().getId().toString(),
-                        cUser.getDiv().getId().toString()
+                        Libra.LIMIT_DIFF_MPFS.toString()
                 );
                 dispose();
-                new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": [" + LibraService.user.getElevator() + "]");
+                new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + LibraService.user.getElevators());
             }
         } catch (Exception e1) {
             e1.printStackTrace();

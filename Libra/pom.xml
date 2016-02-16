@@ -28,13 +28,18 @@
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
-        <!-- JDBC -->
+        <!-- COM -->
         <dependency>
             <groupId>com</groupId>
             <artifactId>driver</artifactId>
             <version>3.0</version>
         </dependency>
-
+        <!-- POI -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.12</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -53,13 +53,16 @@ public class LoginView extends JFrame implements ActionListener {
         userText.setText(SettingsService.get("user.login"));
         passwordText.setText(SettingsService.get("user.pass"));
 
-        Libra.dbUrl = SettingsService.get("jdbc.url");
+        String dataBaseUrlString = SettingsService.get("jdbc.url");
+        Libra.dbUrl = dataBaseUrlString.contains(":") ? dataBaseUrlString : Libra.decodeURL(dataBaseUrlString);
+
         Libra.dbUser = SettingsService.get("jdbc.login");
         Libra.dbPass = SettingsService.get("jdbc.pass");
         Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
         Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang", "en").toLowerCase()));
         UIManager.put("OptionPane.yesButtonText", Libra.translate("yes"));
         UIManager.put("OptionPane.noButtonText", Libra.translate("no"));
+        UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
 
     private void placeComponents(JPanel panel) {

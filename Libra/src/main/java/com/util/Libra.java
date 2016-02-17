@@ -117,4 +117,21 @@ public class Libra {
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
+
+    public static String encodeURL(String url) {
+        StringBuilder code = new StringBuilder();
+        for (byte b : url.getBytes()) {
+            code.append(1000 - b);
+        }
+        return code.toString();
+    }
+
+    public static String decodeURL(String code) {
+        StringBuilder url = new StringBuilder();
+        for (String s : code.split("(?<=\\G...)")) {
+            url.append((char) (1000 - Integer.valueOf(s)));
+        }
+        return url.toString();
+    }
+
 }

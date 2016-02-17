@@ -2,6 +2,7 @@ package com.view.component.editors;
 
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.toedter.calendar.JTextFieldDateEditor;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -10,7 +11,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComboEdit extends JComboBox<CustomItem> implements FocusListener, IEdit, ItemListener {
+public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, FocusListener, IEdit, ItemListener {
 
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
@@ -18,15 +19,11 @@ public class ComboEdit extends JComboBox<CustomItem> implements FocusListener, I
     public ComboEdit(String name, List<CustomItem> list) {
         setName(name);
         addItemListener(this);
+        addKeyListener(this);
+        addFocusListener(this);
         for (CustomItem o : list) {
             addItem(o);
         }
-    }
-
-    public ComboEdit(String name, DataSet dataSet) {
-        setName(name);
-        addItemListener(this);
-        changeData(dataSet);
     }
 
     public void changeData(DataSet dataSet) {
@@ -92,5 +89,19 @@ public class ComboEdit extends JComboBox<CustomItem> implements FocusListener, I
         if (e.getStateChange() == ItemEvent.SELECTED) {
             fireChangeEditEvent();
         }
+    }
+
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD) {
+            transferFocus();
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+
     }
 }

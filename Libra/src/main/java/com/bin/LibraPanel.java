@@ -164,8 +164,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             Map<String, Object> params = new HashMap<String, Object>();
             params.put(":date1", date1.getDate());
             params.put(":date2", date2.getDate());
-            //params.put(":div", LibraService.user.getDiv().getId());
-            //params.put(":admin", LibraService.user.getAdminLevel());
             params.put(":userid", LibraService.user.getId());
             dataGrid.select(params);
             refreshDetail(0);
@@ -236,6 +234,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("nr_act_nedostaci", 50),
                     new GridField("masa_return", 50),
                     new GridField("nr_act_nedovygruzki", 50),
+                    new GridField("clcdivt", 50),
                     new GridField("clcelevatort", 150)};
         } else {
             return new GridField[]{
@@ -264,7 +263,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("time_out", 50),
                     new GridField("clcelevatort", 150),
                     new GridField("prparc_seria_nr", 50),
-                    new GridField("prparc_data", 50)};
+                    new GridField("prparc_data", 50),
+                    new GridField("clcdivt", 50)};
         }
     }
 

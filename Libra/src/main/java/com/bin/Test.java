@@ -1,6 +1,7 @@
 package com.bin;
 
 import com.service.ReportService;
+import com.sun.javafx.image.impl.IntArgb;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,8 +10,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -37,10 +40,31 @@ public class Test  {
 
     public static void main(String[] args) throws Exception {
         new Test();
+        /*String text = "jdbc:oracle:thin:@192.168.1.221:1521:TRANSOIL";
 
-
-        //ReportService.openForm("templates/TTN.xls", map);
+        String encoded = encodeURL(text);
+        System.out.println(encoded);
+        String decoded = decodeURL(encoded);
+        System.out.println(decoded);
+        System.out.println(decoded.equals(text));*/
     }
+
+    public static String encodeURL(String url){
+        StringBuilder code = new StringBuilder();
+        for (byte b : url.getBytes()) {
+            code.append(1000 - b);
+        }
+        return code.toString();
+    }
+
+    public static String decodeURL(String code){
+        StringBuilder url = new StringBuilder();
+        for (String s : code.split("(?<=\\G...)")) {
+            url.append((char)(1000 - Integer.valueOf(s)));
+        }
+        return url.toString();
+    }
+
 
     public String translate(String src) {
         final CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();

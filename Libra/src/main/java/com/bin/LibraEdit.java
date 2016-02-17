@@ -26,7 +26,6 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     private final ArmType armType;
     private final int stepDown = 27;
-    private final int editHeight = 23;
     private LibraPanel libraPanel;
     private DataSet dataSet;
     private ImageIcon saveIcon = Libra.createImageIcon("images/save.png", 20, 20);
@@ -41,6 +40,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private SearchEdit contract_nrmanual;
     private DateEdit contract_data;
     private SearchEdit clcdep_hozt;
+    private SearchEdit auto;
+    private SearchEdit nr_remorca;
+    private SearchEdit clcsofer_s_14t;
     private DateEdit time_in;
     private DateEdit time_out;
     private Font sFont = new Font("Courier", Font.BOLD, 19);
@@ -52,6 +54,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private PrintPanel printPanel;
     private IEdit clcelevatort;
     private IEdit clcdivt;
+    private boolean isBloc = false;
 
 
     public LibraEdit(LibraPanel libraPanel, DataSet dataSet, ArmType armType) {
@@ -68,8 +71,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         setLayout(new BorderLayout());
         fieldsPanel.setLayout(new BoxLayout(fieldsPanel, BoxLayout.Y_AXIS));
         currentSeason = Libra.defineSeason();
-        String[] names = new String[]{"tip", "id", "nr", "dt", "br", "userid", "sc", "masa"};
-        historySet = new DataSet(Arrays.asList(names));
+        historySet = new DataSet(Arrays.asList("tip", "id", "nr", "dt", "br", "userid", "sc", "masa"));
 
         initBoard();
         setVisible(true);
@@ -183,6 +185,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             }
         }
         bSave.setEnabled(false);
+        isBloc = true;
     }
 
     private void blockWeightBoards() {
@@ -210,6 +213,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
                     int n = JOptionPane.showConfirmDialog(this, Libra.translate("saveConfirmDialog1"), Libra.translate("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                     if (n == 0) {
+                        insertAditionalInfo();
+
                         if (id.isEmpty()) {
                             DataSet keys = Libra.libraService.selectDataSet(SearchType.NEXTVAL, new HashMap<String, Object>());
                             Object nextval = keys.getValueByName("NEXTVAL", 0);
@@ -240,8 +245,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 Libra.eMsg(e1.getMessage());
             }
         } else if (e.getSource().equals(bCancel)) {
-            int n = JOptionPane.showConfirmDialog(this, Libra.translate("cancelConfirmDialog1"), Libra.translate("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION);
-            if (n == 0)
+            if (isBloc || 0 == JOptionPane.showConfirmDialog(this, Libra.translate("cancelConfirmDialog1"), Libra.translate("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
                 dispose();
         } else if (e.getSource().equals(bPrint)) {
             printTTN();
@@ -312,13 +316,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 ////////////////////
         JPanel p2 = createPanel(fieldsPanel, 2);
 
-        SearchEdit auto = new SearchEdit("auto", Libra.libraService, SearchType.AUTO);
+        auto = new SearchEdit("auto", Libra.libraService, SearchType.AUTO);
         auto.setShouldClear(false);
         auto.setValue(dataSet.getValueByName("auto", 0));
         addToPanel(8, 8, 150, p2, auto);
         policy.add(auto);
 
-        SearchEdit nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.REMORCA);
+        nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.REMORCA);
         nr_remorca.setShouldClear(false);
         nr_remorca.setValue(dataSet.getValueByName("nr_remorca", 0));
         addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
@@ -328,8 +332,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         vin.setValue(dataSet.getValueByName("vin", 0));
         addToPanel(370, 8, 150, p2, vin);
 
-        SearchEdit clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
+        clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
         clcsofer_s_14t.setValue(dataSet.getValueByName("clcsofer_s_14t", 0));
+        clcsofer_s_14t.setShouldClear(false);
         addToPanel(370, 8 + stepDown, 150, p2, clcsofer_s_14t);
         policy.add(clcsofer_s_14t);
 //////////////////
@@ -356,6 +361,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         clcdep_transpt.setValue(dataSet.getValueByName("clcdep_transpt", 0));
         addToPanel(370, 8, 200, p3, clcdep_transpt);
         policy.add(clcdep_transpt);
+        addInsertButton(p3, clcdep_transpt);
 
         SearchEdit clcdep_gruzootpravitt = new SearchEdit("clcdep_gruzootpravitt", Libra.libraService, SearchType.UNIVOIE);
         clcdep_gruzootpravitt.setValue(dataSet.getValueByName("clcdep_gruzootpravitt", 0));
@@ -420,14 +426,6 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         nr_act_nedostaci.setBounds(8 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedostaci);
 
-        JLabel masaReturnLabel = new JLabel(Libra.translate("masa_return"));
-        masaReturnLabel.setBounds(8, 8 + stepDown, 200, editHeight);
-        p6.add(masaReturnLabel);
-
-        NumberEdit masa_return = new NumberEdit("masa_return", Libra.decimalFormat);
-        masa_return.setValue(dataSet.getValueByName("masa_return", 0));
-        masa_return.setBounds(8 + 210, 8 + stepDown, 100, editHeight);
-        p6.add(masa_return);
 
         JLabel nrActNedovigrLabel = new JLabel(Libra.translate("nr_act_nedovygruzki"));
         nrActNedovigrLabel.setBounds(370, 8, 200, editHeight);
@@ -437,6 +435,15 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         nr_act_nedovygruzki.setValue(dataSet.getValueByName("nr_act_nedovygruzki", 0));
         nr_act_nedovygruzki.setBounds(370 + 160, 8, 100, editHeight);
         p6.add(nr_act_nedovygruzki);
+
+        JLabel masaReturnLabel = new JLabel(Libra.translate("masa_return"));
+        masaReturnLabel.setBounds(370, 8 + stepDown, 200, editHeight);
+        p6.add(masaReturnLabel);
+
+        NumberEdit masa_return = new NumberEdit("masa_return", Libra.decimalFormat);
+        masa_return.setValue(dataSet.getValueByName("masa_return", 0));
+        masa_return.setBounds(370 + 160, 8 + stepDown, 100, editHeight);
+        p6.add(masa_return);
 
         createCalculationPanel();
     }
@@ -468,13 +475,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 ////////////////////
         JPanel p2 = createPanel(fieldsPanel, 2);
 
-        SearchEdit nr_vagon = new SearchEdit("nr_vagon", Libra.libraService, SearchType.AUTO);
-        nr_vagon.setShouldClear(false);
-        nr_vagon.setValue(dataSet.getValueByName("nr_vagon", 0));
-        addToPanel(8, 8, 150, p2, nr_vagon);
-        policy.add(nr_vagon);
+        auto = new SearchEdit("nr_vagon", Libra.libraService, SearchType.AUTO);
+        auto.setShouldClear(false);
+        auto.setValue(dataSet.getValueByName("nr_vagon", 0));
+        addToPanel(8, 8, 150, p2, auto);
+        policy.add(auto);
 
-        SearchEdit nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.AUTO);
+        nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.AUTO);
         nr_remorca.setShouldClear(false);
         nr_remorca.setValue(dataSet.getValueByName("nr_remorca", 0));
         addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
@@ -484,8 +491,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         vin.setValue(dataSet.getValueByName("vin", 0));
         addToPanel(370, 8, 150, p2, vin);
 
-        SearchEdit clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
+        clcsofer_s_14t = new SearchEdit("clcsofer_s_14t", Libra.libraService, SearchType.DRIVER);
         clcsofer_s_14t.setValue(dataSet.getValueByName("clcsofer_s_14t", 0));
+        clcsofer_s_14t.setShouldClear(false);
         addToPanel(370, 8 + stepDown, 150, p2, clcsofer_s_14t);
         policy.add(clcsofer_s_14t);
 //////////////////
@@ -494,6 +502,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         clcdep_destinatt.setValue(dataSet.getValueByName("clcdep_destinatt", 0));
         addToPanel(8, 8, 200, p3, clcdep_destinatt);
         policy.add(clcdep_destinatt);
+        addInsertButton(p3, clcdep_destinatt);
 
         SearchEdit clcprazgruz_s_12t = new SearchEdit("clcprazgruz_s_12t", Libra.libraService, SearchType.PLACES);
         clcprazgruz_s_12t.setValue(dataSet.getValueByName("clcprazgruz_s_12t", 0));
@@ -553,7 +562,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         Object idVal = dataSet.getValueByName("id", 0);
         if (idVal == null) {
             clcelevatort.addChangeEditListener(this);
-            policy.add((JComponent) clcelevatort);
+            if (LibraService.user.getElevators().size() > 1)
+                policy.add((JComponent) clcelevatort);
         } else {
             clcelevatort.setValue(dataSet.getValueByName("clcelevatort", 0));
             clcelevatort.setChangable(false);
@@ -564,7 +574,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             if (!clcelevatort.isEmpty()) {
                 DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
                 ((ComboEdit) clcdivt).changeData(divSet);
-                policy.add((JComponent) clcdivt);
+                if (!divSet.isEmpty() && divSet.size() > 1)
+                    policy.add((JComponent) clcdivt);
             }
         } else {
             clcdivt.setValue(dataSet.getValueByName("clcdivt", 0));
@@ -574,9 +585,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     }
 
     public void createCalculationPanel() {
-        JPanel sumaPanel = createPanel(fieldsPanel, 3);
+        int editHeight = 23;
 
+        JPanel sumaPanel = createPanel(fieldsPanel, 3);
         JLabel bruttoLabel = new JLabel(Libra.translate("masa_brutto"), SwingConstants.CENTER);
+
         bruttoLabel.setBounds(120, 4, 120, editHeight);
         sumaPanel.add(bruttoLabel);
         JLabel taraLabel = new JLabel(Libra.translate("masa_tara"), SwingConstants.CENTER);
@@ -685,6 +698,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void printTTN() {
         try {
+            if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
+                throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
+            }
+
             DataSet repData = new DataSet();
             repData.addDataSet(updateDataSet(dataSet));
             if (printPanel != null) {
@@ -692,7 +709,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             }
 
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":exped", 3966);
+            params.put(":exped", clcdivt.getValue());
             params.put(":dest", dataSet.getValueByName("clcdep_destinatt", 0));
             params.put(":sc", dataSet.getValueByName("clcsct", 0));
 
@@ -702,6 +719,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         } catch (Exception e1) {
             e1.printStackTrace();
             Libra.eMsg(e1.getMessage());
+        }
+    }
+
+    public void insertAditionalInfo() throws Exception {
+        if (clcsofer_s_14t.getValue() instanceof String) {
+            CustomItem item = Libra.libraService.insertDriver(clcsofer_s_14t.getText(), auto.getText(), nr_remorca.getText(), "S", "14");
+            clcsofer_s_14t.setValue(item);
         }
     }
 }

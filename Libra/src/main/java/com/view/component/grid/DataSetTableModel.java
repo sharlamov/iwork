@@ -89,13 +89,15 @@ public class DataSetTableModel extends AbstractTableModel {
         if (bd != null) {
             switch (((BigDecimal) bd).intValue()) {
                 case 6711039:
-                    return Color.decode("#CC0000");
+                    return Color.decode("#CC3333");
                 case 13421823:
-                    return Color.decode("#FF6699");
+                    return Color.decode("#FF9999");
                 case 13434828:
                     return Color.decode("#CCFFCC");
                 case 5635925:
                     return Color.decode("#55FF55");
+                case 0:
+                    return Color.decode("#FFFF66");
                 default:
                     return Color.white;
             }

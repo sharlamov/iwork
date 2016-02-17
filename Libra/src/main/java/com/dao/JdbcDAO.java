@@ -45,7 +45,6 @@ public class JdbcDAO {
         List<Object[]> list = new ArrayList<Object[]>();
         List<String> names = new ArrayList<String>();
 
-
         PreparedStatement stmt = getConnection().prepareStatement(query);
         initParams(stmt, params);
 

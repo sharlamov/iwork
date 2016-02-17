@@ -22,7 +22,6 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
 
     public CommonEdit(String name) {
-        super();
         setName(name);
         addFocusListener(this);
         addKeyListener(this);

@@ -7,7 +7,7 @@ public enum SearchType {
     UNIVOE("select * from (select cod, denumirea ||', '|| codvechi as clccodt from vms_univers where tip='O' and gr1 in ('E') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     UNIVOI("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1 in ('I') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     UNIVOIECOTA("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1 in ('I','E','COTA') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    PLACES("select * from (select cod1 as cod, denumirea ||', '|| nmb1t ||', '|| nmb2t as clccodt from vms_syss s where tip='S' and cod='12' and cod1>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    PLACES("select cod, clccodt from (select cod1 as cod, denumirea ||', '|| nmb1t ||', '|| nmb2t as clccodt, denumirea from vms_syss s where tip='S' and cod='12' and cod1>0) where lower(denumirea) like :findQuery and rownum < 11 order by 2"),
     PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040)) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     DRIVER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     AUTO("select * from (select distinct NMB1T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB1T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
@@ -148,12 +148,8 @@ public enum SearchType {
     INSHISTORY("insert into vtf_prohodn_scales (tip,id,nr,dt,br,userid,sc,masa) values (:tip,:id,id_tmdb_cm.nextval,:dt,:br,:userid,:sc,:masa)"),
     NEXTVAL("select ID_MP_VESY.NEXTVAL from dual"),
     PRINTTTN("select\n" +
-            " (SELECT denumirea FROM vms_univers WHERE cod=:exped)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :exped=U1.COD(+))\n" +
-            ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:exped))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
-            ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:exped and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
-            ",(select clccod_bankt1 from  vms_org_accounts where cod_org=:exped and rownum=1))||', '||nvl((select clcmfo_bankt from  vms_org_accounts where cod_org=:exped and rekvizit1 like '1')\n" +
-            ",(select clcmfo_bankt from  vms_org_accounts where cod_org=:exped and rownum=1))\n" +
-            "expeditor,(select codfiscal from vms_org where cod = :exped) expedFisc \n" +
+            " (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'FACTURATVA') expeditor \n" +
+            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'CODFISCAL') expedFisc \n" +
             ",(SELECT denumirea FROM vms_univers WHERE cod=:dest)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :dest=U1.COD(+))\n" +
             ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:dest))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
             ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +

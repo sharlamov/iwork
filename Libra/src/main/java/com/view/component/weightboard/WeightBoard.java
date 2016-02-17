@@ -8,7 +8,6 @@ import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Random;
 
 public class WeightBoard extends JPanel implements ActionListener, ScaleEventListener {
 
@@ -67,9 +66,9 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
             e.printStackTrace();
         }
 
-        if (newWeight == null || newWeight == 0)
+       /* if (newWeight == null || newWeight == 0)
             setWeight((new Random()).nextInt(50000));
-        else
+        else*/
             setWeight(newWeight);
     }
 

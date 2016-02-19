@@ -10,9 +10,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.MouseListener;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class DataGrid extends JPanel {
 
@@ -22,6 +21,9 @@ public class DataGrid extends JPanel {
     private DataSetTableModel dtm;
     private int dataGridWith;
     private Map<String, Object> params;
+    private Map<Integer, Font> columnFonts = new HashMap<Integer, Font>();
+    private SummaryRow summaryRow;
+    private Map<String, String> summaryMap;
 
     public DataGrid(LibraService libraService, SearchType searchType, GridField[] names, boolean useBgColor) {
         super(new BorderLayout());
@@ -32,7 +34,7 @@ public class DataGrid extends JPanel {
         tbl.setRowSelectionAllowed(true);
         tbl.getTableHeader().setReorderingAllowed(false);
         tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer(useBgColor));
+        tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer(useBgColor, columnFonts));
         tbl.setFillsViewportHeight(true);
 
         for (int i = 0; i < names.length; i++) {
@@ -44,6 +46,30 @@ public class DataGrid extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(tbl);
         add(scrollPane, BorderLayout.CENTER);
+    }
+
+    public DataGrid(LibraService libraService, SearchType searchType, GridField[] names, boolean useBgColor, boolean useSummary) {
+        this(libraService, searchType, names, useBgColor);
+        if (useSummary) {
+            summaryMap = new LinkedHashMap<String, String>();
+            summaryRow = new SummaryRow();
+            add(summaryRow, BorderLayout.SOUTH);
+        }
+    }
+
+    public void refreshSummary() {
+        if (summaryRow != null) {
+            summaryMap.clear();
+            BigDecimal b = dtm.getSumByColumn("masa_brutto");
+            BigDecimal t = dtm.getSumByColumn("masa_tara");
+            BigDecimal n = b.subtract(t);
+
+            summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));
+            summaryMap.put("summary.brutto", Libra.decimalFormat.format(b));
+            summaryMap.put("summary.tara", Libra.decimalFormat.format(t));
+            summaryMap.put("summary.netto", Libra.decimalFormat.format(n));
+            summaryRow.publishSummary(summaryMap);
+        }
     }
 
     public void setHeaderFont(Font font) {
@@ -70,6 +96,7 @@ public class DataGrid extends JPanel {
         this.params = params;
         DataSet d = libraService.selectDataSet(searchType, params);
         dtm.publish(d);
+        refreshSummary();
         return d.size();
     }
 
@@ -108,6 +135,7 @@ public class DataGrid extends JPanel {
     public int filter(String filterString) throws Exception {
         DataSet d = libraService.filterDataSet(searchType, params, filterString);
         dtm.publish(d);
+        refreshSummary();
         return d.size();
     }
 
@@ -126,7 +154,7 @@ public class DataGrid extends JPanel {
             }
 
             String s = (String) JOptionPane.showInputDialog(
-                    getFrame(), "Что искать?", "Поиск",
+                    getFrame(), Libra.translate("find.what"), Libra.translate("find"),
                     JOptionPane.PLAIN_MESSAGE, null, null, textVal);
 
             System.out.println(s);
@@ -134,6 +162,8 @@ public class DataGrid extends JPanel {
             if (s != null && !s.isEmpty()) {
                 DataSet d = libraService.filterDataSet(searchType, params, Collections.singletonMap(columnName, "%" + s.toLowerCase() + "%"));
                 dtm.publish(d);
+                refreshSummary();
+
                 if (!d.isEmpty()) {
                     setSelectedRow(0);
                     tbl.setColumnSelectionInterval(c, c);
@@ -150,5 +180,11 @@ public class DataGrid extends JPanel {
             cmp = cmp.getParent();
         }
         return cmp;
+    }
+
+    public void setColumnFont(String fieldName, Font font) {
+        int n = dtm.findColumn(fieldName);
+        if (n != -1)
+            columnFonts.put(n, font);
     }
 }

@@ -23,6 +23,7 @@ import java.util.Map;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
 
+    private final Font headerFont = new Font("Courier", Font.BOLD, 12);
     private JDateChooser date1;
     private JDateChooser date2;
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
@@ -42,7 +43,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        dataGrid = new DataGrid(Libra.libraService, armType == ArmType.IN ? SearchType.SCALEIN : SearchType.SCALEOUT, getFieldNames(armType), armType == ArmType.IN);
+        dataGrid = new DataGrid(Libra.libraService, armType == ArmType.IN ? SearchType.SCALEIN : SearchType.SCALEOUT, getFieldNames(armType), armType == ArmType.IN, true);
         dataGrid.addListSelectionListener(this);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
@@ -53,11 +54,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 }
             }
         });
+        dataGrid.setColumnFont("masa_brutto", headerFont);
+        dataGrid.setColumnFont("masa_tara", headerFont);
+        dataGrid.setColumnFont("masa_netto", headerFont);
 
         tableKeyBindings(dataGrid);
 
         dataGrid.addToolBar(initToolBar());
-        dataGrid.setHeaderFont(new Font("Courier", Font.BOLD, 12));
+        dataGrid.setHeaderFont(headerFont);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(dataGrid);
         splitPane.setRightComponent(detail);
@@ -208,18 +212,17 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private GridField[] getFieldNames(ArmType type) {
         if (type == ArmType.IN) {
             return new GridField[]{
-                    new GridField("sofer", 75),
-                    new GridField("auto", 75),
-                    new GridField("nr_remorca", 50),
-                    new GridField("vin", 50),
-                    new GridField("clcdep_postavt", 150),
-                    new GridField("clcppogruz_s_12t", 112),
-                    new GridField("clcsc_mpt", 100),
-                    new GridField("sezon_yyyy", 35),
-                    new GridField("ttn_n", 100),
-                    new GridField("ttn_data", 100),
-                    new GridField("masa_ttn", 50),
                     new GridField("nr_analiz", 50),
+                    new GridField("sofer", 90),
+                    new GridField("auto", 100),
+                    new GridField("nr_remorca", 65),
+                    new GridField("clcdep_postavt", 150),
+                    new GridField("clcppogruz_s_12t", 100),
+                    new GridField("clcsc_mpt", 100),
+                    new GridField("sezon_yyyy", 40),
+                    new GridField("ttn_n", 85),
+                    new GridField("ttn_data", 80),
+                    new GridField("masa_ttn", 50),
                     new GridField("masa_brutto", 50),
                     new GridField("masa_tara", 50),
                     new GridField("masa_netto", 50),
@@ -238,24 +241,23 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("clcelevatort", 150)};
         } else {
             return new GridField[]{
-                    new GridField("clcsofer_s_14t", 100),
+                    new GridField("nr_analiz", 50),
+                    new GridField("prikaz_id", 50),
+                    new GridField("clcsofer_s_14t", 90),
                     new GridField("nr_vagon", 100),
-                    new GridField("nr_remorca", 50),
-                    new GridField("vin", 50),
+                    new GridField("nr_remorca", 65),
                     new GridField("clcdep_perevozt", 150),
                     new GridField("clcdep_destinatt", 150),
-                    new GridField("clcprazgruz_s_12t", 112),
-                    new GridField("clcpunctto_s_12t", 112),
-                    new GridField("clcsct", 100),
-                    new GridField("sezon_yyyy", 50),
-                    new GridField("ttn_n", 100),
-                    new GridField("ttn_data", 100),
-                    new GridField("ttn_nn_perem", 100),
-                    new GridField("nr_analiz", 50),
+                    new GridField("clcprazgruz_s_12t", 100),
+                    new GridField("clcpunctto_s_12t", 100),
+                    new GridField("clcsct", 140),
+                    new GridField("sezon_yyyy", 40),
+                    new GridField("ttn_n", 85),
+                    new GridField("ttn_data", 80),
+                    new GridField("ttn_nn_perem", 85),
                     new GridField("masa_brutto", 50),
                     new GridField("masa_tara", 50),
                     new GridField("masa_netto", 50),
-                    new GridField("prikaz_id", 50),
                     new GridField("prikaz_masa", 50),
                     new GridField("nrdoc_out", 50),
                     new GridField("clcsklad_pogruzkit", 150),

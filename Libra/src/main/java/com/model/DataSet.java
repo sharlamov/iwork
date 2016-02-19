@@ -1,7 +1,7 @@
 package com.model;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class DataSet extends ArrayList<Object[]> {
@@ -72,10 +72,25 @@ public class DataSet extends ArrayList<Object[]> {
         }
     }
 
-    public void addDataSet(DataSet d1){
+    public void addDataSet(DataSet d1) {
         for (int i = 0; i < d1.names.size(); i++) {
             addField(d1.names.get(i), d1.get(0)[i]);
         }
+    }
+
+    public BigDecimal getSumByColumn(String fieldName) {
+        int colNumber = findField(fieldName);
+        BigDecimal res = BigDecimal.ZERO;
+
+        if (colNumber != -1) {
+            for (Object[] row : this) {
+                Object value = row[colNumber];
+                if (value instanceof BigDecimal) {
+                    res = res.add((BigDecimal) value);
+                }
+            }
+        }
+        return res;
     }
 
     public List<String> getNames() {

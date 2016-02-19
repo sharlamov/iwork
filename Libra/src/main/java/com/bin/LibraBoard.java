@@ -11,8 +11,8 @@ public class LibraBoard extends JPanel {
 
     public LibraBoard() {
         super(new BorderLayout());
-        ScaleOnlinePanel board = new ScaleOnlinePanel();
-        add(board, BorderLayout.NORTH);
+        add(new ScaleOnlinePanel(), BorderLayout.NORTH);
+
         ImageIcon icon = Libra.createImageIcon("images/middle.gif");
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(getHtmlTitle("tabName0"), icon, new LibraPanel(ArmType.IN));

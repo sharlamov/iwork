@@ -142,16 +142,16 @@ public class LibraService {
         dao.exec(sql, objects.toArray());
     }
 
-    public CustomItem insertItem(String name, String fiskcod, String tip, String gr1) throws Exception {
+    public CustomItem insertItemUniv(String name, String fiskcod, String tip, String gr1) throws Exception {
         String sql = "{call insert into vms_univers (cod, denumirea, codvechi, tip, gr1) values (id_tms_univers.nextval, ?, ?, ?, ?) RETURNING cod INTO ? }";
         int n = dao.insertListItem(sql, new Object[]{name, fiskcod, tip, gr1});
         return new CustomItem(new BigDecimal(n), name + ", " + fiskcod);
     }
 
-    public CustomItem insertDriver(String name, String auto, String remorca, String tip, String gr1) throws Exception {
-        final String sql = "{call insert into tms_syss (tip, cod, denumirea, NMB1T, NMB2T, cod1) "TEST REMORCA
-                + "values (?, ?, ?, ?, ?, (select nvl(max(cod1),0) + 1 from vms_syss where tip = ?  and cod = ? )) RETURNING cod1 INTO ? }";
-        int n = dao.insertListItem(sql, new Object[]{tip, gr1, name, auto, remorca, tip, gr1 });
+    public CustomItem insertItemSyss(String name, String info, String tip, String gr1) throws Exception {
+        final String sql = "{call insert into tms_syss (tip, cod, denumirea, um, cod1) "
+                + "values (?, ?, ?, ?, (select nvl(max(cod1),0) + 1 from vms_syss where tip = ?  and cod = ? )) RETURNING cod1 INTO ? }";
+        int n = dao.insertListItem(sql, new Object[]{tip, gr1, name, info, tip, gr1});
         return new CustomItem(new BigDecimal(n), name);
     }
 }

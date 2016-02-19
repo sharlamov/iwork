@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 public class ScalesDriver {
 
-    private final String numberFormat = "[^0-9]+";
     private SerialPort serialPort;
     private String deviceName;
     private int rate;
@@ -67,11 +66,13 @@ public class ScalesDriver {
         try {
             for (int i = 0; i < 50; i++) {
                 TimeUnit.MILLISECONDS.sleep(10);
+                System.out.println("weight: " + weight);
                 if (weight != null)
                     return true;
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return false;
     }
@@ -90,7 +91,7 @@ public class ScalesDriver {
                 if (weight == null) {
                     c++;
                 } else {
-                    if(Math.abs(weight - lastWeight) > 20){
+                    if (Math.abs(weight - lastWeight) > 20) {
                         isStable = false;
                         lastWeight = weight;
                         break;
@@ -111,6 +112,7 @@ public class ScalesDriver {
     }
 
     class PortReader implements SerialPortEventListener {
+        private final String numberFormat = "[^0-9]+";
         private StringBuilder receivedData = new StringBuilder();
 
         public void serialEvent(SerialPortEvent event) {
@@ -127,7 +129,7 @@ public class ScalesDriver {
                 } catch (SerialPortException ex) {
                     weight = null;
                     receivedData.setLength(0);
-                    ex.printStackTrace();
+                    System.out.println(ex.getMessage());
                 }
             }
         }

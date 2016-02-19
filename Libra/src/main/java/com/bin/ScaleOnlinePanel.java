@@ -50,6 +50,7 @@ public class ScaleOnlinePanel extends JPanel implements ActionListener {
             initScales();
         } catch (Exception e1) {
             e1.printStackTrace();
+            Libra.eMsg(e1.getMessage());
         }
     }
 }

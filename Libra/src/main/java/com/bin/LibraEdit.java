@@ -43,6 +43,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private SearchEdit auto;
     private SearchEdit nr_remorca;
     private SearchEdit clcsofer_s_14t;
+    private CommonEdit vin;
     private DateEdit time_in;
     private DateEdit time_out;
     private Font sFont = new Font("Courier", Font.BOLD, 19);
@@ -135,6 +136,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     public void initStatusPanel() {
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         statusPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        bPrint.setMargin(new Insets(0, 0, 0, 0));
         bPrint.addActionListener(this);
         bPrint.setPreferredSize(Libra.buttonSize);
         bSave.addActionListener(this);
@@ -207,13 +209,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                         throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
                     }
 
-                    dataSet.setValueByName("time_in", 0, new Timestamp(time_in.isEmpty() ? System.currentTimeMillis() : time_in.getDate().getTime()));
-                    dataSet.setValueByName("time_out", 0, new Timestamp(time_out.isEmpty() ? System.currentTimeMillis() : time_out.getDate().getTime()));
-                    Object historyCod = null;
-
                     int n = JOptionPane.showConfirmDialog(this, Libra.translate("saveConfirmDialog1"), Libra.translate("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                     if (n == 0) {
+                        Object historyCod = null;
                         insertAditionalInfo();
+                        updateDataSet(dataSet);
 
                         if (id.isEmpty()) {
                             DataSet keys = Libra.libraService.selectDataSet(SearchType.NEXTVAL, new HashMap<String, Object>());
@@ -269,7 +269,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 int n = JOptionPane.showConfirmDialog(comp, message, Libra.translate("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                 if (n == 0) {
                     try {
-                        CustomItem item = Libra.libraService.insertItem(name.getText(), oldCod.getText(), "O", "E");
+                        CustomItem item = Libra.libraService.insertItemUniv(name.getText(), oldCod.getText(), "O", "E");
                         edit.setValue(item);
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -322,13 +322,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 150, p2, auto);
         policy.add(auto);
 
-        nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.REMORCA);
+        nr_remorca = new SearchEdit("nr_remorca", Libra.libraService, SearchType.TRAILER);
         nr_remorca.setShouldClear(false);
         nr_remorca.setValue(dataSet.getValueByName("nr_remorca", 0));
         addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
         policy.add(nr_remorca);
 
-        CommonEdit vin = new CommonEdit("vin");
+        vin = new CommonEdit("vin");
         vin.setValue(dataSet.getValueByName("vin", 0));
         addToPanel(370, 8, 150, p2, vin);
 
@@ -381,21 +381,22 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
-        NumberEdit masa_ttn = new NumberEdit("masa_ttn", Libra.decimalFormat);
-        masa_ttn.setValue(dataSet.getValueByName("masa_ttn", 0));
-        addToPanel(8, 8 + stepDown, 100, p4, masa_ttn);
-        policy.add(masa_ttn);
-
         DateEdit ttn_data = new DateEdit("ttn_data");
         ttn_data.setValue(dataSet.getValueByName("ttn_data", 0));
-        addToPanel(370, 8, 100, p4, ttn_data);
+        addToPanel(8, 8 + stepDown, 100, p4, ttn_data);
         policy.add(ttn_data.getDateEditor().getUiComponent());
+
+        NumberEdit masa_ttn = new NumberEdit("masa_ttn", Libra.decimalFormat);
+        masa_ttn.setValue(dataSet.getValueByName("masa_ttn", 0));
+        addToPanel(370, 8, 100, p4, masa_ttn);
+        policy.add(masa_ttn);
+
 //////////////////
         JPanel p5 = createPanel(fieldsPanel, 2);
 
         clcdep_hozt = new SearchEdit("clcdep_hozt", Libra.libraService, SearchType.UNIVOE);
         clcdep_hozt.setValue(dataSet.getValueByName("clcdep_hozt", 0));
-        addToPanel(8, 8 + stepDown, 200, p5, clcdep_hozt);
+        addToPanel(370, 8, 200, p5, clcdep_hozt);
         addInsertButton(p5, clcdep_hozt);
 
         contract_nrmanual = new SearchEdit("contract_nrmanual", "nr_manual"
@@ -408,12 +409,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 100, p5, contract_nrmanual);
         policy.add(contract_nrmanual);
 
-        policy.add(clcdep_hozt);
-
         contract_data = new DateEdit("contract_data");
         contract_data.setValue(dataSet.getValueByName("contract_data", 0));
-        addToPanel(370, 8, 100, p5, contract_data);
+        addToPanel(8, 8 + stepDown, 100, p5, contract_data);
         policy.add(contract_data.getDateEditor().getUiComponent());
+        policy.add(clcdep_hozt);
 //////////////////
         JPanel p6 = createPanel(fieldsPanel, 2);
 
@@ -433,7 +433,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         NumberEdit nr_act_nedovygruzki = new NumberEdit("nr_act_nedovygruzki", Libra.decimalFormat);
         nr_act_nedovygruzki.setValue(dataSet.getValueByName("nr_act_nedovygruzki", 0));
-        nr_act_nedovygruzki.setBounds(370 + 160, 8, 100, editHeight);
+        nr_act_nedovygruzki.setBounds(370 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedovygruzki);
 
         JLabel masaReturnLabel = new JLabel(Libra.translate("masa_return"));
@@ -442,7 +442,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         NumberEdit masa_return = new NumberEdit("masa_return", Libra.decimalFormat);
         masa_return.setValue(dataSet.getValueByName("masa_return", 0));
-        masa_return.setBounds(370 + 160, 8 + stepDown, 100, editHeight);
+        masa_return.setBounds(370 + 210, 8 + stepDown, 100, editHeight);
         p6.add(masa_return);
 
         createCalculationPanel();
@@ -487,7 +487,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
         policy.add(nr_remorca);
 
-        CommonEdit vin = new CommonEdit("vin");
+        vin = new CommonEdit("vin");
         vin.setValue(dataSet.getValueByName("vin", 0));
         addToPanel(370, 8, 150, p2, vin);
 
@@ -498,7 +498,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         policy.add(clcsofer_s_14t);
 //////////////////
         JPanel p3 = createPanel(fieldsPanel, 3);
-        SearchEdit clcdep_destinatt = new SearchEdit("clcdep_destinatt", Libra.libraService, SearchType.UNIVOIECOTA);
+        SearchEdit clcdep_destinatt = new SearchEdit("clcdep_destinatt", Libra.libraService, SearchType.UNIVOIE);
         clcdep_destinatt.setValue(dataSet.getValueByName("clcdep_destinatt", 0));
         addToPanel(8, 8, 200, p3, clcdep_destinatt);
         policy.add(clcdep_destinatt);
@@ -537,15 +537,21 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
-        CommonEdit ttn_nn_perem = new CommonEdit("ttn_nn_perem");
-        ttn_nn_perem.setValue(dataSet.getValueByName("ttn_nn_perem", 0));
-        addToPanel(8, 8 + stepDown, 100, p4, ttn_nn_perem);
-        policy.add(ttn_nn_perem);
-
         DateEdit ttn_data = new DateEdit("ttn_data");
         ttn_data.setValue(dataSet.getValueByName("ttn_data", 0));
-        addToPanel(370, 8, 100, p4, ttn_data);
+        addToPanel(8, 8 + stepDown, 100, p4, ttn_data);
         policy.add(ttn_data.getDateEditor().getUiComponent());
+
+
+        JLabel masaReturnLabel = new JLabel(Libra.translate("ttn_nn_perem"));
+        masaReturnLabel.setBounds(370, 8, 200, 23);
+        p4.add(masaReturnLabel);
+
+        CommonEdit ttn_nn_perem = new CommonEdit("ttn_nn_perem");
+        ttn_nn_perem.setValue(dataSet.getValueByName("ttn_nn_perem", 0));
+        ttn_nn_perem.setBounds(370 + 210, 8, 100, 23);
+        p4.add(ttn_nn_perem);
+        policy.add(ttn_nn_perem);
 
         createCalculationPanel();
     }
@@ -693,6 +699,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 }
             }
         }
+
+        dataSet.setValueByName("time_in", 0, new Timestamp(time_in.isEmpty() ? System.currentTimeMillis() : time_in.getDate().getTime()));
+        dataSet.setValueByName("time_out", 0, new Timestamp(time_out.isEmpty() ? System.currentTimeMillis() : time_out.getDate().getTime()));
+        dataSet.setValueByName("sofer", 0, clcsofer_s_14t.getText());
+
         return data;
     }
 
@@ -724,8 +735,22 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void insertAditionalInfo() throws Exception {
         if (clcsofer_s_14t.getValue() instanceof String) {
-            CustomItem item = Libra.libraService.insertDriver(clcsofer_s_14t.getText(), auto.getText(), nr_remorca.getText(), "S", "14");
+            CustomItem item = Libra.libraService.insertItemSyss(clcsofer_s_14t.getText(), "", "S", "14");
             clcsofer_s_14t.setValue(item);
+        }
+        if (!auto.getText().isEmpty()) {
+            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", auto.getValue()));
+            if (Integer.valueOf(autoSet.getValueByName("cnt", 0).toString()) == 0) {
+                CustomItem item = Libra.libraService.insertItemSyss(auto.getText().toUpperCase(), vin.getText(), "S", "15");
+                auto.setValue(item.getLabel());
+            }
+        }
+        if (!nr_remorca.getText().isEmpty()) {
+            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", nr_remorca.getValue()));
+            if (Integer.valueOf(autoSet.getValueByName("cnt", 0).toString()) == 0) {
+                CustomItem item = Libra.libraService.insertItemSyss(nr_remorca.getText().toUpperCase(), "", "S", "16");
+                nr_remorca.setValue(item.getLabel());
+            }
         }
     }
 }

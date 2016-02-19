@@ -1,5 +1,6 @@
 package com.driver;
 
+import jssc.SerialPortException;
 import jssc.SerialPortList;
 
 import java.util.ArrayList;
@@ -11,26 +12,39 @@ public class ScalesManager {
 
     public ScalesManager() {
         scales = new ArrayList<ScalesDriver>();
+       /* try {
+            File file = new File("scaleDriverLog.log");
+            FileOutputStream fis = new FileOutputStream(file);
+            PrintStream out = new PrintStream(fis);
+            System.setOut(out);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }*/
     }
 
     public String[] getPortList() {
         return SerialPortList.getPortNames();
     }
 
-    public void defineScales() throws Exception {
+    public void defineScales() {
         scales.clear();
         String[] ports = SerialPortList.getPortNames();
 
         for (String port : ports) {
             ScalesDriver driver;
             for (ScaleType scaleType : ScaleType.values()) {
+                System.out.println(scaleType);
                 driver = new ScalesDriver(scaleType, port);
-                driver.openPort();
-                if (driver.checkDriver()) {
-                    scales.add(driver);
-                    break;
+                try {
+                    driver.openPort();
+                    if (driver.checkDriver()) {
+                        scales.add(driver);
+                        break;
+                    }
+                    driver.closePort();
+                } catch (SerialPortException e) {
+                    System.out.println(e.getMessage());
                 }
-                driver.closePort();
             }
         }
     }

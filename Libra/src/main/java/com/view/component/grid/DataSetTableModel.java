@@ -42,6 +42,15 @@ public class DataSetTableModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    public int findColumn(String columnName) {
+        for (int i = 0; i < getColumnCount(); i++) {
+            if (columnName.equals(getFieldName(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public int getRowCount() {
         return count;
     }
@@ -82,6 +91,10 @@ public class DataSetTableModel extends AbstractTableModel {
             lst.add(dataSet.get(row));
         }
         return new DataSet(dataSet.getNames(), lst);
+    }
+
+    public BigDecimal getSumByColumn(String fieldName) {
+        return dataSet.getSumByColumn(fieldName);
     }
 
     public Color getRowColor(int row) {

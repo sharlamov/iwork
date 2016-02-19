@@ -3,15 +3,15 @@ package com.enums;
 public enum SearchType {
 
     CROPS("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip = 'M' and gr1 in ('2161','2171','2173') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    UNIVOIE("select * from (select cod, denumirea ||', '|| codvechi as clccodt from vms_univers where tip='O' and gr1 in ('I','E') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    UNIVOE("select * from (select cod, denumirea ||', '|| codvechi as clccodt from vms_univers where tip='O' and gr1 in ('E') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    UNIVOI("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1 in ('I') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    UNIVOIECOTA("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1 in ('I','E','COTA') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    UNIVOIE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('I','E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 11"),
+    UNIVOE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 11"),
+    UNIVOI("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 in ('I') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    //UNIVOIECOTA("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 in ('I','E','COTA') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     PLACES("select cod, clccodt from (select cod1 as cod, denumirea ||', '|| nmb1t ||', '|| nmb2t as clccodt, denumirea from vms_syss s where tip='S' and cod='12' and cod1>0) where lower(denumirea) like :findQuery and rownum < 11 order by 2"),
     PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040)) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     DRIVER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    AUTO("select * from (select distinct NMB1T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB1T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
-    REMORCA("select * from (select distinct NMB2T clccodt  from vms_syss v where v.tip='S' and v.cod=14 and v.cod1<>0 and NMB2T is not null) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
+    AUTO("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=15 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    TRAILER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=16 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     SCALEIN("select * from (select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
             "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t,\n" +
             "(select denumirea from vms_univers u where u.cod = div) clcdivt\n" +
@@ -159,7 +159,6 @@ public enum SearchType {
             ",(select codvechi from vms_univers where cod = :sc )sccodvechi\n" +
             ",(select um from vms_univers where cod = :sc )scum \n" +
             "from dual"),
-    GETDIVFIRM("select cod div,denumirea clcdivt, codi cod, denumirea_parent clccodt from vms_univers where tip='O' and gr1='DIV' and codi is not null and isarhiv is null and cod = ?"),
     GETUSERPROP("select prop from (\n" +
             "      select trim((select value from a$adp$v p where key = ? and obj_id = a.obj_id)) prop \n" +
             "      from a$adm a connect by obj_id = prior parent_id start with obj_id = (select obj_id from a$adp$v p where key='ID' and value=?) order by level\t\n" +

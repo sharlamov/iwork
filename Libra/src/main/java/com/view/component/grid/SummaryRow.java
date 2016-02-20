@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class SummaryRow extends JPanel {
 
-    private Font sumaFont = new Font("Courier", Font.BOLD, 20);
+    private Font sumaFont = new Font("Courier", Font.BOLD, 18);
 
     public SummaryRow() {
         super(new FlowLayout(FlowLayout.CENTER, 35, 5));

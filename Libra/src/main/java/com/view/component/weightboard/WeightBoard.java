@@ -66,14 +66,12 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
             e.printStackTrace();
         }
 
-       /* if (newWeight == null || newWeight == 0)
-            setWeight((new Random()).nextInt(50000));
-        else*/
-            setWeight(newWeight);
+        setWeight(newWeight);
     }
 
     public Integer getWeight() {
-        return Integer.valueOf(score.getText());
+        String value = score.getText();
+        return value.isEmpty() ? null : Integer.valueOf(value);
     }
 
     public void setWeight(Integer weight) {

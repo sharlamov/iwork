@@ -15,6 +15,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ public class SearchEdit extends CommonEdit {
 
     public SearchEdit(String name, String sourceName, GridField[] fields, LibraService service, SearchType searchType) {
         super(name);
+        setFormatter(null);
         this.sourceName = sourceName;
         this.fields = fields;
         this.service = service;
@@ -211,8 +213,17 @@ public class SearchEdit extends CommonEdit {
             DataSet dataSet = dataGrid.getDataSetByRow(row);
             selectedDataSet = dataSet;
             setValue(dataSet.getValueByName(sourceName, 0));
-        }
+        }/* else if (shouldClear && (getValue() == null || getValue() == "")) {
+            removeValue();
+        }*/
 
+    }
+
+    @Override
+    public void commitEdit() throws ParseException {
+        if (!shouldClear) {
+            super.commitEdit();
+        }
     }
 
     public DataSet getSelectedDataSet() {

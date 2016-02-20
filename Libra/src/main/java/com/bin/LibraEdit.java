@@ -153,7 +153,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         Integer weight = weightBoard.getWeight();
         boolean isEmptyCar;
 
-        if (weight != null) {
+        if (weight != null && weight != 0) {
             Date cTime = new Date();
             if (firstField.isEmpty()) {
                 firstField.setValue(weight);
@@ -171,6 +171,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             Object[] objects = {armType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
             historySet.add(objects);
             blockWeightBoards();
+        } else {
+            Libra.eMsg(Libra.translate("error.zeroweight"));
         }
     }
 

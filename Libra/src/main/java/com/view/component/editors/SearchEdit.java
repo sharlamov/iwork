@@ -210,9 +210,11 @@ public class SearchEdit extends CommonEdit {
     private void selectValue() {
         int row = dataGrid.getSelectedRow();
         if (row != -1 && popup != null) {
-            DataSet dataSet = dataGrid.getDataSetByRow(row);
-            selectedDataSet = dataSet;
-            setValue(dataSet.getValueByName(sourceName, 0));
+            selectedDataSet = dataGrid.getDataSetByRow(row);
+            setValue(selectedDataSet.getValueByName(sourceName, 0));
+        } else if (row == -1 && popup != null && dataGrid.getRowCount() == 1) {
+            selectedDataSet = dataGrid.getDataSetByRow(0);
+            setValue(selectedDataSet.getValueByName(sourceName, 0));
         }/* else if (shouldClear && (getValue() == null || getValue() == "")) {
             removeValue();
         }*/

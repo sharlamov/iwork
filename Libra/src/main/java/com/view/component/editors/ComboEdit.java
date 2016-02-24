@@ -2,7 +2,6 @@ package com.view.component.editors;
 
 import com.model.CustomItem;
 import com.model.DataSet;
-import com.toedter.calendar.JTextFieldDateEditor;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -44,8 +43,8 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, Foc
         }
     }
 
-    public void setChangable(boolean isChangable) {
-        setEnabled(isChangable);
+    public void setChangeable(boolean isChangeable) {
+        setEnabled(isChangeable);
     }
 
     public Object getValue() {

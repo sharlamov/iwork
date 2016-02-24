@@ -23,7 +23,6 @@ import java.util.Map;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
 
-    private final Font headerFont = new Font("Courier", Font.BOLD, 12);
     private JDateChooser date1;
     private JDateChooser date2;
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
@@ -54,6 +53,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                 }
             }
         });
+        Font headerFont = new Font("Courier", Font.BOLD, 12);
         dataGrid.setColumnFont("masa_brutto", headerFont);
         dataGrid.setColumnFont("masa_tara", headerFont);
         dataGrid.setColumnFont("masa_netto", headerFont);

@@ -1,25 +1,12 @@
 package com.bin;
 
-import com.service.ReportService;
-import com.sun.javafx.image.impl.IntArgb;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class Test  {
+public class Test {
 
     public Test() {
 
@@ -49,23 +36,6 @@ public class Test  {
         System.out.println(decoded.equals(text));*/
     }
 
-    public static String encodeURL(String url){
-        StringBuilder code = new StringBuilder();
-        for (byte b : url.getBytes()) {
-            code.append(1000 - b);
-        }
-        return code.toString();
-    }
-
-    public static String decodeURL(String code){
-        StringBuilder url = new StringBuilder();
-        for (String s : code.split("(?<=\\G...)")) {
-            url.append((char)(1000 - Integer.valueOf(s)));
-        }
-        return url.toString();
-    }
-
-
     public String translate(String src) {
         final CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
         final StringBuilder result = new StringBuilder();
@@ -86,7 +56,7 @@ public class Test  {
             StringBuilder string = new StringBuilder();
             for (byte b : ascii) {
                 int hexVal = Integer.parseInt(String.valueOf(b), 16);
-                string.append((char)hexVal);
+                string.append((char) hexVal);
             }
             return string.toString();
         } catch (Exception e) {

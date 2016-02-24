@@ -49,12 +49,12 @@ public class DateEdit extends JDateChooser implements FocusListener, IEdit {
         }
     }
 
-    public void setChangable(boolean isChangable) {
-        setEnabled(isChangable);
+    public void setChangeable(boolean isChangeable) {
+        setEnabled(isChangeable);
         ((JTextFieldDateEditor) getDateEditor())
-                .setDisabledTextColor(isChangable ? Color.black : Color.darkGray);
+                .setDisabledTextColor(isChangeable ? Color.black : Color.darkGray);
 
-        if (isChangable)
+        if (isChangeable)
             getCalendarButton().setPreferredSize(getCalendarButton().getMinimumSize());
         else
             getCalendarButton().setPreferredSize(new Dimension(1, 1));

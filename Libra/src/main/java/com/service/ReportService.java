@@ -12,11 +12,10 @@ import java.util.regex.Pattern;
 
 public class ReportService {
 
-    private static String REGEX = "_\\w+";
-
     public static void openForm(String path, DataSet dataSet) throws Exception {
         long t = System.currentTimeMillis();
 
+        String REGEX = "_\\w+";
         Pattern p = Pattern.compile(REGEX);
         File source = new File(path);
         File target = File.createTempFile("libra", ".xls");

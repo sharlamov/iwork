@@ -6,7 +6,7 @@ public interface IEdit {
 
     void fireChangeEditEvent();
 
-    void setChangable(boolean isChangable);
+    void setChangeable(boolean isChangeable);
 
     Object getValue();
 

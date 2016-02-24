@@ -59,7 +59,7 @@ public class LoginView extends JFrame implements ActionListener {
         Libra.dbUser = SettingsService.get("jdbc.login");
         Libra.dbPass = SettingsService.get("jdbc.pass");
         Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
-        Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang", "en").toLowerCase()));
+        Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang").toLowerCase()));
         UIManager.put("OptionPane.yesButtonText", Libra.translate("yes"));
         UIManager.put("OptionPane.noButtonText", Libra.translate("no"));
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);

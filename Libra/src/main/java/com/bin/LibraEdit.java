@@ -15,6 +15,8 @@ import com.view.component.weightboard.WeightBoard;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -64,7 +66,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         this.dataSet = dataSet;
         this.armType = armType;
 
-        policy = new CustomFocusTraversalPolicy();
+        //policy = new CustomFocusTraversalPolicy();
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(940, 650);
         setResizable(false);
@@ -129,6 +131,21 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         if (armType == ArmType.OUT) {
             printPanel = new PrintPanel(net.isEmpty());
             tabbedPane.addTab(Libra.translate("printData"), printPanel);
+
+            ChangeListener changeListener = new ChangeListener() {
+                public void stateChanged(ChangeEvent changeEvent) {
+                    JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
+                    int index = sourceTabbedPane.getSelectedIndex();
+                    if(index == 0){
+                        setFocusTraversalPolicy(policy);
+                    }else{
+                        setFocusTraversalPolicy(null);
+                        printPanel.createFocusPolicy();
+                    }
+                }
+            };
+            tabbedPane.addChangeListener(changeListener);
+
         }
         add(tabbedPane, BorderLayout.CENTER);
     }
@@ -165,8 +182,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 isEmptyCar = secondField.equals(tara);
             }
 
-            firstField.setChangable(false);
-            secondField.setChangable(false);
+            firstField.setChangeable(false);
+            secondField.setChangeable(false);
 
             Object[] objects = {armType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
             historySet.add(objects);
@@ -182,7 +199,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             for (int j = 0; j < comp.getComponentCount(); j++) {
                 Component c = comp.getComponent(j);
                 if (c instanceof IEdit) {
-                    ((IEdit) c).setChangable(false);
+                    ((IEdit) c).setChangeable(false);
                 } else if (c instanceof JButton) {
                     c.setEnabled(false);
                 }
@@ -308,7 +325,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         id = new NumberEdit("id", Libra.decimalFormat);
         id.setValue(dataSet.getValueByName("id", 0));
-        id.setChangable(false);
+        id.setChangeable(false);
         addToPanel(8, 8, 100, p0, id);
 
         NumberEdit nr_analiz = new NumberEdit("nr_analiz", Libra.decimalFormat);
@@ -457,7 +474,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         id = new NumberEdit("id", Libra.decimalFormat);
         id.setValue(dataSet.getValueByName("id", 0));
-        id.setChangable(false);
+        id.setChangeable(false);
         addToPanel(8, 8, 100, p0, id);
 
         NumberEdit nr_analiz = new NumberEdit("nr_analiz", Libra.decimalFormat);
@@ -574,7 +591,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 policy.add((JComponent) clcelevatort);
         } else {
             clcelevatort.setValue(dataSet.getValueByName("clcelevatort", 0));
-            clcelevatort.setChangable(false);
+            clcelevatort.setChangeable(false);
         }
 
 
@@ -587,7 +604,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             }
         } else {
             clcdivt.setValue(dataSet.getValueByName("clcdivt", 0));
-            clcdivt.setChangable(false);
+            clcdivt.setChangeable(false);
         }
 
     }
@@ -633,20 +650,20 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         net = new NumberEdit("masa_netto", Libra.decimalFormat);
         net.addChangeEditListener(this);
         net.setValue(dataSet.getValueByName("masa_netto", 0));
-        net.setChangable(false);
+        net.setChangeable(false);
         net.setBounds(400, 4 + stepDown, 120, editHeight);
         net.setFont(sFont);
         sumaPanel.add(net);
 
         time_in = new DateEdit("time_in", Libra.dateTimeFormat);
         time_in.setValue(dataSet.getValueByName("time_in", 0));
-        time_in.setChangable(false);
+        time_in.setChangeable(false);
         time_in.setBounds(armType == ArmType.IN ? 120 : 260, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(time_in);
 
         time_out = new DateEdit("time_out", Libra.dateTimeFormat);
         time_out.setValue(dataSet.getValueByName("time_out", 0));
-        time_out.setChangable(false);
+        time_out.setChangeable(false);
         time_out.setBounds(armType == ArmType.IN ? 260 : 120, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(time_out);
     }
@@ -682,10 +699,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void checkWeightField(NumberEdit edit) {
         if (edit.isEmpty() && LibraService.user.isHandEditable()) {
-            edit.setChangable(true);
+            edit.setChangeable(true);
             policy.add(edit);
         } else {
-            edit.setChangable(false);
+            edit.setChangeable(false);
             policy.remove(edit);
         }
     }
@@ -725,6 +742,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             params.put(":exped", clcdivt.getValue());
             params.put(":dest", dataSet.getValueByName("clcdep_destinatt", 0));
             params.put(":sc", dataSet.getValueByName("clcsct", 0));
+            params.put(":transp", dataSet.getValueByName("CLCDEP_PEREVOZT", 0));
+            params.put(":net", dataSet.getValueByName("masa_netto", 0));
 
             DataSet dataSet2 = Libra.libraService.selectDataSet(SearchType.PRINTTTN, params);
             repData.addDataSet(dataSet2);
@@ -741,14 +760,14 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             clcsofer_s_14t.setValue(item);
         }
         if (!auto.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", auto.getValue()));
+            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", (Object) auto.getText()));
             if (Integer.valueOf(autoSet.getValueByName("cnt", 0).toString()) == 0) {
                 CustomItem item = Libra.libraService.insertItemSyss(auto.getText().toUpperCase(), vin.getText(), "S", "15");
                 auto.setValue(item.getLabel());
             }
         }
         if (!nr_remorca.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", nr_remorca.getValue()));
+            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", (Object) nr_remorca.getText()));
             if (Integer.valueOf(autoSet.getValueByName("cnt", 0).toString()) == 0) {
                 CustomItem item = Libra.libraService.insertItemSyss(nr_remorca.getText().toUpperCase(), "", "S", "16");
                 nr_remorca.setValue(item.getLabel());

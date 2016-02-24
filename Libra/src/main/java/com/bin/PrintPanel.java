@@ -11,14 +11,15 @@ import java.awt.*;
 
 public class PrintPanel extends JPanel {
 
+    private CommonEdit plc0;
+
     public PrintPanel(boolean isBlocked) {
         super(null);
-
         JLabel pl0 = new JLabel(Libra.translate("print.p0"));
         addToPanel(10, 10, 100, pl0);
         JLabel pl1 = new JLabel(Libra.translate("print.p1"));
         addToPanel(150, 10, 70, pl1);
-        CommonEdit plc0 = new CommonEdit("pl1c");
+        plc0 = new CommonEdit("pl1c");
         addToPanel(200, 10, 100, plc0);
         JLabel pl2 = new JLabel(Libra.translate("print.p2"));
         addToPanel(320, 10, 30, pl2);
@@ -28,7 +29,6 @@ public class PrintPanel extends JPanel {
         addToPanel(460, 10, 50, pl3);
         DateEdit pld0 = new DateEdit("pl3c", Libra.dateFormat);
         addToPanel(500, 10, 100, pld0);
-
 
         JLabel pl4 = new JLabel(Libra.translate("print.p4"));
         addToPanel(10, 40, 100, pl4);
@@ -87,26 +87,31 @@ public class PrintPanel extends JPanel {
         addToPanel(150, 250, 510, pl15c);
 
         JLabel pl16 = new JLabel(Libra.translate("print.p16"));
-        addToPanel(10, 280, 150, pl16);
+        addToPanel(10, 280, 200, pl16);
         CommonEdit pl16c = new CommonEdit("pl16c");
-        addToPanel(150, 280, 510, pl16c);
+        addToPanel(250, 280, 410, pl16c);
 
         JLabel pl17 = new JLabel(Libra.translate("print.p17"));
-        addToPanel(10, 310, 150, pl17);
+        addToPanel(10, 310, 200, pl17);
         CommonEdit pl17c = new CommonEdit("pl17c");
-        addToPanel(150, 310, 510, pl17c);
+        addToPanel(250, 310, 410, pl17c);
 
         JLabel pl18 = new JLabel(Libra.translate("print.p18"));
-        addToPanel(10, 340, 150, pl18);
+        addToPanel(10, 340, 200, pl18);
         CommonEdit pl18c = new CommonEdit("pl18c");
-        addToPanel(150, 340, 510, pl18c);
+        addToPanel(250, 340, 410, pl18c);
 
         JLabel pl19 = new JLabel(Libra.translate("print.p19"));
-        addToPanel(10, 370, 150, pl19);
+        addToPanel(10, 370, 200, pl19);
         CommonEdit pl19c = new CommonEdit("pl19c");
-        addToPanel(150, 370, 510, pl19c);
+        addToPanel(250, 370, 410, pl19c);
 
         blockPanel(isBlocked);
+    }
+
+    public void createFocusPolicy() {
+        plc0.requestFocus();
+        setFocusCycleRoot(true);
     }
 
     public void addToPanel(int x, int y, int width, Component comp) {
@@ -118,7 +123,7 @@ public class PrintPanel extends JPanel {
         for (int j = 0; j < getComponentCount(); j++) {
             Component c = getComponent(j);
             if (c instanceof IEdit) {
-                ((IEdit) c).setChangable(blocked);
+                ((IEdit) c).setChangeable(blocked);
             }
         }
     }

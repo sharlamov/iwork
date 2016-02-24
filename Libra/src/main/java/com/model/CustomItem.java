@@ -8,10 +8,6 @@ public class CustomItem {
     private BigDecimal id;
     private String label;
 
-    public CustomItem() {
-        super();
-    }
-
     public CustomItem(BigDecimal id, String label) {
         super();
         this.id = id;
@@ -39,10 +35,6 @@ public class CustomItem {
 
     public void setLabel(String label) {
         this.label = label;
-    }
-
-    public String toStringValue() {
-        return (id == null ? "" : id) + "#" + (label == null ? "" : label);
     }
 
     @Override

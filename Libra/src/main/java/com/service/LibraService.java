@@ -61,8 +61,8 @@ public class LibraService {
             throw new Exception(Libra.translate("error.notfoundelevator"));
         } else {
             List<CustomItem> items = new ArrayList<CustomItem>();
-            for (int i = 0; i < dataElevator.size(); i++) {
-                items.add((CustomItem) dataElevator.get(i)[0]);
+            for (Object[] aDataElevator : dataElevator) {
+                items.add((CustomItem) aDataElevator[0]);
             }
             user.setElevators(items);
         }

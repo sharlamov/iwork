@@ -42,7 +42,7 @@ public class CommonEdit extends JFormattedTextField implements KeyListener, Focu
             hl.changeEdit(this);
     }
 
-    public void setChangable(boolean isChangable) {
+    public void setChangeable(boolean isChangable) {
         setEnabled(isChangable);
         setDisabledTextColor(Color.black);
         setFocusable(isChangable);

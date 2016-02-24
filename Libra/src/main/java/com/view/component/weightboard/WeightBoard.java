@@ -2,6 +2,7 @@ package com.view.component.weightboard;
 
 import com.driver.ScaleEventListener;
 import com.driver.ScalesDriver;
+import com.util.Libra;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -41,8 +42,8 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
         } else {
             Dimension big = new Dimension(200, 90);
             setPreferredSize(big);
-            btnUpd = new JButton("Обновить");
-            btnAdd = new JButton("Взвесить");
+            btnUpd = new JButton(Libra.translate("scale.refresh"));
+            btnAdd = new JButton(Libra.translate("scale.take"));
             btnUpd.addActionListener(this);
             btnAdd.addActionListener(this);
             JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));

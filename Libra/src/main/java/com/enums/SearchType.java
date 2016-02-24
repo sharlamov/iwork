@@ -6,12 +6,11 @@ public enum SearchType {
     UNIVOIE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('I','E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 11"),
     UNIVOE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 11"),
     UNIVOI("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 in ('I') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    //UNIVOIECOTA("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 in ('I','E','COTA') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     PLACES("select cod, clccodt from (select cod1 as cod, denumirea ||', '|| nmb1t ||', '|| nmb2t as clccodt, denumirea from vms_syss s where tip='S' and cod='12' and cod1>0) where lower(denumirea) like :findQuery and rownum < 11 order by 2"),
     PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040)) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     DRIVER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    AUTO("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=15 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
-    TRAILER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=16 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    AUTO("select * from (select denumirea clccodt from vms_syss s where tip='S' and  cod=15 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
+    TRAILER("select * from (select denumirea clccodt  from vms_syss s where tip='S' and  cod=16 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
     SCALEIN("select * from (select a.*, dep_gruzootpr dep_gruzootpravit,\n" +
             "(select denumirea from vms_syss where tip='S' and  cod=14 and cod1 = a.sofer_s_14) clcsofer_s_14t,\n" +
             "(select denumirea from vms_univers u where u.cod = div) clcdivt\n" +
@@ -30,7 +29,7 @@ public enum SearchType {
             "and PRIZNAK_ARM=2\n" +
             "and exists (select 1 from vms_user_elevator where userid=:userid\n" +
             "and elevator = a.elevator \n" +
-            "and trunc(sysdate) between datastart and dataend)"),
+            "and trunc(sysdate) between datastart and dataend)order by id desc"),
     FINDCONTRACT("select * from (\n" +
             "SELECT nrdoc1,nr_manual,data_alccontr,sc_mp,clcsc_mpt\n" +
             ",(select denumirea from vms_univers u where u.cod=div) clcdivt\n" +
@@ -158,6 +157,9 @@ public enum SearchType {
             "destinatar ,(select codfiscal from vms_org where cod = :dest) destFisc\n" +
             ",(select codvechi from vms_univers where cod = :sc )sccodvechi\n" +
             ",(select um from vms_univers where cod = :sc )scum \n" +
+            ",(select denumirea from vms_univers where cod = :sc )clcnamet \n" +
+            ",(select denumirea ||', '|| codvechi ||', '|| (select adress from tms_org o where o.cod = u.cod) from vms_univers u where cod = :transp )clctransportert \n" +
+            ",Pk_Spell.SPELL (:net) neto \n" +
             "from dual"),
     GETUSERPROP("select prop from (\n" +
             "      select trim((select value from a$adp$v p where key = ? and obj_id = a.obj_id)) prop \n" +

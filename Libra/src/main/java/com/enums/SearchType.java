@@ -7,7 +7,7 @@ public enum SearchType {
     UNIVOE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 11"),
     UNIVOI("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 in ('I') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     PLACES("select cod, clccodt from (select cod1 as cod, denumirea ||', '|| nmb1t ||', '|| nmb2t as clccodt, denumirea from vms_syss s where tip='S' and cod='12' and cod1>0) where lower(denumirea) like :findQuery and rownum < 11 order by 2"),
-    PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040)) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
+    PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040, 22932)) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     DRIVER("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 2"),
     AUTO("select * from (select denumirea clccodt from vms_syss s where tip='S' and  cod=15 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
     TRAILER("select * from (select denumirea clccodt  from vms_syss s where tip='S' and  cod=16 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 11 order by 1"),
@@ -149,6 +149,7 @@ public enum SearchType {
     PRINTTTN("select\n" +
             " (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'FACTURATVA') expeditor \n" +
             ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'CODFISCAL') expedFisc \n" +
+            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'NAME') clcdivnamet \n" +
             ",(SELECT denumirea FROM vms_univers WHERE cod=:dest)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :dest=U1.COD(+))\n" +
             ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:dest))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
             ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
@@ -160,13 +161,75 @@ public enum SearchType {
             ",(select denumirea from vms_univers where cod = :sc )clcnamet \n" +
             ",(select denumirea ||', '|| codvechi ||', '|| (select adress from tms_org o where o.cod = u.cod) from vms_univers u where cod = :transp )clctransportert \n" +
             ",Pk_Spell.SPELL (:net) neto \n" +
+            ",Pk_Spell.SPELL (:delta) delta \n" +
+            ",to_char(sysdate,'dd.mm.yyyy') tod \n" +
+            ",to_char(:time_in,'dd.mm.yyyy hh24-mi-ss') tin \n" +
+            ",to_char(:time_out,'dd.mm.yyyy hh24-mi-ss') tout \n" +
+            ",to_char(:time_in,'hh24') hhin \n" +
+            ",to_char(:time_out,'hh24') hhout \n" +
+            ",to_char(:time_in,'mi') mmin \n" +
+            ",to_char(:time_out,'mi') mmout \n" +
             "from dual"),
     GETUSERPROP("select prop from (\n" +
             "      select trim((select value from a$adp$v p where key = ? and obj_id = a.obj_id)) prop \n" +
             "      from a$adm a connect by obj_id = prior parent_id start with obj_id = (select obj_id from a$adp$v p where key='ID' and value=?) order by level\t\n" +
             ")where prop is not null and rownum = 1"),
     GETSILOSBYUSER("select elevator, clcelevatort from vms_user_elevator where userid = ?"),
-    GETDIVBYSILOS("select distinct div_id, clcdiv_idt from vms_elevator_company where elevator_id = :elevator_id");
+    GETDIVBYSILOS("select distinct div_id, clcdiv_idt from vms_elevator_company where elevator_id = :elevator_id"),
+    SCALEPRINTDATA("select * from scale_tprint where p_id = :p_id"),
+    DATABYELEVATOR("select\n" +
+            "    (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'CONT_SEF') CONT_SEF,\n" +
+            "    (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'DIRECTOR') DIRECTOR\n" +
+            "    from dual"),
+    MERGEPRINTDETAIL("MERGE INTO scale_tprint a\n" +
+            "USING (SELECT :P_ID P_ID, :PL1C PL1C, :PL2C PL2C, :PL3C PL3C, :PL4C PL4C, :PL5C PL5C, :PL6C PL6C, :PL7C PL7C, :PL8C PL8C, :PL9C PL9C, :PL10C PL10C, :PL11C PL11C\n" +
+            ", :PL12C PL12C, :PL13C PL13C, :PL14C PL14C, :PL15C PL15C, :PL16C PL16C, :PL17C PL17C, :PL18C PL18C, :PL19C PL19C FROM dual) b\n" +
+            "ON (a.p_id = b.p_id)\n" +
+            "WHEN MATCHED THEN\n" +
+            "  UPDATE SET\n" +
+            " PL1C = :PL1C, PL2C = :PL2C, PL3C = :PL3C, PL4C = :PL4C,\n" +
+            " PL5C = :PL5C, PL6C = :PL6C, PL7C = :PL7C, PL8C = :PL8C,\n" +
+            " PL9C = :PL9C, PL10C = :PL10C, PL11C = :PL11C, PL12C = :PL12C, \n" +
+            " PL13C = :PL13C, PL14C = :PL14C, PL15C = :PL15C, PL16C = :PL16C,\n" +
+            " PL17C = :PL17C, PL18C = :PL18C, PL19C = :PL19C\n" +
+            "WHEN NOT MATCHED THEN\n" +
+            "  INSERT (P_ID, PL1C, PL2C, PL3C, PL4C, PL5C, PL6C, PL7C, PL8C, PL9C, PL10C, PL11C, PL12C, PL13C, PL14C, PL15C, PL16C, PL17C, PL18C, PL19C)\n" +
+            "  VALUES (b.P_ID, b.PL1C, b.PL2C, b.PL3C, b.PL4C, b.PL5C, b.PL6C, b.PL7C, b.PL8C, b.PL9C, b.PL10C, b.PL11C, b.PL12C, b.PL13C, b.PL14C, b.PL15C, b.PL16C, b.PL17C, b.PL18C, b.PL19C)"),
+    REPINCOMEH("SELECT :datastart||' - '||:dataend  shapka\n" +
+            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'NAME') AS Company\n" +
+            ",'приход' as type_movement, 'погрузки' as type_place\n" +
+            "FROM dual\n"),
+    REPINCOMEM("select rownum rn,a. *, (select lng(denumirea,namerus,nameeng) from vms_univers u where u.cod=sc_mp) CLCSC_MPT2 \n" +
+            "from (SELECT b.*\n" +
+            ", anlz_vlajn vlajn,anlz_sorn sorn,trunc(time_in) data , b.clcppogruz_s_12t place\n" +
+            ",CASE WHEN b.priznak_arm=1 THEN b.AUTO ELSE b.nr_remorca END transport\n" +
+            "FROM VTF_PROHODN_MPFS b,VTF_LABOR_MP a\n" +
+            "WHERE TRUNC(case when nvl(:cb1,0)=1 then time_IN else time_OUT end) BETWEEN :datastart AND :dataend\n" +
+            "AND   NVL(b.DEP_POSTAV,0)=nvl2(:filt2,:filt2,NVL(b.DEP_POSTAV,0))\n" +
+            "AND   NVL(b.SC_MP,0)=nvl2(:filt3,:filt3,NVL(b.SC_MP,0))\n" +
+            "and b.div=:div and a.div(+)=b.div and b.nr_analiz=a.nr_analiz(+)  and b.ELEVATOR=a.ELEVATOR(+)\n" +
+            "and b.sezon_yyyy=a.sezon_yyyy(+)\n" +
+            "AND   NVL(b.elevator,0)=nvl2(:elevator,:elevator,NVL(b.elevator,0))\n" +
+            "ORDER BY trunc(time_in),b.clcsc_mpt,b.CLCDEP_POSTAVT)a"),
+    REPOUTCOMEM("select rownum rn,a.* from(\n" +
+            "SELECT b.time_in,b.time_out,b.CLCDEP_DESTINATT CLCDEP_POSTAVT, anlz_vlajn vlajn,anlz_sorn sorn,trunc(time_in) data \n" +
+            ",b.nr_vagon transport, b.clcsct clcsc_mpt,b.MASA_BRUTTO MASA_BRUTTO_ro,b.MASA_TARA MASA_TARA_RO,b.MASA_NETTO  MASA_NETTO_RO\n" +
+            ",CLCSOFER_S_14T sofer,b.priznak_arm,b.TTN_N,b.nr_analiz\n" +
+            ", nvl(b.CLCPRAZGRUZ_S_12T,v.CLCDESCARCAREA_S_12T) AS Place\n" +
+            "FROM ytrans_VTF_PROHODN_OUT b,VTF_LABOR_MP a, vmdb01m_vinz v \n" +
+            "WHERE TRUNC(time_OUT) BETWEEN :datastart AND :dataend\n" +
+            "AND   NVL(b.DEP_DESTINAT,0)=nvl2(:filt2,:filt2,NVL(b.DEP_DESTINAT,0))\n" +
+            "AND   NVL(b.SC,0)=nvl2(:filt3,:filt3,NVL(b.SC,0))\n" +
+            "and   NVL(b.elevator,0)=nvl2(:elevator,:elevator,NVL(b.elevator,0))\n" +
+            "and b.div=:div\n" +
+            "and a.div(+)=b.div\n" +
+            "and b.nr_analiz=a.nr_analiz(+)\n" +
+            "and b.elevator = a.elevator(+)\n" +
+            "and b.sezon_yyyy=a.sezon_yyyy(+)\n" +
+            "and b.nrdoc_out=v.cod(+)\n" +
+            "ORDER BY trunc(time_in),b.clcsct,b.CLCDEP_DESTINATT\n" +
+            ")a where a.PRIZNAK_ARM = 2");
+
 
     private String sql;
 

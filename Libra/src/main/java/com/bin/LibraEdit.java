@@ -6,7 +6,6 @@ import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LibraService;
-import com.service.ReportService;
 import com.util.CustomFocusTraversalPolicy;
 import com.util.Libra;
 import com.view.component.editors.*;
@@ -57,6 +56,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private PrintPanel printPanel;
     private IEdit clcelevatort;
     private IEdit clcdivt;
+    private SearchEdit clcprazgruz_s_12t;
     private boolean isBloc = false;
 
 
@@ -129,18 +129,18 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(Libra.translate("enterData"), fieldsPanel);
         if (armType == ArmType.OUT) {
-            printPanel = new PrintPanel(net.isEmpty());
+            printPanel = new PrintPanel(dataSet);
             tabbedPane.addTab(Libra.translate("printData"), printPanel);
 
             ChangeListener changeListener = new ChangeListener() {
                 public void stateChanged(ChangeEvent changeEvent) {
                     JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
                     int index = sourceTabbedPane.getSelectedIndex();
-                    if(index == 0){
+                    if (index == 0) {
                         setFocusTraversalPolicy(policy);
-                    }else{
+                    } else {
                         setFocusTraversalPolicy(null);
-                        printPanel.createFocusPolicy();
+                        printPanel.initData(clcdivt.getValue(), clcprazgruz_s_12t.getValue());//(dataSet.getValueByName("ID", 0));
                     }
                 }
             };
@@ -171,23 +171,26 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         boolean isEmptyCar;
 
         if (weight != null && weight != 0) {
-            Date cTime = new Date();
-            if (firstField.isEmpty()) {
-                firstField.setValue(weight);
-                time_in.setValue(cTime);
-                isEmptyCar = firstField.equals(tara);
-            } else {
-                secondField.setValue(weight);
-                time_out.setValue(cTime);
-                isEmptyCar = secondField.equals(tara);
+            int n = JOptionPane.showConfirmDialog(this, Libra.translate("scale.fixedweight"), Libra.translate("scale.take"), JOptionPane.YES_NO_OPTION);
+            if (n == 0) {
+                Date cTime = new Date();
+                if (firstField.isEmpty()) {
+                    firstField.setValue(weight);
+                    time_in.setValue(cTime);
+                    isEmptyCar = firstField.equals(tara);
+                } else {
+                    secondField.setValue(weight);
+                    time_out.setValue(cTime);
+                    isEmptyCar = secondField.equals(tara);
+                }
+
+                firstField.setChangeable(false);
+                secondField.setChangeable(false);
+
+                Object[] objects = {armType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
+                historySet.add(objects);
+                blockWeightBoards();
             }
-
-            firstField.setChangeable(false);
-            secondField.setChangeable(false);
-
-            Object[] objects = {armType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
-            historySet.add(objects);
-            blockWeightBoards();
         } else {
             Libra.eMsg(Libra.translate("error.zeroweight"));
         }
@@ -247,8 +250,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
                         if (armType == ArmType.IN)
                             Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEIN : SearchType.UPDSCALEIN, dataSet);
-                        else
+                        else {
                             Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEOUT : SearchType.UPDSCALEOUT, dataSet);
+
+                            DataSet printDetail = printPanel.getDataSet();
+                            printDetail.setValueByName("p_id", 0, dataSet.getValueByName("id", 0));
+                            Libra.libraService.execute(SearchType.MERGEPRINTDETAIL, printDetail);
+                        }
 
                         if (historyCod != null) {
                             historySet.setValueByName("id", 0, historyCod);
@@ -267,7 +275,20 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             if (isBloc || 0 == JOptionPane.showConfirmDialog(this, Libra.translate("cancelConfirmDialog1"), Libra.translate("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
                 dispose();
         } else if (e.getSource().equals(bPrint)) {
-            printTTN();
+            Map<String, String> repMap = new LinkedHashMap<String, String>();
+            if (armType == ArmType.IN) {
+                repMap.put(Libra.translate("rep0"), "bon.xls");
+                repMap.put(Libra.translate("rep1"), "act1.xls");
+                repMap.put(Libra.translate("rep2"), "act2.xls");
+            } else {
+                repMap.put(Libra.translate("rep3"), "TTN_horiz_graf.xls");
+                repMap.put(Libra.translate("rep4"), "TTN_vertic_graf.xls");
+                repMap.put(Libra.translate("rep5"), "TTN_horiz_negraf.xls");
+                repMap.put(Libra.translate("rep6"), "TTN_horiz_negraf_sum.xls");
+                repMap.put(Libra.translate("rep7"), "NN_vertic_graf.xls");
+                repMap.put(Libra.translate("rep8"), "NN_horiz_graf.xls");
+            }
+            makePrint(repMap);
         } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
             changeEdit(null);
         }
@@ -523,7 +544,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         policy.add(clcdep_destinatt);
         addInsertButton(p3, clcdep_destinatt);
 
-        SearchEdit clcprazgruz_s_12t = new SearchEdit("clcprazgruz_s_12t", Libra.libraService, SearchType.PLACES);
+        clcprazgruz_s_12t = new SearchEdit("clcprazgruz_s_12t", Libra.libraService, SearchType.PLACES);
         clcprazgruz_s_12t.setValue(dataSet.getValueByName("clcprazgruz_s_12t", 0));
         addToPanel(8, 8 + stepDown, 200, p3, clcprazgruz_s_12t);
         policy.add(clcprazgruz_s_12t);
@@ -726,7 +747,30 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         return data;
     }
 
-    public void printTTN() {
+    private void makePrint(Map<String, String> map) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        ButtonGroup bg = new ButtonGroup();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            JRadioButton r0 = new JRadioButton(entry.getKey());
+            bg.add(r0);
+            p.add(r0);
+        }
+
+        int b = JOptionPane.showOptionDialog(null, p,
+                Libra.translate("rep.choose"), JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, null, null);
+        if (b == 0) {
+            for (int i = 0; i < p.getComponentCount(); i++) {
+                JRadioButton rb = (JRadioButton) p.getComponent(i);
+                if (rb.isSelected()) {
+                    printTTN(map.get(rb.getText()));
+                }
+            }
+        }
+    }
+
+    public void printTTN(String name) {
         try {
             if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
                 throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
@@ -745,9 +789,19 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             params.put(":transp", dataSet.getValueByName("CLCDEP_PEREVOZT", 0));
             params.put(":net", dataSet.getValueByName("masa_netto", 0));
 
+            Object mn = dataSet.getValueByName("masa_netto", 0);
+            Object mt = dataSet.getValueByName("masa_ttn", 0);
+            BigDecimal delta = BigDecimal.ZERO;
+            if (mn != null && mt != null) {
+                delta = ((BigDecimal) mt).subtract((BigDecimal) mn);
+            }
+            params.put(":delta", delta);
+            params.put(":time_in", dataSet.getValueByName("time_in", 0));
+            params.put(":time_out", dataSet.getValueByName("time_out", 0));
+
             DataSet dataSet2 = Libra.libraService.selectDataSet(SearchType.PRINTTTN, params);
             repData.addDataSet(dataSet2);
-            ReportService.openForm("templates/TTN.xls", repData);
+            Libra.reportService.buildReport("templates/" + name, repData);
         } catch (Exception e1) {
             e1.printStackTrace();
             Libra.eMsg(e1.getMessage());

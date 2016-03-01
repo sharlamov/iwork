@@ -241,7 +241,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
                     new GridField("clcelevatort", 150)};
         } else {
             return new GridField[]{
-                    new GridField("nr_analiz", 50),
+                    new GridField("nr_analiz", 70),
                     new GridField("prikaz_id", 50),
                     new GridField("clcsofer_s_14t", 90),
                     new GridField("nr_vagon", 100),

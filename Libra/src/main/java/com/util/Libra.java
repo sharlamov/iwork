@@ -2,6 +2,7 @@ package com.util;
 
 import com.driver.ScalesManager;
 import com.service.LibraService;
+import com.service.ReportService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -20,6 +21,8 @@ public class Libra {
     public static String TITLE = "Libra";
 
     public static LibraService libraService = new LibraService();
+
+    public static ReportService reportService = new ReportService();
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 

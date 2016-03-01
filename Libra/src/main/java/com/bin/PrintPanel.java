@@ -1,5 +1,7 @@
 package com.bin;
 
+import com.enums.SearchType;
+import com.model.CustomItem;
 import com.model.DataSet;
 import com.util.Libra;
 import com.view.component.editors.CommonEdit;
@@ -8,13 +10,103 @@ import com.view.component.editors.IEdit;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Collections;
 
 public class PrintPanel extends JPanel {
 
     private CommonEdit plc0;
+    private DataSet printData;
+    private DataSet dataSet;
+    private CommonEdit pl13c;
+    private CommonEdit pl14c;
+    private CommonEdit pl10c;
 
-    public PrintPanel(boolean isBlocked) {
+    public PrintPanel(DataSet dataSet) {
         super(null);
+        createField();
+        this.dataSet = dataSet;
+
+        try {
+            printData = Libra.libraService.selectDataSet(SearchType.SCALEPRINTDATA,
+                    Collections.singletonMap(":p_id", dataSet.getValueByName("id", 0)));
+            if (printData.isEmpty()) {
+                printData.add(new Object[printData.getColumnCount()]);
+            } else
+                initFields();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.eMsg(e.getMessage());
+        }
+
+
+        blockPanel(dataSet.getValueByName("masa_netto", 0) == null);
+    }
+
+    public void initFields() {
+        for (int j = 0; j < getComponentCount(); j++) {
+            Component c = getComponent(j);
+            if (c instanceof IEdit) {
+                ((IEdit) c).setValue(printData.getValueByName(c.getName(), 0));
+            }
+        }
+    }
+
+    public void addToPanel(int x, int y, int width, Component comp) {
+        comp.setBounds(x, y, width, 27);
+        add(comp);
+    }
+
+    public void blockPanel(boolean blocked) {
+        for (int j = 0; j < getComponentCount(); j++) {
+            Component c = getComponent(j);
+            if (c instanceof IEdit) {
+                ((IEdit) c).setChangeable(blocked);
+            }
+        }
+    }
+
+    public DataSet getDataSet() {
+        for (int j = 0; j < getComponentCount(); j++) {
+            Component c = getComponent(j);
+            if (c instanceof IEdit) {
+                printData.setValueByName(c.getName(), 0, ((IEdit) c).getValue());
+            }
+        }
+        return printData;
+    }
+
+    public void initData(Object divId, Object place) {
+        plc0.requestFocus();
+        setFocusCycleRoot(true);
+
+        DataSet set = null;
+        try {
+            set = Libra.libraService.selectDataSet(SearchType.DATABYELEVATOR, Collections.singletonMap(":exped", divId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.eMsg(e.getMessage());
+        }
+
+        if (pl13c.getText().isEmpty() && set != null && !set.isEmpty()) {
+            Object val = set.getValueByName("DIRECTOR", 0);
+            printData.setValueByName("pl13c", 0, val);
+            pl13c.setValue(val);
+        }
+        if (pl14c.getText().isEmpty() && set != null && !set.isEmpty()) {
+            Object val = set.getValueByName("CONT_SEF", 0);
+            printData.setValueByName("pl14c", 0, val);
+            pl14c.setValue(val);
+        }
+        if (pl10c.getText().isEmpty()) {
+            if(place instanceof CustomItem){
+                String str = ((CustomItem) place).getLabel();
+                printData.setValueByName("pl10c", 0, str);
+                pl10c.setValue(str);
+            }
+        }
+    }
+
+    public void createField() {
         JLabel pl0 = new JLabel(Libra.translate("print.p0"));
         addToPanel(10, 10, 100, pl0);
         JLabel pl1 = new JLabel(Libra.translate("print.p1"));
@@ -58,7 +150,7 @@ public class PrintPanel extends JPanel {
         addToPanel(150, 130, 200, pl9c);
         JLabel pl10 = new JLabel(Libra.translate("print.p10"));
         addToPanel(360, 130, 100, pl10);
-        CommonEdit pl10c = new CommonEdit("pl10c");
+        pl10c = new CommonEdit("pl10c");
         addToPanel(460, 130, 200, pl10c);
 
         JLabel pl11 = new JLabel(Libra.translate("print.p11"));
@@ -73,11 +165,11 @@ public class PrintPanel extends JPanel {
 
         JLabel pl13 = new JLabel(Libra.translate("print.p13"));
         addToPanel(10, 220, 100, pl13);
-        CommonEdit pl13c = new CommonEdit("pl13c");
+        pl13c = new CommonEdit("pl13c");
         addToPanel(150, 220, 200, pl13c);
         JLabel pl14 = new JLabel(Libra.translate("print.p14"));
         addToPanel(360, 220, 100, pl14);
-        CommonEdit pl14c = new CommonEdit("pl14c");
+        pl14c = new CommonEdit("pl14c");
         addToPanel(460, 220, 200, pl14c);
 
 
@@ -105,39 +197,5 @@ public class PrintPanel extends JPanel {
         addToPanel(10, 370, 200, pl19);
         CommonEdit pl19c = new CommonEdit("pl19c");
         addToPanel(250, 370, 410, pl19c);
-
-        blockPanel(isBlocked);
-    }
-
-    public void createFocusPolicy() {
-        plc0.requestFocus();
-        setFocusCycleRoot(true);
-    }
-
-    public void addToPanel(int x, int y, int width, Component comp) {
-        comp.setBounds(x, y, width, 27);
-        add(comp);
-    }
-
-    public void blockPanel(boolean blocked) {
-        for (int j = 0; j < getComponentCount(); j++) {
-            Component c = getComponent(j);
-            if (c instanceof IEdit) {
-                ((IEdit) c).setChangeable(blocked);
-            }
-        }
-    }
-
-    public DataSet getDataSet() {
-        DataSet dataSet = new DataSet();
-        for (int j = 0; j < getComponentCount(); j++) {
-            Component c = getComponent(j);
-            if (c instanceof IEdit) {
-                String name = c.getName();
-                Object val = ((IEdit) c).getValue();
-                dataSet.addField(name, val);
-            }
-        }
-        return dataSet;
     }
 }

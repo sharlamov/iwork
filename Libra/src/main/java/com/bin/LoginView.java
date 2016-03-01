@@ -62,6 +62,7 @@ public class LoginView extends JFrame implements ActionListener {
         Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang").toLowerCase()));
         UIManager.put("OptionPane.yesButtonText", Libra.translate("yes"));
         UIManager.put("OptionPane.noButtonText", Libra.translate("no"));
+        UIManager.put("OptionPane.sameSizeButtons", true);
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
 

@@ -22,7 +22,7 @@ public class DataSet extends ArrayList<Object[]> {
         add(new Object[0]);
     }
 
-    private int findField(String fieldName) {
+    public int findField(String fieldName) {
         for (int i = 0; i < names.size(); i++) {
             if (fieldName.equalsIgnoreCase(names.get(i)))
                 return i;

@@ -27,9 +27,9 @@ public class LibraService {
 
     public boolean login(String userName, char[] password) throws Exception {
         if (userName == null || userName.isEmpty()) {
-            throw new Exception("Доступ запрещен! Не указан логин!");
+            throw new Exception(Libra.translate("error.emptylogin"));
         } else if (password == null || password.length == 0) {
-            throw new Exception("Доступ запрещен! Не указан пароль!");
+            throw new Exception(Libra.translate("error.emptypass"));
         }
 
         String sql = "select id\n" +
@@ -43,14 +43,14 @@ public class LibraService {
                 "and nvl(encoded,a$util.encode(password)) = ?";
         DataSet dataSet = dao.select(sql, new Object[]{userName, Libra.encodePass(password)});
         if (dataSet.isEmpty())
-            throw new Exception("Доступ запрещен! Пользователь не найден!");
+            throw new Exception(Libra.translate("error.emptyuser"));
 
         user = new CustomUser();
-        user.setId(new BigDecimal(dataSet.getValueByName("ID", 0).toString()));
-        user.setUsername((String) dataSet.getValueByName("USERNAME", 0));
-        user.setAdminLevel(new BigDecimal(dataSet.getValueByName("ADMIN", 0).toString()).intValue());
-        user.setScaleType(new BigDecimal(dataSet.getValueByName("scaleType", 0).toString()).intValue());
-        user.setHandEditable(dataSet.getValueByName("handeditable", 0).toString().equals("true"));
+        user.setId(dataSet.getNumberValue("ID", 0));
+        user.setUsername(dataSet.getStringValue("USERNAME", 0));
+        user.setAdminLevel(dataSet.getNumberValue("ADMIN", 0).intValue());
+        user.setScaleType(dataSet.getNumberValue("scaleType", 0).intValue());
+        user.setHandEditable(dataSet.getStringValue("handeditable", 0).equals("true"));
 
         if (user.getScaleType() != 5) {
             throw new Exception(Libra.translate("error.enterOnlyCantar"));
@@ -68,16 +68,12 @@ public class LibraService {
         }
 
         DataSet dataSQL = dao.select(SearchType.GETUSERPROP.getSql(), new Object[]{"RUNSQL", user.getId().toString()});
-        Object str = dataSQL.getValueByName("PROP", 0);
-        if (str != null)
-            dao.exec(str.toString(), null);
-
+        String str = dataSQL.getStringValue("PROP", 0);
+        if (!str.isEmpty()) {
+            dao.execute(str, null);
+            dao.commit();
+        }
         return true;
-    }
-
-    public DataSet getHistory(BigDecimal id) throws Exception {
-        String sql = "select br, dt,userid, (select username from vms_users u where u.cod=s.userid)clcuseridt, masa  from tf_prohodn_scales s where id = ?";
-        return dao.select(sql, new Object[]{id});
     }
 
     public DataSet selectDataSet(SearchType type, Map<String, Object> params) throws Exception {
@@ -87,17 +83,25 @@ public class LibraService {
     public DataSet selectDataSet(String query, Map<String, Object> params) throws Exception {
         Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
+        StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String param = m.group().toLowerCase();
             Object obj = params.get(param);
-            if (obj instanceof CustomItem) {
-                objects.add(((CustomItem) obj).getId());
+
+            if (obj instanceof List) {
+                StringBuilder commaList = new StringBuilder();
+                for (Object item : ((List) obj)) {
+                    commaList.append("?,");
+                    objects.add(item);
+                }
+                m.appendReplacement(sb, commaList.toString().replaceAll(",$", ""));
             } else {
                 objects.add(obj);
+                m.appendReplacement(sb, "?");
             }
         }
-        String sql = m.replaceAll("?");
-        return dao.select(sql, objects.toArray());
+        m.appendTail(sb);
+        return dao.select(sb.toString(), objects.toArray());
     }
 
     public DataSet filterDataSet(SearchType searchType, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
@@ -109,17 +113,13 @@ public class LibraService {
         return selectDataSet(query.toString(), params);
     }
 
-    public DataSet filterDataSet(SearchType searchType, Map<String, Object> params, String filterString) throws Exception {
-        return selectDataSet("select * from (" + searchType.getSql() + ") where 1 = 1 and " + filterString, params);
-    }
-
     public void initContext(String adminLevel, String userID, String limit) throws Exception {
         String sql = " begin\n" +
                 "envun4.envsetvalue('INIPARAM_ADMINLEVEL', ?);\n" +
                 "envun4.envsetvalue('PARAM_USERID', ?);\n" +
                 "envun4.envsetvalue('YFSR_LIMIT_DIFF_MPFS', ?);\n" +
                 "end; ";
-        dao.exec(sql, new Object[]{adminLevel, userID, limit});
+        dao.execute(sql, new Object[]{adminLevel, userID, limit});
     }
 
     public void close() {
@@ -131,27 +131,15 @@ public class LibraService {
         }
     }
 
-    public void execute(SearchType searchType, DataSet dataSet) throws Exception {
+    public BigDecimal execute(SearchType searchType, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(searchType.getSql());
         List<Object> objects = new ArrayList<Object>();
+        StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            Object val = dataSet.getValueByName(m.group().substring(1), 0);
-            objects.add(val instanceof CustomItem ? ((CustomItem) val).getId() : val);
+            objects.add(dataSet.getValueByName(m.group().substring(1), 0));
+            m.appendReplacement(sb, "?");
         }
-        String sql = m.replaceAll("?");
-        dao.exec(sql, objects.toArray());
-    }
-
-    public CustomItem insertItemUniv(String name, String fiskcod, String tip, String gr1) throws Exception {
-        String sql = "{call insert into vms_univers (cod, denumirea, codvechi, tip, gr1) values (id_tms_univers.nextval, ?, ?, ?, ?) RETURNING cod INTO ? }";
-        int n = dao.insertListItem(sql, new Object[]{name, fiskcod, tip, gr1});
-        return new CustomItem(new BigDecimal(n), name + ", " + fiskcod);
-    }
-
-    public CustomItem insertItemSyss(String name, String info, String tip, String gr1) throws Exception {
-        final String sql = "{call insert into tms_syss (tip, cod, denumirea, um, cod1) "
-                + "values (?, ?, ?, ?, (select nvl(max(cod1),0) + 1 from vms_syss where tip = ?  and cod = ? )) RETURNING cod1 INTO ? }";
-        int n = dao.insertListItem(sql, new Object[]{tip, gr1, name, info, tip, gr1});
-        return new CustomItem(new BigDecimal(n), name);
+        m.appendTail(sb);
+        return dao.execute(sb.toString(), objects.toArray());
     }
 }

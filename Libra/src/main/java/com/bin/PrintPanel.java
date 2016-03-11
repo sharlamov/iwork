@@ -4,27 +4,37 @@ import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.util.Libra;
-import com.view.component.editors.CommonEdit;
-import com.view.component.editors.DateEdit;
-import com.view.component.editors.IEdit;
+import com.view.component.editors.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
-public class PrintPanel extends JPanel {
+public class PrintPanel extends JPanel implements ChangeEditListener {
 
     private CommonEdit plc0;
     private DataSet printData;
-    private DataSet dataSet;
     private CommonEdit pl13c;
     private CommonEdit pl14c;
     private CommonEdit pl10c;
+    private ComboEdit tva;
+    private NumberEdit price;
+    private NumberEdit priceTva;
+    private DataSet dataSet;
+    private NumberEdit total;
+    private NumberEdit sumaTva;
+    private NumberEdit suma;
+    private CommonEdit pl9c;
 
     public PrintPanel(DataSet dataSet) {
         super(null);
-        createField();
         this.dataSet = dataSet;
+        createField();
 
         try {
             printData = Libra.libraService.selectDataSet(SearchType.SCALEPRINTDATA,
@@ -37,9 +47,6 @@ public class PrintPanel extends JPanel {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
-
-
-        blockPanel(dataSet.getValueByName("masa_netto", 0) == null);
     }
 
     public void initFields() {
@@ -72,34 +79,56 @@ public class PrintPanel extends JPanel {
                 printData.setValueByName(c.getName(), 0, ((IEdit) c).getValue());
             }
         }
+
+        String value1 = printData.getStringValue("pl1c", 0);
+        printData.setValueByName("pl1c", 0, value1.replace(" ", "").toUpperCase());
+
+        String value2 = printData.getStringValue("pl4c", 0);
+        printData.setValueByName("pl4c", 0, value2.replace(" ", "").toUpperCase());
+
         return printData;
     }
 
-    public void initData(Object divId, Object place) {
+    public void initData(Object divId, Object place, Object elevator) {
         plc0.requestFocus();
         setFocusCycleRoot(true);
 
         DataSet set = null;
         try {
-            set = Libra.libraService.selectDataSet(SearchType.DATABYELEVATOR, Collections.singletonMap(":exped", divId));
+            Map<String, Object> params = new HashMap<String, Object>();
+            params.put(":exped", divId);
+            params.put(":clcelevatort", elevator);
+            set = Libra.libraService.selectDataSet(SearchType.DATABYELEVATOR, params);
         } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
 
-        if (pl13c.getText().isEmpty() && set != null && !set.isEmpty()) {
-            Object val = set.getValueByName("DIRECTOR", 0);
-            printData.setValueByName("pl13c", 0, val);
-            pl13c.setValue(val);
+        if (set != null && !set.isEmpty()) {
+            if (pl13c.getText().isEmpty()) {
+                Object val = set.getValueByName("DIRECTOR", 0);
+                printData.setValueByName("pl13c", 0, val);
+                pl13c.setValue(val);
+            }
+            if (pl14c.getText().isEmpty()) {
+                Object val = set.getValueByName("CONT_SEF", 0);
+                printData.setValueByName("pl14c", 0, val);
+                pl14c.setValue(val);
+            }
+            if (pl9c.getText().isEmpty()) {
+                Object val = set.getValueByName("oras", 0);
+                printData.setValueByName("pl9c", 0, val);
+                pl9c.setValue(val);
+            }
         }
-        if (pl14c.getText().isEmpty() && set != null && !set.isEmpty()) {
-            Object val = set.getValueByName("CONT_SEF", 0);
-            printData.setValueByName("pl14c", 0, val);
-            pl14c.setValue(val);
-        }
+
         if (pl10c.getText().isEmpty()) {
-            if(place instanceof CustomItem){
+            if (place instanceof CustomItem) {
                 String str = ((CustomItem) place).getLabel();
+                int n = str.indexOf(',');
+                if (n != -1) {
+                    str = str.substring(0, n);
+                }
                 printData.setValueByName("pl10c", 0, str);
                 pl10c.setValue(str);
             }
@@ -119,7 +148,7 @@ public class PrintPanel extends JPanel {
         addToPanel(340, 10, 100, pln0);
         JLabel pl3 = new JLabel(Libra.translate("print.p3"));
         addToPanel(460, 10, 50, pl3);
-        DateEdit pld0 = new DateEdit("pl3c", Libra.dateFormat);
+        DateEdit pld0 = new DateEdit("pl3c");
         addToPanel(500, 10, 100, pld0);
 
         JLabel pl4 = new JLabel(Libra.translate("print.p4"));
@@ -132,7 +161,7 @@ public class PrintPanel extends JPanel {
         addToPanel(150, 70, 200, pl5c);
         JLabel pl6 = new JLabel(Libra.translate("print.p6"));
         addToPanel(360, 40, 100, pl6);
-        DateEdit pl6d = new DateEdit("pl6c", Libra.dateFormat);
+        DateEdit pl6d = new DateEdit("pl6c");
         addToPanel(460, 40, 200, pl6d);
         JLabel pl7 = new JLabel(Libra.translate("print.p7"));
         addToPanel(360, 70, 100, pl7);
@@ -146,7 +175,7 @@ public class PrintPanel extends JPanel {
 
         JLabel pl9 = new JLabel(Libra.translate("print.p9"));
         addToPanel(10, 130, 100, pl9);
-        CommonEdit pl9c = new CommonEdit("pl9c");
+        pl9c = new CommonEdit("pl9c");
         addToPanel(150, 130, 200, pl9c);
         JLabel pl10 = new JLabel(Libra.translate("print.p10"));
         addToPanel(360, 130, 100, pl10);
@@ -197,5 +226,60 @@ public class PrintPanel extends JPanel {
         addToPanel(10, 370, 200, pl19);
         CommonEdit pl19c = new CommonEdit("pl19c");
         addToPanel(250, 370, 410, pl19c);
+
+        //--------------
+        JLabel tvaLabel = new JLabel(Libra.translate("print.tva"));
+        addToPanel(10, 410, 100, tvaLabel);
+        JLabel priceTvaLabel = new JLabel(Libra.translate("print.pricetva"));
+        addToPanel(120, 410, 100, priceTvaLabel);
+        JLabel priceLabel = new JLabel(Libra.translate("print.price"));
+        addToPanel(230, 410, 100, priceLabel);
+        JLabel sumaLabel = new JLabel(Libra.translate("print.suma"));
+        addToPanel(340, 410, 100, sumaLabel);
+        JLabel sumaTvaLabel = new JLabel(Libra.translate("print.sumatva"));
+        addToPanel(450, 410, 100, sumaTvaLabel);
+        JLabel totalLabel = new JLabel(Libra.translate("print.total"));
+        addToPanel(560, 410, 100, totalLabel);
+
+        tva = new ComboEdit("tva", Arrays.asList(new CustomItem(20, "20%"), new CustomItem(8, "8%"), new CustomItem(0, "0%"), new CustomItem(-1, Libra.translate("print.tvanone"))));
+        tva.setSelectedIndex(0);
+        tva.addChangeEditListener(this);
+        addToPanel(10, 435, 100, tva);
+        priceTva = new NumberEdit("priceTva", Libra.decimalFormat);
+        priceTva.addChangeEditListener(this);
+        addToPanel(120, 435, 100, priceTva);
+        price = new NumberEdit("price", Libra.decimalFormat2);
+        price.setChangeable(false);
+        addToPanel(230, 435, 100, price);
+        suma = new NumberEdit("suma", Libra.decimalFormat2);
+        suma.setChangeable(false);
+        addToPanel(340, 435, 100, suma);
+        sumaTva = new NumberEdit("sumaTva", Libra.decimalFormat2);
+        sumaTva.setChangeable(false);
+        addToPanel(450, 435, 100, sumaTva);
+        total = new NumberEdit("total", Libra.decimalFormat2);
+        total.setChangeable(false);
+        addToPanel(560, 435, 100, total);
+
+        JLabel tipTaraLabel = new JLabel(Libra.translate("print.tara"));
+        addToPanel(10, 475, 100, tipTaraLabel);
+        CommonEdit tipTara = new CommonEdit("tipTara");
+        addToPanel(250, 475, 100, tipTara);
+    }
+
+    public void changeEdit(Object source) {
+        if (source.equals(tva) || source.equals(priceTva)) {
+            if (!tva.isEmpty() && !priceTva.isEmpty()) {
+                CustomItem t = (CustomItem) tva.getValue();
+                BigDecimal factor = t.getId().intValue() == -1 ? BigDecimal.ZERO : t.getId();
+
+                BigDecimal totalCant = dataSet.getNumberValue("masa_netto", 0);
+
+                total.setValue(totalCant.multiply(priceTva.getNumberValue()));
+                sumaTva.setValue(total.getNumberValue().multiply(factor).divide(factor.add(new BigDecimal(100)), 2, RoundingMode.HALF_EVEN));
+                suma.setValue(total.getNumberValue().subtract(sumaTva.getNumberValue()));
+                price.setValue(priceTva.getNumberValue().divide(new BigDecimal(1 + factor.intValue() / 100.0), 2, RoundingMode.HALF_EVEN));
+            }
+        }
     }
 }

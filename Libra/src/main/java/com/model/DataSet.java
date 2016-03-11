@@ -1,16 +1,23 @@
 package com.model;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-public class DataSet extends ArrayList<Object[]> {
+public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
 
     private List<String> names;
 
     public DataSet(List<String> names, List<Object[]> list) {
         this.names = names;
         this.addAll(list);
+    }
+
+    public DataSet(List<String> names, Object[] list) {
+        this.names = names;
+        this.addAll(Collections.singletonList(list));
     }
 
     public DataSet(List<String> names) {
@@ -20,6 +27,10 @@ public class DataSet extends ArrayList<Object[]> {
     public DataSet() {
         this.names = new ArrayList<String>();
         add(new Object[0]);
+    }
+
+    public DataSet(DataSet dataSet) {
+        this(dataSet.names, dataSet);
     }
 
     public int findField(String fieldName) {
@@ -50,6 +61,16 @@ public class DataSet extends ArrayList<Object[]> {
     public Object getValueByName(String fieldName, int row, Object defValue) {
         Object obj = getValueByName(fieldName, row);
         return obj == null ? defValue : obj;
+    }
+
+    public BigDecimal getNumberValue(String fieldName, int row) {
+        Object obj = getValueByName(fieldName, row);
+        return obj != null ? new BigDecimal(obj.toString()) : BigDecimal.ZERO;
+    }
+
+    public String getStringValue(String fieldName, int row) {
+        Object obj = getValueByName(fieldName, row);
+        return obj != null ? obj.toString() : "";
     }
 
     public void setValueByName(String fieldName, int row, Object value) {
@@ -102,5 +123,46 @@ public class DataSet extends ArrayList<Object[]> {
         return "DataSet{" +
                 "names=" + names +
                 '}';
+    }
+
+    public DataSet copy() {
+        DataSet newDataSet = new DataSet(names);
+
+        for (Object[] row : this) {
+            Object[] newRow = new Object[row.length];
+
+            for (int i = 0; i < row.length; i++) {
+                if (row[i] instanceof BigDecimal) {
+                    newRow[i] = new BigDecimal(row[i].toString());
+                } else if (row[i] instanceof String) {
+                    newRow[i] = row[i].toString() + "";
+                } else if (row[i] instanceof CustomItem) {
+                    newRow[i] = ((CustomItem) row[i]).copy();
+                } else if (row[i] instanceof java.sql.Timestamp) {
+                    newRow[i] = Timestamp.valueOf(row[i].toString());
+                } else
+                    newRow[i] = row[i];
+            }
+            newDataSet.add(newRow);
+        }
+
+        return newDataSet;
+    }
+
+    public boolean isDifferent(DataSet aDataSet){
+        if(size() != aDataSet.size() || names.size() != aDataSet.names.size())
+            return true;
+
+        for (int i = 0; i < this.size(); i++) {
+            Object[] fRow = get(i);
+            Object[] aRow = aDataSet.get(i);
+
+            for (int i1 = 0; i1 < fRow.length; i1++) {
+                if(fRow[i1].equals(aRow[i1]))
+                    return true;
+            }
+        }
+
+        return false;
     }
 }

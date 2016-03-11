@@ -7,18 +7,18 @@ import com.util.Libra;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
-public class WeightBoard extends JPanel implements ActionListener, ScaleEventListener {
+public class WeightBoard extends JPanel implements ScaleEventListener {
 
     public JButton btnAdd;
     private JLabel score = new JLabel();
-    private JButton btnUpd;
-    private ScalesDriver driver;
+    private Color stableColor = Color.orange;
+    private Color unstableColor = Color.decode("#FF9999");
+    private boolean isOnline;
+    private boolean isBlock;
 
     public WeightBoard(final ScalesDriver driver, boolean isOnline) {
-        this.driver = driver;
+        this.isOnline = isOnline;
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
@@ -29,45 +29,28 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
         titleLabel.setFont(new Font("Courier", Font.BOLD, 12));
         add(titleLabel, BorderLayout.NORTH);
 
-        score.setBackground(Color.orange);
+        score.setBackground(stableColor);
         score.setOpaque(true);
         score.setHorizontalAlignment(SwingConstants.RIGHT);
         score.setFont(new Font("Courier", Font.BOLD, 45));
         add(score, BorderLayout.CENTER);
 
+        driver.addEventListener(this);
+
         if (isOnline) {
             Dimension small = new Dimension(200, 70);
             setPreferredSize(small);
-            driver.addEventListener(this);
         } else {
             Dimension big = new Dimension(200, 90);
             setPreferredSize(big);
-            btnUpd = new JButton(Libra.translate("scale.refresh"));
             btnAdd = new JButton(Libra.translate("scale.take"));
-            btnUpd.addActionListener(this);
-            btnAdd.addActionListener(this);
-            JPanel buttonsPanel = new JPanel(new GridLayout(1, 2));
-            buttonsPanel.add(btnUpd);
-            buttonsPanel.add(btnAdd);
-            add(buttonsPanel, BorderLayout.SOUTH);
+            add(btnAdd, BorderLayout.SOUTH);
         }
     }
 
     public void setBlock(boolean isBlock) {
-        btnUpd.setEnabled(!isBlock);
+        this.isBlock = isBlock;
         btnAdd.setEnabled(!isBlock);
-    }
-
-    public void stableWeight() {
-        Integer newWeight = null;
-        try {
-            driver.openPort();
-            newWeight = driver.getStableWeight();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        setWeight(newWeight);
     }
 
     public Integer getWeight() {
@@ -79,13 +62,13 @@ public class WeightBoard extends JPanel implements ActionListener, ScaleEventLis
         score.setText(weight == null ? "" : weight.toString());
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(btnUpd)) {
-            stableWeight();
+    public void scaleExecuted(Integer weight, boolean isStable) {
+        setWeight(weight);
+        if (!isOnline) {
+            score.setBackground(isStable ? stableColor : unstableColor);
+            if (!isBlock) {
+                btnAdd.setEnabled(isStable);
+            }
         }
-    }
-
-    public void scaleExecuted(Integer integer) {
-        setWeight(integer);
     }
 }

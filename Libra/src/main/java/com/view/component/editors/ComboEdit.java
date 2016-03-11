@@ -2,20 +2,28 @@ package com.view.component.editors;
 
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.view.component.editors.validators.AbstractValidator;
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.styles.BalloonTipStyle;
+import net.java.balloontip.styles.EdgedBalloonStyle;
+import net.java.balloontip.utils.TimingUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, FocusListener, IEdit, ItemListener {
+public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, IEdit, ItemListener {
 
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
+    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
     public ComboEdit(String name, List<CustomItem> list) {
+        oldBorder = getBorder();
         setName(name);
         addItemListener(this);
         addKeyListener(this);
@@ -23,6 +31,27 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, Foc
         for (CustomItem o : list) {
             addItem(o);
         }
+    }
+
+    public void addValidator(AbstractValidator validator) {
+        validators.add(validator);
+    }
+
+    public boolean verify() {
+        for (AbstractValidator validator : validators) {
+            if (!validator.verify(getValue())) {
+                showError(validator.getErrorMessage());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void showError(String message) {
+        setBorder(BorderFactory.createLineBorder(Color.red));
+        BalloonTipStyle edgedLook = new EdgedBalloonStyle(Color.decode("#FFFFCC"), Color.red);
+        BalloonTip myBalloonTip = new BalloonTip(this, message, edgedLook, false);
+        TimingUtils.showTimedBalloon(myBalloonTip, 3000);
     }
 
     public void changeData(DataSet dataSet) {
@@ -56,7 +85,13 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, Foc
         int n = getModel().getSize();
         for (int i = 0; i < n; i++) {
             Object obj = getModel().getElementAt(i);
-            if (obj.equals(value)) {
+            if(value instanceof BigDecimal && obj instanceof  CustomItem){
+                if (((CustomItem) obj).getId().equals(value)) {
+                    value = obj;
+                    exists = true;
+                    break;
+                }
+            }else if (obj.equals(value)) {
                 exists = true;
                 break;
             }
@@ -72,7 +107,6 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, Foc
     }
 
     public void focusGained(FocusEvent e) {
-        oldBorder = getBorder();
         setBorder(BorderFactory.createLineBorder(Color.GREEN));
     }
 

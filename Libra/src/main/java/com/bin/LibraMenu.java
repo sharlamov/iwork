@@ -15,6 +15,7 @@ public class LibraMenu extends JMenuBar implements ActionListener {
     JMenuItem menuExit;
     JMenuItem menuScaleReportIn;
     JMenuItem menuScaleReportOut;
+    JMenuItem menuScaleReportOutPeriod;
 
     public LibraMenu() {
         menuFile = new JMenu(Libra.translate("file"));
@@ -27,9 +28,12 @@ public class LibraMenu extends JMenuBar implements ActionListener {
         menuScaleReportIn.addActionListener(this);
         menuScaleReportOut = new JMenuItem(Libra.translate("consume"));
         menuScaleReportOut.addActionListener(this);
+        menuScaleReportOutPeriod = new JMenuItem(Libra.translate("consume.period"));
+        menuScaleReportOutPeriod.addActionListener(this);
 
         menuReport.add(menuScaleReportIn);
         menuReport.add(menuScaleReportOut);
+        //menuReport.add(menuScaleReportOutPeriod);
         menuFile.addSeparator();
         menuFile.add(menuExit);
 
@@ -44,6 +48,8 @@ public class LibraMenu extends JMenuBar implements ActionListener {
             new ReportDialog(ReportType.INCOMES);
         } else if (e.getSource().equals(menuScaleReportOut)) {
             new ReportDialog(ReportType.OUTCOMES);
+        } else if (e.getSource().equals(menuScaleReportOutPeriod)) {
+
         }
     }
 

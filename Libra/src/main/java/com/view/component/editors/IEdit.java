@@ -1,6 +1,16 @@
 package com.view.component.editors;
 
-public interface IEdit {
+import com.view.component.editors.validators.AbstractValidator;
+
+import java.awt.event.FocusListener;
+
+public interface IEdit extends FocusListener {
+
+    void addValidator(AbstractValidator validator);
+
+    boolean verify();
+
+    void showError(String message);
 
     void addChangeEditListener(ChangeEditListener listener);
 

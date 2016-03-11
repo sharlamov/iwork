@@ -4,6 +4,7 @@ import com.model.CustomUser;
 import com.service.LibraService;
 import com.service.SettingsService;
 import com.util.Libra;
+import oracle.net.ns.NetException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -104,8 +105,12 @@ public class LoginView extends JFrame implements ActionListener {
                 new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + LibraService.user.getElevators());
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
+            if (e1.getCause() instanceof NetException)
+                Libra.eMsg(Libra.translate("error.neterror"));
+            else {
+                e1.printStackTrace();
+                Libra.eMsg(e1.getMessage());
+            }
         }
     }
 

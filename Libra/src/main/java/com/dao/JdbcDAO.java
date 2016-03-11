@@ -16,7 +16,9 @@ public class JdbcDAO {
     private void initParams(PreparedStatement stmt, Object[] params) throws SQLException {
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
-                if (params[i] instanceof Timestamp) {
+                if (params[i] == null) {
+                    stmt.setNull(i + 1, Types.NULL);
+                } else if (params[i] instanceof Timestamp) {
                     stmt.setTimestamp(i + 1, (Timestamp) params[i]);
                 } else if (params[i] instanceof Date) {
                     stmt.setDate(i + 1, new java.sql.Date(((Date) params[i]).getTime()));
@@ -26,12 +28,10 @@ public class JdbcDAO {
                     stmt.setInt(i + 1, (Integer) params[i]);
                 } else if (params[i] instanceof Long) {
                     stmt.setLong(i + 1, (Long) params[i]);
+                } else if (params[i] instanceof CustomItem) {
+                    stmt.setBigDecimal(i + 1, ((CustomItem) params[i]).getId());
                 } else {
-                    if (params[i] == null)
-                        stmt.setNull(i + 1, Types.NULL);
-                    else {
-                        stmt.setString(i + 1, params[i].toString());
-                    }
+                    stmt.setString(i + 1, params[i].toString());
                 }
             }
         }
@@ -92,14 +92,13 @@ public class JdbcDAO {
     }
 
     public Connection getConnection() throws Exception {
-        if (Libra.dbUser == null || Libra.dbPass == null || Libra.dbUrl == null) {
-            throw new Exception("Проверьте параметры подключения к базе!");
-        }
-        Properties connectionProps = new Properties();
-        connectionProps.put("user", Libra.dbUser);
-        connectionProps.put("password", Libra.dbPass);
-
-        if (connection == null || connection.isClosed()) {
+        if (connection == null || connection.isClosed() || !connection.isValid(0)) {
+            if (Libra.dbUser == null || Libra.dbPass == null || Libra.dbUrl == null) {
+                throw new Exception("Проверьте параметры подключения к базе!");
+            }
+            Properties connectionProps = new Properties();
+            connectionProps.put("user", Libra.dbUser);
+            connectionProps.put("password", Libra.dbPass);
             connection = DriverManager.getConnection(Libra.dbUrl, connectionProps);
             System.out.println("Connected to database");
         }
@@ -113,19 +112,23 @@ public class JdbcDAO {
         }
     }
 
-    public void exec(String query, Object[] params) throws Exception {
-        CallableStatement cs = getConnection().prepareCall(query);
-        initParams(cs, params);
-        cs.execute();
+    public void commit() throws Exception {
         getConnection().commit();
     }
 
-    public int insertListItem(String query, Object[] params) throws Exception {
-        int n = params != null ? params.length + 1 : 1;
-        CallableStatement stmt = getConnection().prepareCall(query);
-        initParams(stmt, params);
-        stmt.registerOutParameter(n, Types.NUMERIC);
-        stmt.executeUpdate();
-        return stmt.getInt(n);
+    public BigDecimal execute(String query, Object[] params) throws Exception {
+        int q = query.length() - query.replace("?", "").length();
+        int p = params != null ? params.length : 0;
+
+        CallableStatement cs = getConnection().prepareCall(query);
+        initParams(cs, params);
+        if (q - p == 1) {
+            cs.registerOutParameter(q, Types.DECIMAL);
+            cs.execute();
+            return cs.getBigDecimal(q);
+        } else {
+            cs.execute();
+            return BigDecimal.ZERO;
+        }
     }
 }

@@ -46,7 +46,7 @@ public class SearchEdit extends CommonEdit {
     }
 
     public SearchEdit(String name, LibraService service, SearchType searchType) {
-        this(name, "clccodt", new GridField[]{new GridField("clccodt", 250)}, service, searchType);
+        this(name, "clccodt", new GridField[]{new GridField("clccodt", 300)}, service, searchType);
     }
 
     public SearchEdit(String name, String sourceName, GridField[] fields, LibraService service, SearchType searchType, IEdit[] iEdits) {
@@ -56,7 +56,7 @@ public class SearchEdit extends CommonEdit {
 
     public void initGridPanel() {
         dataGrid = new DataGrid(service, searchType, fields, false);
-        dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 200));
+        dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 250));
         dataGrid.setFocusable(false);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
@@ -112,9 +112,7 @@ public class SearchEdit extends CommonEdit {
         }
 
         try {
-            //DataSet dataSet = service.selectDataSet(searchType, params);
             cnt = dataGrid.select(params);
-            //publish(dataSet);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -215,9 +213,7 @@ public class SearchEdit extends CommonEdit {
         } else if (row == -1 && popup != null && dataGrid.getRowCount() == 1) {
             selectedDataSet = dataGrid.getDataSetByRow(0);
             setValue(selectedDataSet.getValueByName(sourceName, 0));
-        }/* else if (shouldClear && (getValue() == null || getValue() == "")) {
-            removeValue();
-        }*/
+        }
 
     }
 

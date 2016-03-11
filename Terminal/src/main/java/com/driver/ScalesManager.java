@@ -12,14 +12,6 @@ public class ScalesManager {
 
     public ScalesManager() {
         scales = new ArrayList<ScalesDriver>();
-       /* try {
-            File file = new File("scaleDriverLog.log");
-            FileOutputStream fis = new FileOutputStream(file);
-            PrintStream out = new PrintStream(fis);
-            System.setOut(out);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }*/
     }
 
     public String[] getPortList() {

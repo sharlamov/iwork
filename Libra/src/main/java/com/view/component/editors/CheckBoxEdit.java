@@ -1,5 +1,11 @@
 package com.view.component.editors;
 
+import com.view.component.editors.validators.AbstractValidator;
+import net.java.balloontip.BalloonTip;
+import net.java.balloontip.styles.BalloonTipStyle;
+import net.java.balloontip.styles.EdgedBalloonStyle;
+import net.java.balloontip.utils.TimingUtils;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -16,14 +22,37 @@ public class CheckBoxEdit extends JCheckBox implements KeyListener, FocusListene
 
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
+    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
     public CheckBoxEdit(String name, String text) {
         super(text);
+        oldBorder = getBorder();
         setName(name);
 
         addChangeListener(this);
         addKeyListener(this);
         addFocusListener(this);
+    }
+
+    public void addValidator(AbstractValidator validator) {
+        validators.add(validator);
+    }
+
+    public boolean verify() {
+        for (AbstractValidator validator : validators) {
+            if (!validator.verify(getValue())) {
+                showError(validator.getErrorMessage());
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void showError(String message) {
+        setBorder(BorderFactory.createLineBorder(Color.red));
+        BalloonTipStyle edgedLook = new EdgedBalloonStyle(Color.decode("#FFFFCC"), Color.red);
+        BalloonTip myBalloonTip = new BalloonTip(this, message, edgedLook, false);
+        TimingUtils.showTimedBalloon(myBalloonTip, 3000);
     }
 
     public void addChangeEditListener(ChangeEditListener listener) {
@@ -57,7 +86,6 @@ public class CheckBoxEdit extends JCheckBox implements KeyListener, FocusListene
     }
 
     public void focusGained(FocusEvent e) {
-        oldBorder = getBorder();
         setBorder(BorderFactory.createLineBorder(Color.GREEN));
     }
 

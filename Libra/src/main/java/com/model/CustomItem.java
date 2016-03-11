@@ -3,7 +3,7 @@ package com.model;
 
 import java.math.BigDecimal;
 
-public class CustomItem {
+public class CustomItem implements Copyable<CustomItem> {
 
     private BigDecimal id;
     private String label;
@@ -14,10 +14,16 @@ public class CustomItem {
         this.label = label;
     }
 
+    public CustomItem(int id, String label) {
+        super();
+        this.id = new BigDecimal(id);
+        this.label = label;
+    }
+
     public CustomItem(Object id, Object label) {
         if (id instanceof BigDecimal) {
             this.id = (BigDecimal) id;
-            this.label = label == null ? " " :label.toString();
+            this.label = label == null ? " " : label.toString();
         }
     }
 
@@ -59,5 +65,11 @@ public class CustomItem {
         } else if (other == null || !id.equals(other.id))
             return false;
         return true;
+    }
+
+    public CustomItem copy() {
+        BigDecimal cloneId = getId() != null ? new BigDecimal(getId().toString()) : null;
+        String cloneLabel = getLabel() != null ? getLabel() + "" : "";
+        return new CustomItem(cloneId, cloneLabel);
     }
 }

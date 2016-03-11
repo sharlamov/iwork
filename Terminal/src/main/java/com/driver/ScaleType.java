@@ -14,10 +14,7 @@ public enum ScaleType {
     private int bits;
 
     ScaleType(int rate, String format, int deviation) {
-        this.rate = rate;
-        this.format = format;
-        this.deviation = deviation;
-        this.bits = 8;
+        this(rate, format, 8, deviation);
     }
 
     ScaleType(int rate, String format, int bits, int deviation) {

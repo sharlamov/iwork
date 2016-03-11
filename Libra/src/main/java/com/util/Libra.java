@@ -30,6 +30,8 @@ public class Libra {
 
     public static DecimalFormat decimalFormat = new DecimalFormat("#,###.##");
 
+    public static DecimalFormat decimalFormat2 = new DecimalFormat("#,##0.00");
+
     public static ScalesManager manager = new ScalesManager();
 
     public static Integer LIMIT_DIFF_MPFS = -20;

@@ -69,12 +69,9 @@ public class DataSetTableModel extends AbstractTableModel {
 
     public Object getValueAt(int row, int column) {
         try {
-            if (dataSet == null)
-                return null;
             return dataSet.getValue(row, columnMap.get(column));
         } catch (NullPointerException ex) {
             System.out.println("Not found column: " + names[column]);
-            ex.printStackTrace();
             return null;
         }
     }
@@ -98,22 +95,32 @@ public class DataSetTableModel extends AbstractTableModel {
     }
 
     public Color getRowColor(int row) {
-        Object bd = dataSet.getValueByName("bgcolor", row);
-        if (bd != null) {
-            switch (((BigDecimal) bd).intValue()) {
-                case 6711039:
-                    return Color.decode("#CC3333");
-                case 13421823:
-                    return Color.decode("#FF9999");
-                case 13434828:
-                    return Color.decode("#CCFFCC");
-                case 5635925:
-                    return Color.decode("#55FF55");
-                case 0:
-                    return Color.decode("#FFFF66");
-                default:
-                    return Color.white;
+        BigDecimal bd = dataSet.getNumberValue("bgcolor", row);
+        switch (bd.intValue()) {
+            case 6711039:
+                return Color.decode("#CC3333");
+            case 13421823:
+                return Color.decode("#FF9999");
+            case 13434828:
+                return Color.decode("#CCFFCC");
+            case 5635925:
+                return Color.decode("#55FF55");
+            case 0:
+                return Color.decode("#FFFF66");
+            default:
+                return Color.white;
+        }
+    }
+
+    public int defineLocation(String fieldName, Object value) {
+        int n = dataSet.findField(fieldName);
+        if (n != -1) {
+            for (int i = 0; i < dataSet.size(); i++) {
+                if (value.equals(dataSet.get(i)[n])) {
+                    return i;
+                }
             }
-        } else return Color.white;
+        }
+        return -1;
     }
 }

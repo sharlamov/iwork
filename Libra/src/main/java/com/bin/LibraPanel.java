@@ -2,6 +2,7 @@ package com.bin;
 
 import com.enums.ArmType;
 import com.enums.SearchType;
+import com.model.CustomItem;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
@@ -23,11 +24,12 @@ import java.util.Map;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
 
-    private JDateChooser date1;
-    private JDateChooser date2;
+    private JDateChooser date1 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
+    private JDateChooser date2 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
     private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
     private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png", 100, 30));
+    private JComboBox<CustomItem> comboBox = new JComboBox<CustomItem>();
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
@@ -43,6 +45,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         dataGrid = new DataGrid(Libra.libraService, armType == ArmType.IN ? SearchType.SCALEIN : SearchType.SCALEOUT, getFieldNames(armType), armType == ArmType.IN, true);
+        dataGrid.increaseRowHeight(1.5f);
+        dataGrid.setGridFont(new Font("Courier", Font.PLAIN, 14));
         dataGrid.addListSelectionListener(this);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
@@ -68,7 +72,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         splitPane.setResizeWeight(0.8d);
         splitPane.setOneTouchExpandable(true);
         add(splitPane, BorderLayout.CENTER);
-
         refreshMaster();
     }
 
@@ -118,8 +121,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.add(addBtn);
         toolBar.add(refreshBtn);
-
-
         toolBar.addSeparator();
         halfBtn.addItemListener(this);
         toolBar.add(halfBtn);
@@ -127,50 +128,63 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         Date cDate = Libra.truncDate(null);
 
         toolBar.add(Box.createHorizontalGlue());
-        date1 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
+        toolBar.addSeparator();
+
         date1.setDate(cDate);
         date1.setMaximumSize(dateSize);
         date1.setPreferredSize(dateSize);
         date1.getDateEditor().addPropertyChangeListener(this);
+        date1.setMaxSelectableDate(date2.getDate());
 
-        toolBar.add(date1);
-        toolBar.add(new JLabel(" - "));
-
-        date2 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
         date2.setDate(cDate);
         date2.setMaximumSize(dateSize);
         date2.setPreferredSize(dateSize);
         date2.getDateEditor().addPropertyChangeListener(this);
+        date2.setMinSelectableDate(date1.getDate());
 
+        comboBox.setMaximumSize(new Dimension(200, 27));
+        comboBox.removeAllItems();
+        if (LibraService.user.getElevators().size() > 1) {
+            comboBox.addItem(new CustomItem(null, Libra.translate("all")));
+            comboBox.addItemListener(this);
+        }
+        for (CustomItem item : LibraService.user.getElevators()) {
+            comboBox.addItem(item);
+        }
+
+        toolBar.add(comboBox);
+
+        toolBar.addSeparator();
+        toolBar.add(date1);
+        toolBar.add(new JLabel(" - "));
         toolBar.add(date2);
 
-        date1.setMaxSelectableDate(date2.getDate());
-        date2.setMinSelectableDate(date1.getDate());
         return toolBar;
     }
 
-    public void filterMaster() {
-        try {
-            dataGrid.filter("(nvl(masa_brutto, 0) = 0 and nvl(masa_tara,0) != 0) or (nvl(masa_brutto, 0) != 0 and nvl(masa_tara,0) = 0)");
-            refreshDetail(0);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
+    public void setRowPosition(BigDecimal rowId) {
+        if (rowId != null) {
+            int row = dataGrid.defineLocation("id", rowId);
+            row = row != -1 ? row : 0;
+            dataGrid.setSelectedRow(row);
         }
     }
 
     public void refreshMaster() {
-        if (halfBtn.isSelected()) {
-            halfBtn.setSelected(false);
-        }
-
         try {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":date1", date1.getDate());
-            params.put(":date2", date2.getDate());
-            params.put(":userid", LibraService.user.getId());
+            params.put(":d1", date1.getDate());
+            params.put(":d2", date2.getDate());
+
+            CustomItem item = (CustomItem) comboBox.getSelectedItem();
+            params.put(":elevator", item.getId() == null ? LibraService.user.getElevators() : item);
+            params.put(":empty", halfBtn.isSelected() ? null : 0);
+
             dataGrid.select(params);
-            refreshDetail(0);
+
+            int selectedRow = dataGrid.getSelectedRow();
+            if (selectedRow == -1)
+                refreshDetail(0);
         } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
@@ -188,6 +202,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             new LibraEdit(pan, dataGrid.getDataSetByRow(-1), armType);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
+
         }
     }
 
@@ -242,7 +257,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         } else {
             return new GridField[]{
                     new GridField("nr_analiz", 70),
-                    new GridField("prikaz_id", 50),
+                    new GridField("prikaz_id", 70),
                     new GridField("clcsofer_s_14t", 90),
                     new GridField("nr_vagon", 100),
                     new GridField("nr_remorca", 65),
@@ -272,10 +287,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void itemStateChanged(ItemEvent e) {
         if (e.getSource().equals(halfBtn)) {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                filterMaster();
-            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+            if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
                 refreshMaster();
+            }
+        } else if (e.getSource().equals(comboBox)) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                refreshMaster();
+                System.out.println(comboBox.getSelectedItem());
             }
         }
     }

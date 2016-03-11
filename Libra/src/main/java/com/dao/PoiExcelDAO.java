@@ -73,6 +73,9 @@ public class PoiExcelDAO {
                     if (obj != null && obj.toString() != null) {
                         dataString = obj instanceof Date ? Libra.dateFormat.format(obj) : obj.toString();
                     }
+
+                    if(dataString.contains("\\"))
+                        dataString = dataString.replaceAll("\\\\","/");
                     m.appendReplacement(sb, dataString);
                 }
                 m.appendTail(sb);

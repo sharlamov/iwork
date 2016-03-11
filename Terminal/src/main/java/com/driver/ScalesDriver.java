@@ -19,9 +19,11 @@ public class ScalesDriver {
     private Pattern pattern;
     private int bits;
     private int deviation;
-    private String comPort;
     private Integer weight;
+    private boolean isStable;
+    private long lTime;
     private List<ScaleEventListener> listeners;
+    private String comPort;
 
     public ScalesDriver(ScaleType type, String comPort) {
         this.deviceName = type.toString();
@@ -33,19 +35,17 @@ public class ScalesDriver {
         pattern = Pattern.compile(type.getFormat());
         serialPort = new SerialPort(comPort);
         listeners = new ArrayList<ScaleEventListener>();
+        isStable = false;
+        lTime = System.currentTimeMillis();
     }
 
     public void addEventListener(ScaleEventListener listener) {
         listeners.add(listener);
     }
 
-    public void removeEventListener(ScaleEventListener listener) {
-        listeners.remove(listener);
-    }
-
     private void fireScaleEvent() {
         for (ScaleEventListener listener : listeners) {
-            listener.scaleExecuted(weight);
+            listener.scaleExecuted(weight, isStable);
         }
     }
 
@@ -81,18 +81,32 @@ public class ScalesDriver {
         return weight;
     }
 
+    public void setWeight(String val) {
+        Integer newValue = Integer.valueOf(val);
+        long cTime = System.currentTimeMillis();
+
+        if (weight != null && newValue != null && Math.abs(weight - newValue) <= 20) {
+            isStable = cTime - lTime > 999;
+        } else {
+            isStable = false;
+            lTime = cTime;
+        }
+
+        weight = newValue;
+    }
+
     public Integer getStableWeight() throws InterruptedException {
         int lastWeight = weight == null ? 0 : weight;
-        boolean isStable = false;
-        for (int i = 0, c = 0; i < 5 && !isStable && c < 10; i++) {
-            isStable = true;
+        boolean isSolid = false;
+        for (int i = 0, c = 0; i < 5 && !isSolid && c < 10; i++) {
+            isSolid = true;
             for (int j = 0; j < 100 && c < 10; j++) {
                 TimeUnit.MILLISECONDS.sleep(10);
                 if (weight == null) {
                     c++;
                 } else {
-                    if (Math.abs(weight - lastWeight) > 20) {
-                        isStable = false;
+                    if (Math.abs(weight - lastWeight) > deviation) {
+                        isSolid = false;
                         lastWeight = weight;
                         break;
                     }
@@ -102,13 +116,13 @@ public class ScalesDriver {
         return weight;
     }
 
+    public String getComPort() {
+        return comPort;
+    }
+
     @Override
     public String toString() {
         return deviceName;
-    }
-
-    public String getComPort() {
-        return comPort;
     }
 
     class PortReader implements SerialPortEventListener {
@@ -122,7 +136,7 @@ public class ScalesDriver {
                     receivedData.append(serialPort.readString(count));
                     Matcher m = pattern.matcher(receivedData);
                     if (m.find()) {
-                        weight = Integer.valueOf(m.group(0).replaceAll(numberFormat, ""));
+                        setWeight(m.group(0).replaceAll(numberFormat, ""));
                         receivedData.setLength(0);
                         fireScaleEvent();
                     }

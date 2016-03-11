@@ -33,7 +33,6 @@ public class ScalesPanel extends JPanel implements ActionListener, ScaleEventLis
         label.setFont(new Font("Courier New", Font.BOLD, 30));
         add(label);
 
-
         add(label1);
     }
 
@@ -58,8 +57,8 @@ public class ScalesPanel extends JPanel implements ActionListener, ScaleEventLis
         }
     }
 
-    public void scaleExecuted(Integer weight) {
+    public void scaleExecuted(Integer weight, boolean isStable) {
         label.setText(String.valueOf(weight));
-        label.revalidate();
+        label.setBackground(isStable ? Color.black : Color.red);
     }
 }

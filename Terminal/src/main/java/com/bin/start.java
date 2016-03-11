@@ -3,18 +3,18 @@ package com.bin;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class start {
     static Integer weight = 50;
+
     public static void main(String[] args) throws Exception {
         new JFrameDemo("COM terminal");
         //initTestData();
         //testData();
+
     }
 
     public static Integer getStableWeight() throws InterruptedException {
@@ -27,7 +27,7 @@ public class start {
                 if (weight == null) {
                     c++;
                 } else {
-                    if(Math.abs(weight - lastWeight) > 20){
+                    if (Math.abs(weight - lastWeight) > 20) {
                         isStable = false;
                         lastWeight = weight;
                         break;

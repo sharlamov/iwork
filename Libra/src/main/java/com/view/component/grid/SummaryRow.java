@@ -22,6 +22,7 @@ public class SummaryRow extends JPanel {
         for (Map.Entry<String, String> entry : map.entrySet()) {
             addLabel(entry.getKey(), entry.getValue());
         }
+        revalidate();
         repaint();
     }
 

@@ -2,12 +2,18 @@ package com.bin;
 
 import com.enums.ArmType;
 import com.enums.SearchType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.model.CustomItem;
+import com.model.DataSet;
+import com.service.LangService;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
 import com.util.Libra;
+import com.view.component.editors.ChangeEditListener;
+import com.view.component.editors.ComboEdit;
 import com.view.component.grid.DataGrid;
-import com.view.component.grid.GridField;
+import com.view.component.grid.DataGridSetting;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -18,23 +24,23 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener {
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener, ChangeEditListener {
 
     private JDateChooser date1 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
     private JDateChooser date2 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
     private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
     private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png", 100, 30));
-    private JComboBox<CustomItem> comboBox = new JComboBox<CustomItem>();
+    private ComboEdit elevators;
+    private ComboEdit divs;
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
     private ArmType armType;
     private LibraPanel pan;
+    private JLabel lostCarLabel;
 
     public LibraPanel(final ArmType armType) {
         this.armType = armType;
@@ -44,9 +50,11 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        dataGrid = new DataGrid(Libra.libraService, armType == ArmType.IN ? SearchType.SCALEIN : SearchType.SCALEOUT, getFieldNames(armType), armType == ArmType.IN, true);
+        Gson gson = new GsonBuilder().create();
+        DataGridSetting lSetting = gson.fromJson(Libra.designs.get(armType == ArmType.IN ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
+        dataGrid = new DataGrid(lSetting, Libra.libraService);
         dataGrid.increaseRowHeight(1.5f);
-        dataGrid.setGridFont(new Font("Courier", Font.PLAIN, 14));
+        dataGrid.setGridFont(new Font("Courier", Font.PLAIN, 15));
         dataGrid.addListSelectionListener(this);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
@@ -125,11 +133,17 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         halfBtn.addItemListener(this);
         toolBar.add(halfBtn);
 
-        Date cDate = Libra.truncDate(null);
+        toolBar.addSeparator();
+        lostCarLabel = new JLabel();
+        lostCarLabel.setFont(new Font("Courier", Font.BOLD, 15));
+        lostCarLabel.setOpaque(true);
+        lostCarLabel.setForeground(Color.red);
+        toolBar.add(lostCarLabel);
 
         toolBar.add(Box.createHorizontalGlue());
         toolBar.addSeparator();
 
+        Date cDate = Libra.truncDate(null);
         date1.setDate(cDate);
         date1.setMaximumSize(dateSize);
         date1.setPreferredSize(dateSize);
@@ -142,17 +156,24 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         date2.getDateEditor().addPropertyChangeListener(this);
         date2.setMinSelectableDate(date1.getDate());
 
-        comboBox.setMaximumSize(new Dimension(200, 27));
-        comboBox.removeAllItems();
+        elevators = new ComboEdit(":elevator", LibraService.user.getElevators());
+        elevators.setMaximumSize(new Dimension(200, 27));
+        toolBar.add(elevators);
         if (LibraService.user.getElevators().size() > 1) {
-            comboBox.addItem(new CustomItem(null, Libra.translate("all")));
-            comboBox.addItemListener(this);
-        }
-        for (CustomItem item : LibraService.user.getElevators()) {
-            comboBox.addItem(item);
-        }
+            elevators.insertItemAt(new CustomItem(null, LangService.trans("all")), 0);
+            elevators.setSelectedIndex(0);
+            elevators.addChangeEditListener(this);
+        } else
+            elevators.setVisible(false);
 
-        toolBar.add(comboBox);
+        toolBar.addSeparator();
+
+        divs = new ComboEdit(":div", new ArrayList<CustomItem>());
+        divs.setMaximumSize(new Dimension(100, 27));
+        divs.addChangeEditListener(this);
+        toolBar.add(divs);
+        initDiv();
+
 
         toolBar.addSeparator();
         toolBar.add(date1);
@@ -165,8 +186,18 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void setRowPosition(BigDecimal rowId) {
         if (rowId != null) {
             int row = dataGrid.defineLocation("id", rowId);
-            row = row != -1 ? row : 0;
-            dataGrid.setSelectedRow(row);
+            if (row != -1) {
+                dataGrid.setSelectedRow(row);
+            }
+        }
+    }
+
+    public void lostCarsInit(Map<String, Object> params) throws Exception {
+        DataSet lostDS = Libra.libraService.selectDataSet(armType == ArmType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
+        if (lostDS != null && !lostDS.isEmpty()) {
+            lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
+        } else {
+            lostCarLabel.setText("");
         }
     }
 
@@ -176,11 +207,13 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             params.put(":d1", date1.getDate());
             params.put(":d2", date2.getDate());
 
-            CustomItem item = (CustomItem) comboBox.getSelectedItem();
+            CustomItem item = (CustomItem) elevators.getSelectedItem();
             params.put(":elevator", item.getId() == null ? LibraService.user.getElevators() : item);
+            params.put(":div", divs.getSelectedItem());
             params.put(":empty", halfBtn.isSelected() ? null : 0);
 
             dataGrid.select(params);
+            lostCarsInit(params);
 
             int selectedRow = dataGrid.getSelectedRow();
             if (selectedRow == -1)
@@ -224,77 +257,32 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    private GridField[] getFieldNames(ArmType type) {
-        if (type == ArmType.IN) {
-            return new GridField[]{
-                    new GridField("nr_analiz", 50),
-                    new GridField("sofer", 90),
-                    new GridField("auto", 100),
-                    new GridField("nr_remorca", 65),
-                    new GridField("clcdep_postavt", 150),
-                    new GridField("clcppogruz_s_12t", 100),
-                    new GridField("clcsc_mpt", 100),
-                    new GridField("sezon_yyyy", 40),
-                    new GridField("ttn_n", 85),
-                    new GridField("ttn_data", 80),
-                    new GridField("masa_ttn", 50),
-                    new GridField("masa_brutto", 50),
-                    new GridField("masa_tara", 50),
-                    new GridField("masa_netto", 50),
-                    new GridField("clcdep_gruzootpravitt", 150),
-                    new GridField("clcdep_transpt", 150),
-                    new GridField("clcdep_hozt", 150),
-                    new GridField("time_in", 50),
-                    new GridField("time_out", 50),
-                    new GridField("contract_nr", 50),
-                    new GridField("contract_nrmanual", 50),
-                    new GridField("contract_data", 50),
-                    new GridField("nr_act_nedostaci", 50),
-                    new GridField("masa_return", 50),
-                    new GridField("nr_act_nedovygruzki", 50),
-                    new GridField("clcdivt", 50),
-                    new GridField("clcelevatort", 150)};
-        } else {
-            return new GridField[]{
-                    new GridField("nr_analiz", 70),
-                    new GridField("prikaz_id", 70),
-                    new GridField("clcsofer_s_14t", 90),
-                    new GridField("nr_vagon", 100),
-                    new GridField("nr_remorca", 65),
-                    new GridField("clcdep_perevozt", 150),
-                    new GridField("clcdep_destinatt", 150),
-                    new GridField("clcprazgruz_s_12t", 100),
-                    new GridField("clcpunctto_s_12t", 100),
-                    new GridField("clcsct", 140),
-                    new GridField("sezon_yyyy", 40),
-                    new GridField("ttn_n", 85),
-                    new GridField("ttn_data", 80),
-                    new GridField("ttn_nn_perem", 85),
-                    new GridField("masa_brutto", 50),
-                    new GridField("masa_tara", 50),
-                    new GridField("masa_netto", 50),
-                    new GridField("prikaz_masa", 50),
-                    new GridField("nrdoc_out", 50),
-                    new GridField("clcsklad_pogruzkit", 150),
-                    new GridField("time_in", 50),
-                    new GridField("time_out", 50),
-                    new GridField("clcelevatort", 150),
-                    new GridField("prparc_seria_nr", 50),
-                    new GridField("prparc_data", 50),
-                    new GridField("clcdivt", 50)};
-        }
-    }
-
     public void itemStateChanged(ItemEvent e) {
         if (e.getSource().equals(halfBtn)) {
             if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
                 refreshMaster();
             }
-        } else if (e.getSource().equals(comboBox)) {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                refreshMaster();
-                System.out.println(comboBox.getSelectedItem());
-            }
+        }
+    }
+
+    private void initDiv() {
+        try {
+            DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", elevators.getValue()));
+            divs.changeData(divSet);
+            divs.setSelectedItem(LibraService.user.getDefDiv());
+            divs.setVisible(divSet.size() > 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.eMsg(e.getMessage());
+        }
+    }
+
+    public void changeEdit(Object source) {
+        if (source.equals(elevators)) {
+            initDiv();
+            refreshMaster();
+        } else if (source.equals(divs)) {
+            refreshMaster();
         }
     }
 }

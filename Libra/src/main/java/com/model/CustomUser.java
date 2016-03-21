@@ -12,6 +12,8 @@ public class CustomUser {
     private Integer scaleType;
     private Integer adminLevel;
     private boolean isHandEditable;
+    private String profile;
+    private CustomItem defDiv;
 
     public String getPassword() {
         return password;
@@ -72,5 +74,21 @@ public class CustomUser {
 
     public void setHandEditable(boolean isHandEditable) {
         this.isHandEditable = isHandEditable;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public CustomItem getDefDiv() {
+        return defDiv;
+    }
+
+    public void setDefDiv(CustomItem defDiv) {
+        this.defDiv = defDiv;
     }
 }

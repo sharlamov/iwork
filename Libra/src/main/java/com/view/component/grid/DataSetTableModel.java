@@ -1,7 +1,7 @@
 package com.view.component.grid;
 
 import com.model.DataSet;
-import com.util.Libra;
+import com.service.LangService;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
@@ -24,7 +24,7 @@ public class DataSetTableModel extends AbstractTableModel {
         this.names = names;
         labels = new String[names.length];
         for (int i = 0; i < names.length; i++) {
-            labels[i] = Libra.translate(names[i].getName());
+            labels[i] = LangService.trans(names[i].getName());
         }
     }
 
@@ -32,7 +32,7 @@ public class DataSetTableModel extends AbstractTableModel {
         columnMap.clear();
         labels = new String[names.length];
         for (int i = 0; i < names.length; i++) {
-            labels[i] = Libra.translate(names[i].getName());
+            labels[i] = LangService.trans(names[i].getName());
             int index = dataSet.getNames().indexOf(names[i].getName().toUpperCase());
             if (index != -1)
                 columnMap.put(i, index);

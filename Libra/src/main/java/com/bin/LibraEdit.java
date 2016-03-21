@@ -5,10 +5,12 @@ import com.enums.ArmType;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.service.LangService;
 import com.service.LibraService;
 import com.util.CustomFocusTraversalPolicy;
 import com.util.Libra;
 import com.view.component.editors.*;
+import com.view.component.editors.NumberEdit;
 import com.view.component.editors.validators.NegativeValidator;
 import com.view.component.editors.validators.NullValidator;
 import com.view.component.editors.validators.PositiveValidator;
@@ -32,12 +34,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private final ArmType armType;
     private final int stepDown = 27;
     private LibraPanel libraPanel;
-    private DataSet oldDataSet;
     private DataSet dataSet;
     private ImageIcon saveIcon = Libra.createImageIcon("images/save.png", 20, 20);
-    private JButton bPrint = new JButton(Libra.translate("print"), Libra.createImageIcon("images/printer.png", 24, 24));
-    private JButton bSave = new JButton(Libra.translate("save"));
-    private JButton bCancel = new JButton(Libra.translate("cancel"));
+    private JButton bPrint = new JButton(LangService.trans("print"), Libra.createImageIcon("images/printer.png", 24, 24));
+    private JButton bSave = new JButton(LangService.trans("save"));
+    private JButton bCancel = new JButton(LangService.trans("cancel"));
     private NumberEdit id;
     private SearchEdit sc;
     private NumberEdit net;
@@ -67,18 +68,16 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private CommonEdit ttn_nn_perem;
     private boolean isBloc = false;
     private List<Component> editList;
-    private NullValidator nullValidator = new NullValidator(Libra.translate("msg.empty"));
-    private NegativeValidator negativeValidator = new NegativeValidator(Libra.translate("msg.negative"));
-    private PositiveValidator positiveValidator = new PositiveValidator(Libra.translate("msg.positive"));
+    private NullValidator nullValidator = new NullValidator(LangService.trans("msg.empty"));
+    private NegativeValidator negativeValidator = new NegativeValidator(LangService.trans("msg.negative"));
+    private PositiveValidator positiveValidator = new PositiveValidator(LangService.trans("msg.positive"));
 
 
     public LibraEdit(LibraPanel libraPanel, DataSet dataSet, ArmType armType) {
-        super((JFrame) null, armType == ArmType.IN ? Libra.translate("tabName0") : Libra.translate("tabName1"), true);
+        super((JFrame) null, armType == ArmType.IN ? LangService.trans("tabName0") : LangService.trans("tabName1"), true);
         this.libraPanel = libraPanel;
         this.dataSet = dataSet;
         this.armType = armType;
-
-        oldDataSet = dataSet.copy();
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -100,7 +99,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     }
 
     public void exitDialog() {
-        if (isBloc || 0 == JOptionPane.showConfirmDialog(null, Libra.translate("cancelConfirmDialog1"), Libra.translate("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
+        if (isBloc || 0 == JOptionPane.showConfirmDialog(null, LangService.trans("cancelConfirmDialog1"), LangService.trans("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
             dispose();
     }
 
@@ -153,10 +152,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         }
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab(Libra.translate("enterData"), fieldsPanel);
+        tabbedPane.addTab(LangService.trans("enterData"), fieldsPanel);
         if (armType == ArmType.OUT) {
             printPanel = new PrintPanel(dataSet);
-            tabbedPane.addTab(Libra.translate("printData"), printPanel);
+            tabbedPane.addTab(LangService.trans("printData"), printPanel);
 
             ChangeListener changeListener = new ChangeListener() {
                 public void stateChanged(ChangeEvent changeEvent) {
@@ -197,7 +196,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         boolean isEmptyCar;
 
         if (weight != null && weight != 0) {
-            int n = JOptionPane.showConfirmDialog(this, Libra.translate("scale.fixedweight") + " (" + weight + ")", Libra.translate("scale.take"), JOptionPane.YES_NO_OPTION);
+            int n = JOptionPane.showConfirmDialog(this, LangService.trans("scale.fixedweight") + " (" + weight + ")", LangService.trans("scale.take"), JOptionPane.YES_NO_OPTION);
             if (n == 0) {
                 Date cTime = new Date();
                 if (firstField.isEmpty()) {
@@ -218,7 +217,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 blockWeightBoards();
             }
         } else {
-            Libra.eMsg(Libra.translate("error.zeroweight"));
+            Libra.eMsg(LangService.trans("error.zeroweight"));
         }
     }
 
@@ -248,10 +247,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             try {
                 if (LibraService.user.getScaleType() == 5 && checkEmptyFields()) {
                     if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
-                        throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
+                        throw new Exception(LangService.trans("error.notfoundcompanyelevator"));
                     }
 
-                    int n = JOptionPane.showConfirmDialog(this, Libra.translate("saveConfirmDialog1"), Libra.translate("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
+                    int n = JOptionPane.showConfirmDialog(this, LangService.trans("saveConfirmDialog1"), LangService.trans("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                     if (n == 0) {
                         prepareInfo();
                         updateDataSet(dataSet);
@@ -280,6 +279,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                             Libra.libraService.execute(SearchType.INSHISTORY, historySet);
                         }
 
+                        Libra.libraService.commit();
                         libraPanel.refreshMaster();
                         libraPanel.setRowPosition(key);
                         dispose();
@@ -294,16 +294,16 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         } else if (e.getSource().equals(bPrint)) {
             Map<String, String> repMap = new LinkedHashMap<String, String>();
             if (armType == ArmType.IN) {
-                repMap.put(Libra.translate("rep0"), "bon.xls");
-                repMap.put(Libra.translate("rep1"), "act1.xls");
-                repMap.put(Libra.translate("rep2"), "act2.xls");
+                repMap.put(LangService.trans("rep0"), "bon.xls");
+                repMap.put(LangService.trans("rep1"), "act1.xls");
+                repMap.put(LangService.trans("rep2"), "act2.xls");
             } else {
-                repMap.put(Libra.translate("rep3"), "TTN_horiz_graf.xls");
-                repMap.put(Libra.translate("rep4"), "TTN_vertic_graf.xls");
-                repMap.put(Libra.translate("rep5"), "TTN_horiz_negraf.xls");
-                repMap.put(Libra.translate("rep6"), "TTN_horiz_negraf_sum.xls");
-                repMap.put(Libra.translate("rep7"), "NN_vertic_graf.xls");
-                repMap.put(Libra.translate("rep8"), "NN_horiz_graf.xls");
+                repMap.put(LangService.trans("rep3"), "TTN_horiz_graf.xls");
+                repMap.put(LangService.trans("rep4"), "TTN_vertic_graf.xls");
+                repMap.put(LangService.trans("rep5"), "TTN_horiz_negraf.xls");
+                repMap.put(LangService.trans("rep6"), "TTN_horiz_negraf_sum.xls");
+                repMap.put(LangService.trans("rep7"), "NN_vertic_graf.xls");
+                repMap.put(LangService.trans("rep8"), "NN_horiz_graf.xls");
             }
             makePrint(repMap);
         } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
@@ -321,9 +321,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             public void actionPerformed(ActionEvent e) {
                 JTextField name = new JTextField();
                 JTextField oldCod = new JTextField();
-                Object[] message = {Libra.translate("name"), name, Libra.translate("codfiscal"), oldCod};
+                Object[] message = {LangService.trans("name"), name, LangService.trans("codfiscal"), oldCod};
 
-                int n = JOptionPane.showConfirmDialog(comp, message, Libra.translate("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
+                int n = JOptionPane.showConfirmDialog(comp, message, LangService.trans("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                 if (n == 0) {
                     try {
                         BigDecimal itemId = Libra.libraService.execute(SearchType.INSUNIV, new DataSet(Arrays.asList("denumirea", "codvechi", "tip", "gr1"), new Object[]{name.getText(), oldCod.getText(), "O", "E"}));
@@ -338,7 +338,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     }
 
     private void addToPanel(int x, int y, int size, JPanel panelTo, JComponent comp) {
-        JLabel label = new JLabel(Libra.translate(comp.getName()));
+        JLabel label = new JLabel(LangService.trans(comp.getName()));
         label.setBounds(x, y, 100, 23);
         panelTo.add(label);
         comp.setBounds(x + 110, y, size, 23);
@@ -367,7 +367,6 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         NumberEdit nr_analiz = new NumberEdit("nr_analiz", Libra.decimalFormat);
         nr_analiz.setValue(dataSet.getValueByName("nr_analiz", 0));
-        nr_analiz.addValidator(nullValidator);
         nr_analiz.addValidator(positiveValidator);
         addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
@@ -480,7 +479,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 //////////////////
         JPanel p6 = createPanel(fieldsPanel, 2);
 
-        JLabel nrActNedLabel = new JLabel(Libra.translate("nr_act_nedostaci"));
+        JLabel nrActNedLabel = new JLabel(LangService.trans("nr_act_nedostaci"));
         nrActNedLabel.setBounds(8, 8, 200, editHeight);
         p6.add(nrActNedLabel);
 
@@ -490,7 +489,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         p6.add(nr_act_nedostaci);
 
 
-        JLabel nrActNedovigrLabel = new JLabel(Libra.translate("nr_act_nedovygruzki"));
+        JLabel nrActNedovigrLabel = new JLabel(LangService.trans("nr_act_nedovygruzki"));
         nrActNedovigrLabel.setBounds(370, 8, 200, editHeight);
         p6.add(nrActNedovigrLabel);
 
@@ -499,7 +498,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         nr_act_nedovygruzki.setBounds(370 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedovygruzki);
 
-        JLabel masaReturnLabel = new JLabel(Libra.translate("masa_return"));
+        JLabel masaReturnLabel = new JLabel(LangService.trans("masa_return"));
         masaReturnLabel.setBounds(370, 8 + stepDown, 200, editHeight);
         p6.add(masaReturnLabel);
 
@@ -618,7 +617,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         policy.add(ttn_data.getDateEditor().getUiComponent());
 
 
-        JLabel masaReturnLabel = new JLabel(Libra.translate("ttn_nn_perem"));
+        JLabel masaReturnLabel = new JLabel(LangService.trans("ttn_nn_perem"));
         masaReturnLabel.setBounds(370, 8, 200, 23);
         p4.add(masaReturnLabel);
 
@@ -650,11 +649,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             clcelevatort.setChangeable(false);
         }
 
-
         if (idVal == null) {
             if (!clcelevatort.isEmpty()) {
                 DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
                 ((ComboEdit) clcdivt).changeData(divSet);
+                ((ComboEdit) clcdivt).setSelectedItem(LibraService.user.getDefDiv());
                 if (!divSet.isEmpty() && divSet.size() > 1)
                     policy.add((JComponent) clcdivt);
             }
@@ -669,21 +668,21 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         int editHeight = 23;
 
         JPanel sumaPanel = createPanel(fieldsPanel, 3);
-        JLabel bruttoLabel = new JLabel(Libra.translate("masa_brutto"), SwingConstants.CENTER);
+        JLabel bruttoLabel = new JLabel(LangService.trans("masa_brutto"), SwingConstants.CENTER);
 
         bruttoLabel.setBounds(120, 4, 120, editHeight);
         sumaPanel.add(bruttoLabel);
-        JLabel taraLabel = new JLabel(Libra.translate("masa_tara"), SwingConstants.CENTER);
+        JLabel taraLabel = new JLabel(LangService.trans("masa_tara"), SwingConstants.CENTER);
         taraLabel.setBounds(260, 4, 120, editHeight);
         sumaPanel.add(taraLabel);
-        JLabel nettoLabel = new JLabel(Libra.translate("masa_netto"), SwingConstants.CENTER);
+        JLabel nettoLabel = new JLabel(LangService.trans("masa_netto"), SwingConstants.CENTER);
         nettoLabel.setBounds(400, 4, 120, editHeight);
         sumaPanel.add(nettoLabel);
 
-        JLabel weightLabel = new JLabel(Libra.translate("weight"));
+        JLabel weightLabel = new JLabel(LangService.trans("weight"));
         weightLabel.setBounds(8, 8 + stepDown, 120, editHeight);
         sumaPanel.add(weightLabel);
-        JLabel timeLabel = new JLabel(Libra.translate("time"));
+        JLabel timeLabel = new JLabel(LangService.trans("time"));
         timeLabel.setBounds(8, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(timeLabel);
 
@@ -746,6 +745,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             try {
                 DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
                 ((ComboEdit) clcdivt).changeData(divSet);
+                ((ComboEdit) clcdivt).setSelectedItem(LibraService.user.getDefDiv());
             } catch (Exception e) {
                 e.printStackTrace();
                 Libra.eMsg(e.getMessage());
@@ -786,7 +786,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         }
 
         int b = JOptionPane.showOptionDialog(null, p,
-                Libra.translate("rep.choose"), JOptionPane.YES_NO_OPTION,
+                LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE, null, null, null);
         if (b == 0) {
             for (int i = 0; i < p.getComponentCount(); i++) {
@@ -801,7 +801,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     public void printTTN(String name) {
         try {
             if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
-                throw new Exception(Libra.translate("error.notfoundcompanyelevator"));
+                throw new Exception(LangService.trans("error.notfoundcompanyelevator"));
             }
 
             DataSet repData = new DataSet();

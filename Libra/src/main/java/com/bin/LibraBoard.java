@@ -1,6 +1,7 @@
 package com.bin;
 
 import com.enums.ArmType;
+import com.service.LangService;
 import com.util.Libra;
 
 import javax.swing.*;
@@ -23,6 +24,6 @@ public class LibraBoard extends JPanel {
     }
 
     public String getHtmlTitle(String title) {
-        return "<html><body width='150'>" + Libra.translate(title) + "</body></html>";
+        return "<html><body width='150'>" + LangService.trans(title) + "</body></html>";
     }
 }

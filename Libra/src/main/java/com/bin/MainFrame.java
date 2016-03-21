@@ -19,7 +19,7 @@ public class MainFrame extends JFrame {
         add(new LibraMenu(), BorderLayout.NORTH);
 
         add(new LibraBoard());
-        setSize(800, 500);
+        setSize(1000, 700);
         setLocationRelativeTo(null);
         if (Libra.autoLogin != 1)
             setExtendedState(JFrame.MAXIMIZED_BOTH);

@@ -114,10 +114,6 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return res;
     }
 
-    public List<String> getNames() {
-        return names;
-    }
-
     @Override
     public String toString() {
         return "DataSet{" +
@@ -149,8 +145,8 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return newDataSet;
     }
 
-    public boolean isDifferent(DataSet aDataSet){
-        if(size() != aDataSet.size() || names.size() != aDataSet.names.size())
+    public boolean isDifferent(DataSet aDataSet) {
+        if (size() != aDataSet.size() || names.size() != aDataSet.names.size())
             return true;
 
         for (int i = 0; i < this.size(); i++) {
@@ -158,11 +154,19 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
             Object[] aRow = aDataSet.get(i);
 
             for (int i1 = 0; i1 < fRow.length; i1++) {
-                if(fRow[i1].equals(aRow[i1]))
+                if (fRow[i1].equals(aRow[i1]))
                     return true;
             }
         }
 
         return false;
+    }
+
+    public List<String> getNames() {
+        return names;
+    }
+
+    public void setNames(List<String> names) {
+        this.names = names;
     }
 }

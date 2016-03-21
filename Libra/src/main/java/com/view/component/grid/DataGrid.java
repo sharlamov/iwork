@@ -16,7 +16,7 @@ import java.util.*;
 public class DataGrid extends JPanel {
 
     private LibraService libraService;
-    private SearchType searchType;
+    private String sql;
     private JTable tbl;
     private DataSetTableModel dtm;
     private int dataGridWith;
@@ -28,7 +28,7 @@ public class DataGrid extends JPanel {
     public DataGrid(LibraService libraService, SearchType searchType, GridField[] names, boolean useBgColor) {
         super(new BorderLayout());
         this.libraService = libraService;
-        this.searchType = searchType;
+        this.sql = searchType.getSql();
         dtm = new DataSetTableModel(names);
         tbl = new JTable(dtm);
         tbl.setRowSelectionAllowed(true);
@@ -48,28 +48,60 @@ public class DataGrid extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
     }
 
-    public DataGrid(LibraService libraService, SearchType searchType, GridField[] names, boolean useBgColor, boolean useSummary) {
-        this(libraService, searchType, names, useBgColor);
-        if (useSummary) {
+    public DataGrid(DataGridSetting lSetting, LibraService libraService) {
+        super(new BorderLayout());
+
+        this.libraService = libraService;
+        this.sql = lSetting.getQuery();
+        dtm = new DataSetTableModel(lSetting.getNames());
+        tbl = new JTable(dtm);
+        tbl.setRowSelectionAllowed(true);
+        tbl.getTableHeader().setReorderingAllowed(false);
+        tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer(lSetting.isUseBgColor(), columnFonts));
+        tbl.setFillsViewportHeight(true);
+        tbl.setAutoCreateRowSorter(lSetting.isUseSorting());
+
+        for (int i = 0; i < lSetting.getNames().length; i++) {
+            TableColumn column = tbl.getColumnModel().getColumn(i);
+            int width = lSetting.getNames()[i].getSize();
+            column.setPreferredWidth(width);
+            dataGridWith += width;
+        }
+
+        JScrollPane scrollPane = new JScrollPane(tbl);
+        add(scrollPane, BorderLayout.CENTER);
+
+        if (lSetting.isUseSummary()) {
             summaryMap = new LinkedHashMap<String, String>();
             summaryRow = new SummaryRow();
             add(summaryRow, BorderLayout.SOUTH);
         }
     }
 
+
     public void refreshSummary() {
         if (summaryRow != null) {
             summaryMap.clear();
             BigDecimal b = dtm.getSumByColumn("masa_brutto");
             BigDecimal t = dtm.getSumByColumn("masa_tara");
-            BigDecimal n = b.subtract(t);
+            BigDecimal n = dtm.getSumByColumn("masa_netto");
 
             summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));
             summaryMap.put("summary.brutto", Libra.decimalFormat.format(b));
             summaryMap.put("summary.tara", Libra.decimalFormat.format(t));
             summaryMap.put("summary.netto", Libra.decimalFormat.format(n));
+
             summaryRow.publishSummary(summaryMap);
         }
+    }
+
+    public void increaseRowHeight(float koef) {
+        tbl.setRowHeight((int) (tbl.getRowHeight() * koef));
+    }
+
+    public void setGridFont(Font font) {
+        tbl.setFont(font);
     }
 
     public void setHeaderFont(Font font) {
@@ -94,8 +126,13 @@ public class DataGrid extends JPanel {
 
     public int select(Map<String, Object> params) throws Exception {
         this.params = params;
-        DataSet d = libraService.selectDataSet(searchType, params);
+        tbl.setRowSorter(null);
+        tbl.getTableHeader().repaint();
+        tbl.getTableHeader().revalidate();
+        tbl.setAutoCreateRowSorter(true);
+        DataSet d = libraService.selectDataSet(sql, params);
         dtm.publish(d);
+
         refreshSummary();
         return d.size();
     }
@@ -132,13 +169,6 @@ public class DataGrid extends JPanel {
         tbl.setFocusable(isFocusable);
     }
 
-    public int filter(String filterString) throws Exception {
-        DataSet d = libraService.filterDataSet(searchType, params, filterString);
-        dtm.publish(d);
-        refreshSummary();
-        return d.size();
-    }
-
     public int filter() throws Exception {
         int r = tbl.getSelectedRow();
         int c = tbl.getSelectedColumn();
@@ -153,14 +183,11 @@ public class DataGrid extends JPanel {
                 textVal = val.toString();
             }
 
-            String s = (String) JOptionPane.showInputDialog(
-                    getFrame(), Libra.translate("find.what"), Libra.translate("find"),
-                    JOptionPane.PLAIN_MESSAGE, null, null, textVal);
-
+            String s = Libra.fMsg("find", "find.what", textVal, getFrame());
             System.out.println(s);
 
             if (s != null && !s.isEmpty()) {
-                DataSet d = libraService.filterDataSet(searchType, params, Collections.singletonMap(columnName, "%" + s.toLowerCase() + "%"));
+                DataSet d = libraService.filterDataSet(sql, params, Collections.singletonMap(columnName, "%" + s.toLowerCase() + "%"));
                 dtm.publish(d);
                 refreshSummary();
 
@@ -186,5 +213,9 @@ public class DataGrid extends JPanel {
         int n = dtm.findColumn(fieldName);
         if (n != -1)
             columnFonts.put(n, font);
+    }
+
+    public int defineLocation(String fieldName, Object value) {
+        return dtm.defineLocation(fieldName, value);
     }
 }

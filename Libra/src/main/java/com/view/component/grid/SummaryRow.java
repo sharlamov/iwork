@@ -1,6 +1,6 @@
 package com.view.component.grid;
 
-import com.util.Libra;
+import com.service.LangService;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -27,7 +27,7 @@ public class SummaryRow extends JPanel {
     }
 
     public void addLabel(String name, String value) {
-        JLabel label = new JLabel(Libra.translate(name) + " " + value);
+        JLabel label = new JLabel(LangService.trans(name) + " " + value);
         label.setFont(sumaFont);
         add(label);
     }

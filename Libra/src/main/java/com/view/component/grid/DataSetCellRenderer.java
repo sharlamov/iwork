@@ -31,7 +31,7 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
             label.setBackground(clr);
 
             if (table.isCellSelected(row, col)) {
-                setBackground(Color.lightGray);
+                setBackground(clr.darker());
             } else
                 setForeground(Color.black);
         }

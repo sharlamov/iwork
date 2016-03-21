@@ -27,9 +27,9 @@ public class LibraService {
 
     public boolean login(String userName, char[] password) throws Exception {
         if (userName == null || userName.isEmpty()) {
-            throw new Exception(Libra.translate("error.emptylogin"));
+            throw new Exception(LangService.trans("error.emptylogin"));
         } else if (password == null || password.length == 0) {
-            throw new Exception(Libra.translate("error.emptypass"));
+            throw new Exception(LangService.trans("error.emptypass"));
         }
 
         String sql = "select id\n" +
@@ -37,13 +37,15 @@ public class LibraService {
                 ",nvl(admin,0) as admin\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_HAND_EDITABLE') handEditable\n" +
+                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_PROFILE') profile\n" +
+                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_DEFDIV') defdiv\n" +
                 "from a$users$v a \n" +
                 "where enabled=1 \n" +
                 "and LOWER(username) = LOWER(?)\n" +
                 "and nvl(encoded,a$util.encode(password)) = ?";
         DataSet dataSet = dao.select(sql, new Object[]{userName, Libra.encodePass(password)});
         if (dataSet.isEmpty())
-            throw new Exception(Libra.translate("error.emptyuser"));
+            throw new Exception(LangService.trans("error.emptyuser"));
 
         user = new CustomUser();
         user.setId(dataSet.getNumberValue("ID", 0));
@@ -51,14 +53,17 @@ public class LibraService {
         user.setAdminLevel(dataSet.getNumberValue("ADMIN", 0).intValue());
         user.setScaleType(dataSet.getNumberValue("scaleType", 0).intValue());
         user.setHandEditable(dataSet.getStringValue("handeditable", 0).equals("true"));
+        user.setProfile(dataSet.getStringValue("profile", 0));
+        user.setDefDiv(new CustomItem(dataSet.getNumberValue("defdiv", 0), "DEFDIV"));
 
         if (user.getScaleType() != 5) {
-            throw new Exception(Libra.translate("error.enterOnlyCantar"));
+            throw new Exception(LangService.trans("error.enterOnlyCantar"));
         }
 
+        //load elevators
         DataSet dataElevator = dao.select(SearchType.GETSILOSBYUSER.getSql(), new Object[]{user.getId()});
         if (dataElevator.isEmpty()) {
-            throw new Exception(Libra.translate("error.notfoundelevator"));
+            throw new Exception(LangService.trans("error.notfoundelevator"));
         } else {
             List<CustomItem> items = new ArrayList<CustomItem>();
             for (Object[] aDataElevator : dataElevator) {
@@ -67,12 +72,23 @@ public class LibraService {
             user.setElevators(items);
         }
 
+        //run sql
         DataSet dataSQL = dao.select(SearchType.GETUSERPROP.getSql(), new Object[]{"RUNSQL", user.getId().toString()});
         String str = dataSQL.getStringValue("PROP", 0);
         if (!str.isEmpty()) {
             dao.execute(str, null);
             dao.commit();
         }
+
+        //load design
+        DataSet designs = dao.select("select lsection, ldata from libra_designs_tbl where lprofile = ?", new Object[]{user.getProfile().toUpperCase()});
+        if (!designs.isEmpty()) {
+            for (Object[] row : designs)
+                Libra.designs.put(row[0].toString(), row[1].toString());
+        } else {
+            throw new Exception(LangService.trans("Profile not found!"));
+        }
+
         return true;
     }
 
@@ -113,6 +129,15 @@ public class LibraService {
         return selectDataSet(query.toString(), params);
     }
 
+    public DataSet filterDataSet(String sql, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
+        StringBuilder query = new StringBuilder("select * from (" + sql + ") where 1 = 1");
+        for (Map.Entry<String, String> entry : filterMap.entrySet()) {
+            query.append(" and lower(").append(entry.getKey()).append(") like :").append(entry.getKey());
+            params.put(":" + entry.getKey(), entry.getValue());
+        }
+        return selectDataSet(query.toString(), params);
+    }
+
     public void initContext(String adminLevel, String userID, String limit) throws Exception {
         String sql = " begin\n" +
                 "envun4.envsetvalue('INIPARAM_ADMINLEVEL', ?);\n" +
@@ -141,5 +166,9 @@ public class LibraService {
         }
         m.appendTail(sb);
         return dao.execute(sb.toString(), objects.toArray());
+    }
+
+    public void commit() throws Exception {
+        dao.commit();
     }
 }

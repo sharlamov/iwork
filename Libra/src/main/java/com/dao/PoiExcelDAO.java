@@ -74,8 +74,8 @@ public class PoiExcelDAO {
                         dataString = obj instanceof Date ? Libra.dateFormat.format(obj) : obj.toString();
                     }
 
-                    if(dataString.contains("\\"))
-                        dataString = dataString.replaceAll("\\\\","/");
+                    if (dataString.contains("\\"))
+                        dataString = dataString.replaceAll("\\\\", "/");
                     m.appendReplacement(sb, dataString);
                 }
                 m.appendTail(sb);
@@ -112,7 +112,7 @@ public class PoiExcelDAO {
 
 
             for (int i = 0; i < count; i++) {
-                copyRow(workbook, sheet, n + i, n + i + 1);
+                copyRow(sheet, n + i, n + i + 1);
             }
 
             for (int i = 0; i < count + 1; i++, n++) {
@@ -172,7 +172,7 @@ public class PoiExcelDAO {
         }
     }
 
-    private void copyRow(Workbook workbook, Sheet worksheet, int sourceRowNum, int destinationRowNum) {
+    private void copyRow(Sheet worksheet, int sourceRowNum, int destinationRowNum) {
         // Get the source / new row
         Row newRow = worksheet.getRow(destinationRowNum);
         Row sourceRow = worksheet.getRow(sourceRowNum);
@@ -191,14 +191,17 @@ public class PoiExcelDAO {
             Cell newCell = newRow.createCell(i);
 
             // If the old cell is null jump to next cell
-            if (oldCell == null) {
+            if (oldCell == null)
                 continue;
-            }
+
 
             // Copy style from old cell and apply to new cell
+            /*
             CellStyle newCellStyle = workbook.createCellStyle();
             newCellStyle.cloneStyleFrom(oldCell.getCellStyle());
-            newCell.setCellStyle(newCellStyle);
+            newCell.setCellStyle(newCellStyle);*/
+
+            newCell.setCellStyle(oldCell.getCellStyle());
 
             // If there is a cell comment, copy
             if (newCell.getCellComment() != null) newCell.setCellComment(oldCell.getCellComment());
@@ -233,22 +236,5 @@ public class PoiExcelDAO {
                     newCell.setCellValue(oldCell.getStringCellValue());
             }
         }
-
-        // If there are are any merged regions in the source row, copy to new row
- /*
-        for (int i = 0; i < worksheet.getLastRowNum(); i++) {
-            CellRangeAddress cellRangeAddress = worksheet.getMergedRegion(i);
-            if (cellRangeAddress.getFirstRow() == sourceRow.getRowNum()) {
-                CellRangeAddress newCellRangeAddress = new CellRangeAddress(newRow.getRowNum(),
-                        (newRow.getRowNum() +
-                                (cellRangeAddress.getFirstRow() -
-                                        cellRangeAddress.getLastRow())),
-                        cellRangeAddress.getFirstColumn(),
-                        cellRangeAddress.getLastColumn());
-                worksheet.addMergedRegion(newCellRangeAddress);
-            }
-        }
-
- * */
     }
 }

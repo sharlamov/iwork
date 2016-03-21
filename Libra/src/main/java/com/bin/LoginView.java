@@ -1,27 +1,29 @@
 package com.bin;
 
 import com.model.CustomUser;
+import com.service.LangService;
 import com.service.LibraService;
 import com.service.SettingsService;
 import com.util.Libra;
+import com.view.component.panel.CustomPanel;
 import oracle.net.ns.NetException;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Locale;
-import java.util.ResourceBundle;
 
 public class LoginView extends JFrame implements ActionListener {
 
     JTextField userText = new JTextField(20);
     JPasswordField passwordText = new JPasswordField(20);
     private JButton loginButton;
+    private int x = 400;
+    private int y = 250;
 
     public LoginView() throws HeadlessException {
         super(Libra.TITLE);
-        setSize(300, 150);
+        setSize(x, y);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -32,12 +34,13 @@ public class LoginView extends JFrame implements ActionListener {
         });
 
         initParams();
-        loginButton = new JButton(Libra.translate("enter"));
+        loginButton = new JButton(LangService.trans("enter"));
 
         if (Libra.autoLogin == 1) {
             login(userText.getText(), passwordText.getPassword());
         } else {
-            JPanel panel = new JPanel();
+            Image img = Libra.getImage("images/logo.jpg", x, y);
+            CustomPanel panel = new CustomPanel(img);
             add(panel);
             placeComponents(panel);
             setLocationRelativeTo(null);
@@ -60,9 +63,10 @@ public class LoginView extends JFrame implements ActionListener {
         Libra.dbUser = SettingsService.get("jdbc.login");
         Libra.dbPass = SettingsService.get("jdbc.pass");
         Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
-        Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang").toLowerCase()));
-        UIManager.put("OptionPane.yesButtonText", Libra.translate("yes"));
-        UIManager.put("OptionPane.noButtonText", Libra.translate("no"));
+        LangService.init(SettingsService.get("user.lang"), Libra.libraService);
+        //Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang").toLowerCase()));
+        UIManager.put("OptionPane.yesButtonText", LangService.trans("yes"));
+        UIManager.put("OptionPane.noButtonText", LangService.trans("no"));
         UIManager.put("OptionPane.sameSizeButtons", true);
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
@@ -70,26 +74,26 @@ public class LoginView extends JFrame implements ActionListener {
     private void placeComponents(JPanel panel) {
         panel.setLayout(null);
 
-        JLabel userLabel = new JLabel(Libra.translate("login"));
-        userLabel.setBounds(10, 10, 80, 25);
-        panel.add(userLabel);
+        JLabel userLabel = new JLabel(LangService.trans("login"));
+        userLabel.setBounds(200, 10, 80, 25);
+        //panel.add(userLabel);
 
-        userText.setBounds(100, 10, 160, 25);
+        userText.setBackground(Color.decode("#FFFF66"));
+        userText.setBounds(250, 10, 140, 25);
         panel.add(userText);
 
-        JLabel passwordLabel = new JLabel(Libra.translate("pass"));
-        passwordLabel.setBounds(10, 40, 80, 25);
-        panel.add(passwordLabel);
+        JLabel passwordLabel = new JLabel(LangService.trans("pass"));
+        passwordLabel.setBounds(200, 40, 80, 25);
+        //panel.add(passwordLabel);
 
-        passwordText.setBounds(100, 40, 160, 25);
+        passwordText.setBackground(Color.decode("#FFFF66"));
+        passwordText.setBounds(250, 40, 140, 25);
+        passwordText.addActionListener(this);
         panel.add(passwordText);
 
-        loginButton.setBounds(10, 80, 80, 25);
+        loginButton.setBounds(250, 70, 140, 25);
         loginButton.addActionListener(this);
         panel.add(loginButton);
-
-      /*  registerButton.setBounds(180, 80, 80, 25);
-        panel.add(registerButton);*/
     }
 
     public void login(String login, char[] pass) {
@@ -106,7 +110,7 @@ public class LoginView extends JFrame implements ActionListener {
             }
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)
-                Libra.eMsg(Libra.translate("error.neterror"));
+                Libra.eMsg(LangService.trans("error.neterror"));
             else {
                 e1.printStackTrace();
                 Libra.eMsg(e1.getMessage());
@@ -116,6 +120,8 @@ public class LoginView extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(loginButton)) {
+            login(userText.getText(), passwordText.getPassword());
+        }else if(e.getSource().equals(passwordText)){
             login(userText.getText(), passwordText.getPassword());
         }
     }

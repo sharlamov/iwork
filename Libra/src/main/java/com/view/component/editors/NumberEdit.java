@@ -1,5 +1,7 @@
 package com.view.component.editors;
 
+import com.view.component.editors.CommonEdit;
+
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;

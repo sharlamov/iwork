@@ -1,20 +1,17 @@
 package com.util;
 
 import com.driver.ScalesManager;
+import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Libra {
 
@@ -34,6 +31,8 @@ public class Libra {
 
     public static ScalesManager manager = new ScalesManager();
 
+    public static Map<String, String> designs = new HashMap<String, String>();
+
     public static Integer LIMIT_DIFF_MPFS = -20;
 
     public static String dbUrl;
@@ -44,21 +43,29 @@ public class Libra {
 
     public static int autoLogin;
 
-    public static ResourceBundle messages;
-
     public static Dimension buttonSize = new Dimension(100, 25);
-
-    public static String translate(String key) {
-        try {
-            return messages.getString(key);
-        } catch (java.util.MissingResourceException e) {
-            return key;
-        }
-    }
 
     public static void eMsg(String str) {
         Toolkit.getDefaultToolkit().beep();
         JOptionPane.showMessageDialog(null, str, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static String fMsg(String name, String query, String text, Component parent) {
+        return (String) JOptionPane.showInputDialog(
+                parent, LangService.trans(query), LangService.trans(name),
+                JOptionPane.PLAIN_MESSAGE, createImageIcon("images/filter.png"), null, text);
+    }
+
+    public static Image getImage(String path, int x, int y) {
+        try {
+            java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
+            if (imgURL != null) {
+                return ImageIO.read(imgURL).getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static ImageIcon createImageIcon(String path) {
@@ -72,16 +79,8 @@ public class Libra {
     }
 
     public static ImageIcon createImageIcon(String path, int x, int y) {
-        java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
-        try {
-            assert imgURL != null;
-            Image img = ImageIO.read(imgURL);
-            Image newImg = img.getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH);
-            return new ImageIcon(newImg);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Image img = getImage(path, x, y);
+        return img != null ? new ImageIcon(img) : null;
     }
 
 
@@ -98,11 +97,11 @@ public class Libra {
     private static BigDecimal defVal(BigDecimal v_result) {
         String text = v_result.toString();
         int v_length = text.length();
-        BigDecimal v_defval = BigDecimal.ZERO;
+        BigDecimal vDefVal = BigDecimal.ZERO;
         for (int i = 0; i < v_length; i++) {
-            v_defval = v_defval.add(new BigDecimal((int) (text.charAt(i))));
+            vDefVal = vDefVal.add(new BigDecimal((int) (text.charAt(i))));
         }
-        return v_defval;
+        return vDefVal;
     }
 
     public static int defineSeason() {

@@ -1,7 +1,10 @@
 package com.view.component.grid;
 
+import com.enums.DocType;
 import com.enums.SearchType;
+import com.model.Act;
 import com.model.DataSet;
+import com.service.LangService;
 import com.service.LibraService;
 import com.util.Libra;
 
@@ -9,7 +12,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -36,6 +39,7 @@ public class DataGrid extends JPanel {
         tbl.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer(useBgColor, columnFonts));
         tbl.setFillsViewportHeight(true);
+        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         for (int i = 0; i < names.length; i++) {
             TableColumn column = tbl.getColumnModel().getColumn(i);
@@ -61,6 +65,16 @@ public class DataGrid extends JPanel {
         tbl.setDefaultRenderer(Object.class, new DataSetCellRenderer(lSetting.isUseBgColor(), columnFonts));
         tbl.setFillsViewportHeight(true);
         tbl.setAutoCreateRowSorter(lSetting.isUseSorting());
+        tbl.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        tbl.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                Point point = e.getPoint();
+                int currentRow = tbl.rowAtPoint(point);
+                setSelectedRow(currentRow);
+            }
+        });
 
         for (int i = 0; i < lSetting.getNames().length; i++) {
             TableColumn column = tbl.getColumnModel().getColumn(i);
@@ -79,6 +93,38 @@ public class DataGrid extends JPanel {
         }
     }
 
+    public void addActs(final DocType docType) {
+        if (!docType.getActs().isEmpty()) {
+            JPopupMenu popupMenu = new JPopupMenu();
+
+            for (final Act act : docType.getActs()) {
+                JMenuItem item = new JMenuItem(LangService.trans(act.getName()));
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        int rowNr = getSelectedRow();
+                        DataSet ds = getDataSetByRow(rowNr);
+                        BigDecimal bd1 = ds.getNumberValue("id", 0);
+                        BigDecimal bd2 = ds.getNumberValue("masa_netto", 0);
+                        Object bd3 = ds.getValueByName("clcdivt", 0);
+                        try {
+                            if (bd1.equals(BigDecimal.ZERO) || bd2.equals(BigDecimal.ZERO)) {
+                                Libra.eMsg(LangService.trans("error.emptynet"));
+                            } else {
+                                Libra.libraService.execute(act.getSql(), new DataSet(Arrays.asList("id", "div","nrset"), new Object[]{bd1, bd3, 1}));
+                                JOptionPane.showMessageDialog(null, LangService.trans("doc.saved"), "Error", JOptionPane.INFORMATION_MESSAGE);
+                                select(params);
+                                setSelectedRow(rowNr);
+                            }
+                        } catch (Exception e1) {
+                            Libra.eMsg(e1.getMessage());
+                        }
+                    }
+                });
+                popupMenu.add(item);
+            }
+            tbl.setComponentPopupMenu(popupMenu);
+        }
+    }
 
     public void refreshSummary() {
         if (summaryRow != null) {

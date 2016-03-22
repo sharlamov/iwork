@@ -1,6 +1,6 @@
 package com.bin;
 
-import com.enums.ArmType;
+import com.enums.DocType;
 import com.service.LangService;
 import com.util.Libra;
 
@@ -16,9 +16,9 @@ public class LibraBoard extends JPanel {
 
         ImageIcon icon = Libra.createImageIcon("images/middle.gif");
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab(getHtmlTitle("tabName0"), icon, new LibraPanel(ArmType.IN));
+        tabbedPane.addTab(getHtmlTitle("tabName0"), icon, new LibraPanel(DocType.IN));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_F1);
-        tabbedPane.addTab(getHtmlTitle("tabName1"), icon, new LibraPanel(ArmType.OUT));
+        tabbedPane.addTab(getHtmlTitle("tabName1"), icon, new LibraPanel(DocType.OUT));
         tabbedPane.setMnemonicAt(1, KeyEvent.VK_F2);
         add(tabbedPane, BorderLayout.CENTER);
     }

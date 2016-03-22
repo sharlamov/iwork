@@ -315,7 +315,89 @@ public enum SearchType {
             "where PRIZNAK_ARM=2 and elevator in (:elevator)\n" +
             "and decode(:div, null, 1, div) = nvl(:div, 1)\n" +
             "and nvl(masa_netto, 0) = 0\n" +
-            "and rownum = 1 order by time_out");
+            "and rownum = 1 order by time_out"),
+    ACTOUT0("Declare\n" +
+            "vCod number;\n" +
+            "vnrdoc_out number;\n" +
+            "vttn varchar2(20);\n" +
+            "vsysfid number;\n" +
+            "prikaz number;\n" +
+            "vdiv number;\n" +
+            "BEGIN \n" +
+            "envun4.envsetvalue('SysfIdList_AlwaysEditable', '48610,48623,48623,48608,48626');\n" +
+            "Un$div.set_def(:div);\n" +
+            "begin\n" +
+            "SELECT sysfid,s.cod,s.div  INTO vsysfid, prikaz, vdiv  FROM vmdb_docs s,ytrans_VTF_PROHODN_OUT t WHERE s.cod=t.prikaz_id AND ID=:ID AND t.div=s.div;\n" +
+            "If vsysfid not in (48621,48622,48618,48307) then \n" +
+            "msg('Такой № приказа не существует!');\n" +
+            "end if;\n" +
+            "exception when no_data_found then\n" +
+            "msg('Неправильный № документа!');\n" +
+            "end;\n" +
+            "select nvl(nrdoc_out,0) into vnrdoc_out from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "Select ttn_n into vttn from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "If vnrdoc_out=0 then\n" +
+            "select id_tmdb_docs.nextval into vCod from dual;\n" +
+            "INSERT INTO vmdb_docs (cod,sysfid,datamanual,nrmanual,div,nrset)\n" +
+            "Select vcod,decode(vsysfid,48621,48610,48622,48623,48618,48608,48307,48626),time_out,ttn_n\n" +
+            ",div,:nrset\n" +
+            "from ytrans_VTF_PROHODN_OUT where id=:id;\n" +
+            "-----\n" +
+            "Insert into VMDB_ST201M (nrdoc,dtdep,ctdep,ctsc1,ctnrdoc,sa)\n" +
+            "Select vcod,DEP_DESTINAT,(Select nvl(m.ctsc1,d.ctsc1) from VMDB_ST201M m, VMDB_ST201D d where m.nrdoc=d.nrdoc and m.nrdoc=prikaz_id and d.dtsc=sc)\n" +
+            ",(Select nvl(m.ctsc,d.ctstrsc) from VMDB_ST201M m, VMDB_ST201D d where m.nrdoc=d.nrdoc and m.nrdoc=prikaz_id and d.dtsc=sc)\n" +
+            ",prikaz_id,0\n" +
+            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv and prikaz_id=prikaz;\n" +
+            "-----\n" +
+            "Insert into VMDB_ST201d (nrdoc,ct,dtsc,ctdep,ctsc1,cant,txtcoment,ctcant,rrowid,ctnrdoc,dtcant1,ctcant1,dtnrdoc,suma,ctstrsc,dtstrsc)\n" +
+            "Select vcod,d.ct,d.dtsc,d.ctdep,nvl(m.ctsc1,d.ctsc1),nvl(masa_netto,masa_brutto),decode(t.priznak_arm,2,t.nr_vagon,3,t.commentarii)\n" +
+            ",nvl(d.cant,d.ctcant),t.id,t.nr_analiz,anlz_vlajn,anlz_sorn,t.sezon_yyyy,d.suma,nvl(m.ctsc,d.ctstrsc),t.TTN_N\n" +
+            " from ytrans_VTF_PROHODN_OUT t,VMDB_ST201d d,VMDB_ST201m m,VTF_LABOR_MP l\n" +
+            " where t.ttn_n=vttn and d.nrdoc=t.prikaz_id and t.sc=d.dtsc \n" +
+            "and d.nrdoc=m.nrdoc and (t.nr_analiz=l.nr_analiz(+) and t.sezon_yyyy=l.sezon_yyyy(+)\n" +
+            "and (t.div=vdiv and t.div=l.div(+))) and t.id=:id;\n" +
+            "-----\n" +
+            "Insert into VMDB01M_VINZ (cod,PRFACT_SERIA,prfact_nr,prfact_data)\n" +
+            "Select vcod,substr(ttn_n,1,2),substr(ttn_n,3),ttn_data\n" +
+            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "-----\n" +
+            "Update ytrans_VTF_PROHODN_OUT set nrdoc_out=vCod,PRINT_CHK=NULL where ttn_n=vttn and prikaz_id=prikaz and div=vdiv and nrdoc_out is null;\n" +
+            "end if;\n" +
+            "end;\n"),
+    ACTOUT1("Declare\n" +
+            "vCod number;\n" +
+            "vnrdoc_out number;\n" +
+            "vttn varchar2(20);\n" +
+            "vsysfid number;\n" +
+            "prikaz number;\n" +
+            "vdiv number;\n" +
+            "BEGIN\n" +
+            "envun4.envsetvalue('SysfIdList_AlwaysEditable', '48613');\n" +
+            "Un$div.set_def(:div);\n" +
+            "SELECT div,ttn_n INTO vdiv,vttn  FROM ytrans_VTF_PROHODN_OUT t WHERE ID=:ID;\n" +
+            "select id_tmdb_docs.nextval into vCod from dual;\n" +
+            "---\n" +
+            "INSERT INTO vmdb_docs (cod,sysfid,datamanual,nrmanual,div,nrset)\n" +
+            "Select vcod,48613,time_out,ttn_n,vdiv,:nrset\n" +
+            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "-----\n" +
+            "Insert into VMDB_ST201M (nrdoc,dtdep)\n" +
+            "Select vcod,DEP_DESTINAT from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "---------------------------------------------\n" +
+            "Insert into VMDB_ST201d (nrdoc,ct,ct1,dtsc,cant,ctcant,rrowid,ctnrdoc,dtcant1,ctcant1,dtnrdoc)\n" +
+            "Select vcod,2163,3,t.sc,t.masa_netto,l.anlz_zernprim,t.id,t.nr_analiz,l.anlz_vlajn,l.anlz_sorn,t.sezon_yyyy\n" +
+            " from ytrans_VTF_PROHODN_OUT t,VTF_LABOR_MP l\n" +
+            " where t.ttn_n=vttn \n" +
+            "and (t.nr_analiz=l.nr_analiz(+) and t.sezon_yyyy=l.sezon_yyyy(+)\n" +
+            "and (t.div=vdiv and t.div=l.div(+))) and t.id=:id;\n" +
+            "--------------\n" +
+            "Insert into VMDB01M_VINZ (cod,PRFACT_SERIA,prfact_nr,prfact_data)\n" +
+            "Select vcod,substr(ttn_n,1,2),substr(ttn_n,3),ttn_data\n" +
+            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
+            "-----\n" +
+            "Update ytrans_VTF_PROHODN_OUT set nrdoc_out=vCod,PRINT_CHK=NULL where ttn_n=vttn and div=vdiv  and nrdoc_out is null;\n" +
+            "------------\n" +
+            "end;");
 
 
     private String sql;

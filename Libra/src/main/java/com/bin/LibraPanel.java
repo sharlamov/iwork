@@ -1,6 +1,6 @@
 package com.bin;
 
-import com.enums.ArmType;
+import com.enums.DocType;
 import com.enums.SearchType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,12 +38,12 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
-    private ArmType armType;
+    private DocType docType;
     private LibraPanel pan;
     private JLabel lostCarLabel;
 
-    public LibraPanel(final ArmType armType) {
-        this.armType = armType;
+    public LibraPanel(final DocType docType) {
+        this.docType = docType;
         this.detail = new HistoryPanel();
         this.pan = this;
 
@@ -51,17 +51,18 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
         Gson gson = new GsonBuilder().create();
-        DataGridSetting lSetting = gson.fromJson(Libra.designs.get(armType == ArmType.IN ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
+        DataGridSetting lSetting = gson.fromJson(Libra.designs.get(docType == DocType.IN ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
         dataGrid = new DataGrid(lSetting, Libra.libraService);
         dataGrid.increaseRowHeight(1.5f);
         dataGrid.setGridFont(new Font("Courier", Font.PLAIN, 15));
         dataGrid.addListSelectionListener(this);
+        dataGrid.addActs(docType);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
                 JTable table = (JTable) me.getSource();
                 int row = table.rowAtPoint(me.getPoint());
                 if (me.getClickCount() == 2 && row != -1) {
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), armType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), docType);
                 }
             }
         });
@@ -89,14 +90,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             public void actionPerformed(ActionEvent ae) {
                 int row = table.getSelectedRow();
                 if (row != -1)
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), armType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), docType);
             }
         });
 
         table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
         table.getAMap().put("Insert", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), armType);
+                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), docType);
             }
         });
 
@@ -195,7 +196,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void lostCarsInit(Map<String, Object> params) {
         DataSet lostDS = null;
         try {
-            lostDS = Libra.libraService.selectDataSet(armType == ArmType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
+            lostDS = Libra.libraService.selectDataSet(docType == DocType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
             if (lostDS != null && !lostDS.isEmpty()) {
                 lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
             }
@@ -237,7 +238,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), armType);
+            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), docType);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
 

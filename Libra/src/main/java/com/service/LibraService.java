@@ -157,7 +157,11 @@ public class LibraService {
     }
 
     public BigDecimal execute(SearchType searchType, DataSet dataSet) throws Exception {
-        Matcher m = paramsPattern.matcher(searchType.getSql());
+        return execute(searchType.getSql(), dataSet);
+    }
+
+    public BigDecimal execute(String query, DataSet dataSet) throws Exception {
+        Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {

@@ -1,7 +1,7 @@
 package com.bin;
 
 import com.driver.ScalesDriver;
-import com.enums.ArmType;
+import com.enums.DocType;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
@@ -10,7 +10,6 @@ import com.service.LibraService;
 import com.util.CustomFocusTraversalPolicy;
 import com.util.Libra;
 import com.view.component.editors.*;
-import com.view.component.editors.NumberEdit;
 import com.view.component.editors.validators.NegativeValidator;
 import com.view.component.editors.validators.NullValidator;
 import com.view.component.editors.validators.PositiveValidator;
@@ -31,7 +30,7 @@ import java.util.List;
 
 public class LibraEdit extends JDialog implements ActionListener, ChangeEditListener {
 
-    private final ArmType armType;
+    private final DocType docType;
     private final int stepDown = 27;
     private LibraPanel libraPanel;
     private DataSet dataSet;
@@ -73,11 +72,11 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private PositiveValidator positiveValidator = new PositiveValidator(LangService.trans("msg.positive"));
 
 
-    public LibraEdit(LibraPanel libraPanel, DataSet dataSet, ArmType armType) {
-        super((JFrame) null, armType == ArmType.IN ? LangService.trans("tabName0") : LangService.trans("tabName1"), true);
+    public LibraEdit(LibraPanel libraPanel, DataSet dataSet, DocType docType) {
+        super((JFrame) null, docType == DocType.IN ? LangService.trans("tabName0") : LangService.trans("tabName1"), true);
         this.libraPanel = libraPanel;
         this.dataSet = dataSet;
-        this.armType = armType;
+        this.docType = docType;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -120,7 +119,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             }
             wb.btnAdd.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (armType == ArmType.IN)
+                    if (docType == DocType.IN)
                         fixWeight(wb, brutto, tara);
                     else
                         fixWeight(wb, tara, brutto);
@@ -138,7 +137,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         fieldsPanel.removeAll();
         policy = new CustomFocusTraversalPolicy();
 
-        if (armType == ArmType.IN)
+        if (docType == DocType.IN)
             inForm();
         else
             outForm();
@@ -153,7 +152,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(LangService.trans("enterData"), fieldsPanel);
-        if (armType == ArmType.OUT) {
+        if (docType == DocType.OUT) {
             printPanel = new PrintPanel(dataSet);
             tabbedPane.addTab(LangService.trans("printData"), printPanel);
 
@@ -178,16 +177,20 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     public void initStatusPanel() {
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         statusPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
         bPrint.setMargin(new Insets(0, 0, 0, 0));
         bPrint.addActionListener(this);
         bPrint.setPreferredSize(Libra.buttonSize);
+        statusPanel.add(bPrint);
+
         bSave.addActionListener(this);
         bSave.setPreferredSize(Libra.buttonSize);
+        statusPanel.add(bSave);
+
         bCancel.addActionListener(this);
         bCancel.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bPrint);
-        statusPanel.add(bSave);
         statusPanel.add(bCancel);
+
         add(statusPanel, BorderLayout.SOUTH);
     }
 
@@ -212,7 +215,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 firstField.setChangeable(false);
                 secondField.setChangeable(false);
 
-                Object[] objects = {armType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
+                Object[] objects = {docType.getValue(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight};
                 historySet.add(objects);
                 blockWeightBoards();
             }
@@ -263,7 +266,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                             key = (BigDecimal) id.getValue();
                         }
 
-                        if (armType == ArmType.IN)
+                        if (docType == DocType.IN)
                             Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEIN : SearchType.UPDSCALEIN, dataSet);
                         else {
                             Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEOUT : SearchType.UPDSCALEOUT, dataSet);
@@ -293,7 +296,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             exitDialog();
         } else if (e.getSource().equals(bPrint)) {
             Map<String, String> repMap = new LinkedHashMap<String, String>();
-            if (armType == ArmType.IN) {
+            if (docType == DocType.IN) {
                 repMap.put(LangService.trans("rep0"), "bon.xls");
                 repMap.put(LangService.trans("rep1"), "act1.xls");
                 repMap.put(LangService.trans("rep2"), "act2.xls");
@@ -713,13 +716,13 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         time_in = new DateEdit("time_in", Libra.dateTimeFormat);
         time_in.setValue(dataSet.getValueByName("time_in", 0));
         time_in.setChangeable(false);
-        time_in.setBounds(armType == ArmType.IN ? 120 : 260, 8 + stepDown + stepDown, 120, editHeight);
+        time_in.setBounds(docType == DocType.IN ? 120 : 260, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(time_in);
 
         time_out = new DateEdit("time_out", Libra.dateTimeFormat);
         time_out.setValue(dataSet.getValueByName("time_out", 0));
         time_out.setChangeable(false);
-        time_out.setBounds(armType == ArmType.IN ? 260 : 120, 8 + stepDown + stepDown, 120, editHeight);
+        time_out.setBounds(docType == DocType.IN ? 260 : 120, 8 + stepDown + stepDown, 120, editHeight);
         sumaPanel.add(time_out);
     }
 

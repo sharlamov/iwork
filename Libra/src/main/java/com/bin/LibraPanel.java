@@ -192,18 +192,22 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    public void lostCarsInit(Map<String, Object> params) throws Exception {
-        DataSet lostDS = Libra.libraService.selectDataSet(armType == ArmType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
-        if (lostDS != null && !lostDS.isEmpty()) {
-            lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
-        } else {
-            lostCarLabel.setText("");
+    public void lostCarsInit(Map<String, Object> params) {
+        DataSet lostDS = null;
+        try {
+            lostDS = Libra.libraService.selectDataSet(armType == ArmType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
+            if (lostDS != null && !lostDS.isEmpty()) {
+                lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.eMsg(e.getMessage());
         }
     }
 
-    public void refreshMaster() {
+    public Map<String, Object> refreshMaster() {
+        Map<String, Object> params = new HashMap<String, Object>();
         try {
-            Map<String, Object> params = new HashMap<String, Object>();
             params.put(":d1", date1.getDate());
             params.put(":d2", date2.getDate());
 
@@ -213,7 +217,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             params.put(":empty", halfBtn.isSelected() ? null : 0);
 
             dataGrid.select(params);
-            lostCarsInit(params);
 
             int selectedRow = dataGrid.getSelectedRow();
             if (selectedRow == -1)
@@ -222,6 +225,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
+
+        return params;
     }
 
     public void refreshDetail(int row) {
@@ -259,7 +264,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void itemStateChanged(ItemEvent e) {
         if (e.getSource().equals(halfBtn)) {
-            if (e.getStateChange() == ItemEvent.SELECTED || e.getStateChange() == ItemEvent.DESELECTED) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                lostCarsInit(refreshMaster());
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
+                lostCarLabel.setText("");
                 refreshMaster();
             }
         }

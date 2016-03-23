@@ -98,7 +98,7 @@ public class DataSetTableModel extends AbstractTableModel {
         BigDecimal bd = dataSet.getNumberValue("bgcolor", row);
         switch (bd.intValue()) {
             case 6711039:
-                return Color.decode("#CC3333");
+                return Color.decode("#FF2020");
             case 13421823:
                 return Color.decode("#FF9999");
             case 13434828:

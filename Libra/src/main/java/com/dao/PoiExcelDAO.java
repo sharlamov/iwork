@@ -95,7 +95,7 @@ public class PoiExcelDAO {
             row = sheet.getRow(cr.getRow());
             Cell cell = row.getCell(cr.getCol());
 
-            if (Cell.CELL_TYPE_STRING == cell.getCellType()) {
+            if (cell != null && Cell.CELL_TYPE_STRING == cell.getCellType()) {
                 String val = cell.getStringCellValue();
                 Matcher m = p.matcher(val);
                 while (m.find()) {

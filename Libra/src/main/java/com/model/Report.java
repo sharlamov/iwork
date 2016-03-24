@@ -1,7 +1,5 @@
 package com.model;
 
-import com.enums.String;
-
 public class Report {
 
     private java.lang.String template;

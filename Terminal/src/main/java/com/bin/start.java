@@ -40,7 +40,7 @@ public class start {
 
     private static void initTestData() throws IOException {
         StringBuilder receivedData = new StringBuilder();
-        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/com1458806212171.log"));
+        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/com1458811873656.log"));
         String strLine;
         while ((strLine = br.readLine()) != null) {
             receivedData.append(strLine);
@@ -56,5 +56,6 @@ public class start {
             }
         }
     }
+
 
 }

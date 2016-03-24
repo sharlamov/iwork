@@ -8,13 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum DocType {
-    IN(1, new ArrayList<Act>(),
-            Arrays.asList(
-                    new Report("bon.xls", String.PRINTTTN.getSql()),
-                    new Report("act1.xls", String.PRINTTTN.getSql()),
-                    new Report("act2.xls", String.PRINTTTN.getSql())
-    )),
-    OUT(2, Arrays.asList(new Act("out.act1", String.ACTOUT0.getSql()), new Act("out.act2", String.ACTOUT1.getSql())));
+    IN(1, new ArrayList<Act>()),
+    OUT(2, Arrays.asList(new Act("out.act1", SearchType.ACTOUT0.getSql()), new Act("out.act2", SearchType.ACTOUT1.getSql())));
 
 
     private int value;

@@ -24,6 +24,7 @@ public class ScalesDriver {
     private long lTime;
     private List<ScaleEventListener> listeners;
     private String comPort;
+    private boolean isInverse;
 
     public ScalesDriver(ScaleType type, String comPort) {
         this.deviceName = type.toString();
@@ -31,12 +32,17 @@ public class ScalesDriver {
         this.deviation = type.getDeviation();
         this.bits = type.getBits();
         this.comPort = comPort;
+        this.isInverse = type.isInverse();
 
         pattern = Pattern.compile(type.getFormat());
         serialPort = new SerialPort(comPort);
         listeners = new ArrayList<ScaleEventListener>();
         isStable = false;
         lTime = System.currentTimeMillis();
+    }
+
+    private String reverseString(String str) {
+        return new StringBuilder(str).reverse().toString();
     }
 
     public void addEventListener(ScaleEventListener listener) {
@@ -82,10 +88,10 @@ public class ScalesDriver {
     }
 
     public void setWeight(String val) {
-        Integer newValue = Integer.valueOf(val);
+        Integer newValue = Integer.valueOf(isInverse ? reverseString(val) : val);
         long cTime = System.currentTimeMillis();
 
-        if (weight != null && newValue != null && Math.abs(weight - newValue) <= 20) {
+        if (weight != null && newValue != null && Math.abs(weight - newValue) <= deviation) {
             isStable = cTime - lTime > 999;
         } else {
             isStable = false;

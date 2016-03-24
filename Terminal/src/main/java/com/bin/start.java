@@ -40,13 +40,13 @@ public class start {
 
     private static void initTestData() throws IOException {
         StringBuilder receivedData = new StringBuilder();
-        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/com1458811873656.log"));
+        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/com1458826236563.log"));
         String strLine;
         while ((strLine = br.readLine()) != null) {
             receivedData.append(strLine);
         }
 
-        Pattern pattern = Pattern.compile("([=][0-9|\\s]+[\\D])");
+        Pattern pattern = Pattern.compile("([=][-|0-9|\\s]{8}[\\D])");
         if (receivedData.length() > 0) {
             Matcher m = pattern.matcher(receivedData);
             while (m.find()) {

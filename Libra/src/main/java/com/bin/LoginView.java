@@ -64,7 +64,7 @@ public class LoginView extends JFrame implements ActionListener {
         Libra.dbPass = SettingsService.get("jdbc.pass");
         Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
         LangService.init(SettingsService.get("user.lang"), Libra.libraService);
-        //Libra.messages = ResourceBundle.getBundle("message", new Locale(SettingsService.get("user.lang").toLowerCase()));
+
         UIManager.put("OptionPane.yesButtonText", LangService.trans("yes"));
         UIManager.put("OptionPane.noButtonText", LangService.trans("no"));
         UIManager.put("OptionPane.sameSizeButtons", true);
@@ -121,7 +121,7 @@ public class LoginView extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(loginButton)) {
             login(userText.getText(), passwordText.getPassword());
-        }else if(e.getSource().equals(passwordText)){
+        } else if (e.getSource().equals(passwordText)) {
             login(userText.getText(), passwordText.getPassword());
         }
     }

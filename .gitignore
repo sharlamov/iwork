@@ -6,3 +6,4 @@ target/
 *.log
 *.jar
 Libra/setting.json
+Libra/setting.ini

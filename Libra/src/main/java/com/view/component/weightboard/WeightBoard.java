@@ -3,6 +3,7 @@ package com.view.component.weightboard;
 import com.driver.ScaleEventListener;
 import com.driver.ScalesDriver;
 import com.service.LangService;
+import com.util.Fonts;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -26,13 +27,13 @@ public class WeightBoard extends JPanel implements ScaleEventListener {
         titleLabel.setBackground(Color.lightGray);
         titleLabel.setOpaque(true);
         titleLabel.setText(driver.toString());
-        titleLabel.setFont(new Font("Courier", Font.BOLD, 12));
+        titleLabel.setFont(Fonts.bold12);
         add(titleLabel, BorderLayout.NORTH);
 
         score.setBackground(stableColor);
         score.setOpaque(true);
         score.setHorizontalAlignment(SwingConstants.RIGHT);
-        score.setFont(new Font("Courier", Font.BOLD, 45));
+        score.setFont(Fonts.bold45);
         add(score, BorderLayout.CENTER);
 
         driver.addEventListener(this);

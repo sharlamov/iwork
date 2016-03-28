@@ -1,17 +1,16 @@
 package com.bin;
 
-import com.enums.DocType;
 import com.enums.SearchType;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.model.Doc;
 import com.service.LangService;
 import com.service.LibraService;
 import com.toedter.calendar.JDateChooser;
+import com.util.Fonts;
 import com.util.Libra;
+import com.view.component.db.editors.ComboDbEdit;
 import com.view.component.editors.ChangeEditListener;
-import com.view.component.editors.ComboEdit;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.DataGridSetting;
 
@@ -25,6 +24,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.List;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener, ChangeEditListener {
 
@@ -33,48 +33,49 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
     private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
     private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png", 100, 30));
-    private ComboEdit elevators;
-    private ComboEdit divs;
+    private ComboDbEdit elevators;
+    private ComboDbEdit divs;
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
-    private DocType docType;
+    private Doc doc;
     private LibraPanel pan;
     private JLabel lostCarLabel;
+    private DataSet filter;
 
-    public LibraPanel(final DocType docType) {
-        this.docType = docType;
+    public LibraPanel(final Doc doc, DataGridSetting lSetting) {
+        this.doc = doc;
         this.detail = new HistoryPanel();
         this.pan = this;
 
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        Gson gson = new GsonBuilder().create();
-        DataGridSetting lSetting = gson.fromJson(Libra.designs.get(docType == DocType.IN ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
         dataGrid = new DataGrid(lSetting, Libra.libraService);
         dataGrid.increaseRowHeight(1.5f);
-        dataGrid.setGridFont(new Font("Courier", Font.PLAIN, 15));
+        dataGrid.setGridFont(Fonts.plain15);
         dataGrid.addListSelectionListener(this);
-        dataGrid.addActs(docType);
+        dataGrid.addActs(doc);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
                 JTable table = (JTable) me.getSource();
                 int row = table.rowAtPoint(me.getPoint());
                 if (me.getClickCount() == 2 && row != -1) {
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), docType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), doc);
                 }
             }
         });
-        Font headerFont = new Font("Courier", Font.BOLD, 12);
-        dataGrid.setColumnFont("masa_brutto", headerFont);
-        dataGrid.setColumnFont("masa_tara", headerFont);
-        dataGrid.setColumnFont("masa_netto", headerFont);
+        dataGrid.setColumnFont("masa_brutto", Fonts.bold12);
+        dataGrid.setColumnFont("masa_tara", Fonts.bold12);
+        dataGrid.setColumnFont("masa_netto", Fonts.bold12);
+
+        List<String> lst = Arrays.asList("d1", "d2", "elevator", "div", "empty");
+        filter = new DataSet(lst, new Object[lst.size()]);
 
         tableKeyBindings(dataGrid);
 
         dataGrid.addToolBar(initToolBar());
-        dataGrid.setHeaderFont(headerFont);
+        dataGrid.setHeaderFont(Fonts.bold12);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
         splitPane.setLeftComponent(dataGrid);
         splitPane.setRightComponent(detail);
@@ -90,14 +91,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             public void actionPerformed(ActionEvent ae) {
                 int row = table.getSelectedRow();
                 if (row != -1)
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), docType);
+                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), doc);
             }
         });
 
         table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
         table.getAMap().put("Insert", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), docType);
+                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), doc);
             }
         });
 
@@ -136,7 +137,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.addSeparator();
         lostCarLabel = new JLabel();
-        lostCarLabel.setFont(new Font("Courier", Font.BOLD, 15));
+        lostCarLabel.setFont(Fonts.bold15);
         lostCarLabel.setOpaque(true);
         lostCarLabel.setForeground(Color.red);
         toolBar.add(lostCarLabel);
@@ -157,7 +158,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         date2.getDateEditor().addPropertyChangeListener(this);
         date2.setMinSelectableDate(date1.getDate());
 
-        elevators = new ComboEdit(":elevator", LibraService.user.getElevators());
+        elevators = new ComboDbEdit("elevator", LibraService.user.getElevators(), filter);
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
         if (LibraService.user.getElevators().size() > 1) {
@@ -169,7 +170,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.addSeparator();
 
-        divs = new ComboEdit(":div", new ArrayList<CustomItem>());
+        divs = new ComboDbEdit("div", new ArrayList<CustomItem>(), filter);
         divs.setMaximumSize(new Dimension(100, 27));
         divs.addChangeEditListener(this);
         toolBar.add(divs);
@@ -196,7 +197,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void lostCarsInit(Map<String, Object> params) {
         DataSet lostDS = null;
         try {
-            lostDS = Libra.libraService.selectDataSet(docType == DocType.IN ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
+            lostDS = Libra.libraService.selectDataSet(doc.getId() == 1 ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
             if (lostDS != null && !lostDS.isEmpty()) {
                 lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
             }
@@ -238,7 +239,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), docType);
+            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), doc);
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
 

@@ -8,7 +8,6 @@ public class CustomPanel extends JPanel {
     private Image backgroundImage;
 
     public CustomPanel(Image backgroundImage) {
-        super();
         this.backgroundImage = backgroundImage;
     }
 

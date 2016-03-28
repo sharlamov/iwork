@@ -1,32 +1,35 @@
 package com.model;
 
+import java.io.File;
 public class Report {
 
-    private java.lang.String template;
+    private String name;
+    private File template;
     private String headerSQL;
     private String masterSQL;
     private String detailSQL;
 
-    public Report(java.lang.String template, String headerSQL, String masterSQL, String detailSQL) {
+    public Report(String name, File template, String headerSQL, String masterSQL, String detailSQL) {
+        this.name = name;
         this.template = template;
         this.headerSQL = headerSQL;
         this.masterSQL = masterSQL;
         this.detailSQL = detailSQL;
     }
 
-    public Report(java.lang.String template, String headerSQL, String masterSQL) {
-        this(template, headerSQL, masterSQL, null);
+    public Report(String name, File template, String headerSQL, String masterSQL) {
+        this(name, template, headerSQL, masterSQL, null);
     }
 
-    public Report(java.lang.String template, String headerSQL) {
-        this(template, headerSQL, null);
+    public Report(String name, File template, String headerSQL) {
+        this(name, template, headerSQL, null);
     }
 
-    public java.lang.String getTemplate() {
+    public File getTemplate() {
         return template;
     }
 
-    public void setTemplate(java.lang.String template) {
+    public void setTemplate(File template) {
         this.template = template;
     }
 
@@ -52,5 +55,13 @@ public class Report {
 
     public void setDetailSQL(String detailSQL) {
         this.detailSQL = detailSQL;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

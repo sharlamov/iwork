@@ -1,9 +1,9 @@
 package com.bin;
 
-import com.enums.ReportType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.model.Report;
 import com.service.LangService;
 import com.util.Libra;
 
@@ -11,7 +11,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Type;
-import java.util.Map;
+import java.util.List;
 
 public class LibraMenu extends JMenuBar implements ActionListener {
 
@@ -37,19 +37,19 @@ public class LibraMenu extends JMenuBar implements ActionListener {
         }
     }
 
-
     public void makeReportMenu() {
         JMenu menuReport = new JMenu(LangService.trans("report"));
-        Gson gson = new GsonBuilder().create();
-        Type type = new TypeToken<Map<String, ReportType>>() {
-        }.getType();
-        Map<String, ReportType> reports = gson.fromJson(Libra.designs.get("REPORT.LIST"), type);
 
-        for (final Map.Entry<String, ReportType> report : reports.entrySet()) {
-            JMenuItem reportItem = new JMenuItem(LangService.trans(report.getKey()));
+        Gson gson = new GsonBuilder().create();
+        //gson.toJson(Libra.reportService.getReportList(), System.out);
+        Type type = new TypeToken<List<Report>>() {}.getType();
+        List<Report> reports = gson.fromJson(Libra.designs.get("REPORT.LIST"), type);
+
+        for (final Report report : reports) {
+            JMenuItem reportItem = new JMenuItem(LangService.trans(report.getName()));
             reportItem.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    new ReportDialog(report.getValue());
+                    new ReportDialog(report);
                 }
             });
             menuReport.add(reportItem);

@@ -17,9 +17,8 @@ public class PoiExcelDAO {
 
     private Pattern p = Pattern.compile("_\\w+");
 
-    public void makeReport(String path, DataSet header, DataSet master) throws Exception {
+    public void makeReport(File source, DataSet header, DataSet master) throws Exception {
         long t = System.currentTimeMillis();
-        File source = new File(path);
         File target = File.createTempFile("libra", ".xls");
         target.deleteOnExit();
         copyFile(source, target);

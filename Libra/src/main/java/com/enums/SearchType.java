@@ -165,13 +165,13 @@ public enum SearchType {
             ")where prop is not null and rownum = 1"),
     GETSILOSBYUSER("select elevator, clcelevatort from vms_user_elevator where userid = ?"),
     GETDIVBYSILOS("select distinct div_id, clcdiv_idt from vms_elevator_company where elevator_id = :elevator_id"),
-    SCALEPRINTDATA("select * from scale_tprint where p_id = :p_id"),
+    SCALEPRINTDATA("select * from libra_printinfo_tbl where p_id = :p_id"),
     DATABYELEVATOR("select\n" +
             "(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'SIGN1') DIRECTOR,\n" +
             "(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'SIGN2') CONT_SEF,\n" +
             "(select (select denumirea from vms_syss where cod1 = oras and tip='S' and cod='12') from vms_org where cod = :clcelevatort) oras\n" +
             "from dual"),
-    MERGEPRINTDETAIL("merge into scale_tprint a\n" +
+    MERGEPRINTDETAIL("merge into libra_printinfo_tbl a\n" +
             "using (select :p_id p_id, :pl1c pl1c, :pl2c pl2c, :pl3c pl3c, :pl4c pl4c, :pl5c pl5c, :pl6c pl6c, :pl7c pl7c, :pl8c pl8c, :pl9c pl9c, :pl10c pl10c, :pl11c pl11c\n" +
             ", :pl12c pl12c, :pl13c pl13c, :pl14c pl14c, :pl15c pl15c, :pl16c pl16c, :pl17c pl17c, :pl18c pl18c, :pl19c pl19c \n" +
             ", :tva tva, :pricetva pricetva, :tiptara tiptara,:suma suma, :sumaTva sumaTva, :total total, :price price from dual) b\n" +

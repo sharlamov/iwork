@@ -1,9 +1,9 @@
 package com.view.component.grid;
 
-import com.enums.DocType;
 import com.enums.SearchType;
 import com.model.Act;
 import com.model.DataSet;
+import com.model.Doc;
 import com.service.LangService;
 import com.service.LibraService;
 import com.util.Libra;
@@ -93,11 +93,11 @@ public class DataGrid extends JPanel {
         }
     }
 
-    public void addActs(final DocType docType) {
-        if (!docType.getActs().isEmpty()) {
+    public void addActs(final Doc doc) {
+        if (!doc.getActions().isEmpty()) {
             JPopupMenu popupMenu = new JPopupMenu();
 
-            for (final Act act : docType.getActs()) {
+            for (final Act act : doc.getActions()) {
                 JMenuItem item = new JMenuItem(LangService.trans(act.getName()));
                 item.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -110,7 +110,7 @@ public class DataGrid extends JPanel {
                             if (bd1.equals(BigDecimal.ZERO) || bd2.equals(BigDecimal.ZERO)) {
                                 Libra.eMsg(LangService.trans("error.emptynet"));
                             } else {
-                                Libra.libraService.execute(act.getSql(), new DataSet(Arrays.asList("id", "div","nrset"), new Object[]{bd1, bd3, 1}));
+                                Libra.libraService.execute(act.getSql(), new DataSet(Arrays.asList("id", "div", "nrset"), new Object[]{bd1, bd3, 1}));
                                 JOptionPane.showMessageDialog(null, LangService.trans("doc.saved"), "Error", JOptionPane.INFORMATION_MESSAGE);
                                 select(params);
                                 setSelectedRow(rowNr);
@@ -172,10 +172,12 @@ public class DataGrid extends JPanel {
 
     public int select(Map<String, Object> params) throws Exception {
         this.params = params;
-        tbl.setRowSorter(null);
-        tbl.getTableHeader().repaint();
-        tbl.getTableHeader().revalidate();
-        tbl.setAutoCreateRowSorter(true);
+        if (tbl.getAutoCreateRowSorter()) {
+            tbl.setRowSorter(null);
+            tbl.getTableHeader().repaint();
+            tbl.getTableHeader().revalidate();
+            tbl.setAutoCreateRowSorter(true);
+        }
         DataSet d = libraService.selectDataSet(sql, params);
         dtm.publish(d);
 
@@ -196,7 +198,14 @@ public class DataGrid extends JPanel {
     }
 
     public void setSelectedRow(int row) {
-        tbl.setRowSelectionInterval(row, row);
+        if (row != -1){
+            tbl.setRowSelectionInterval(row, row);
+            scrollToVisible(row);
+        }
+    }
+
+    public void scrollToVisible(int rowIndex) {
+        tbl.scrollRectToVisible(tbl.getCellRect(rowIndex,0, true));
     }
 
     public Object getValueByFieldName(String id, int row) {

@@ -5,6 +5,7 @@ import com.enums.DocType;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.model.Report;
 import com.service.LangService;
 import com.service.LibraService;
 import com.util.CustomFocusTraversalPolicy;
@@ -296,19 +297,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             exitDialog();
         } else if (e.getSource().equals(bPrint)) {
             Map<String, String> repMap = new LinkedHashMap<String, String>();
-            if (docType == DocType.IN) {
-                repMap.put(LangService.trans("rep0"), "bon.xls");
-                repMap.put(LangService.trans("rep1"), "act1.xls");
-                repMap.put(LangService.trans("rep2"), "act2.xls");
-            } else {
-                repMap.put(LangService.trans("rep3"), "TTN_horiz_graf.xls");
-                repMap.put(LangService.trans("rep4"), "TTN_vertic_graf.xls");
-                repMap.put(LangService.trans("rep5"), "TTN_horiz_negraf.xls");
-                repMap.put(LangService.trans("rep6"), "TTN_horiz_negraf_sum.xls");
-                repMap.put(LangService.trans("rep7"), "NN_vertic_graf.xls");
-                repMap.put(LangService.trans("rep8"), "NN_horiz_graf.xls");
-            }
-            makePrint(repMap);
+            makePrint();
         } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
             changeEdit(null);
         }
@@ -778,30 +767,30 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         return data;
     }
 
-    private void makePrint(Map<String, String> map) {
+    private void makePrint() {
         JPanel p = new JPanel();
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         ButtonGroup bg = new ButtonGroup();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            JRadioButton r0 = new JRadioButton(entry.getKey());
+        for (Report report : docType.getReports()) {
+            JRadioButton r0 = new JRadioButton(LangService.trans(report.getName()));
             bg.add(r0);
             p.add(r0);
         }
 
-        int b = JOptionPane.showOptionDialog(null, p,
-                LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null, null, null);
-        if (b == 0) {
+        if(JOptionPane.showOptionDialog(null, p, LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
+
             for (int i = 0; i < p.getComponentCount(); i++) {
                 JRadioButton rb = (JRadioButton) p.getComponent(i);
                 if (rb.isSelected()) {
-                    printTTN(map.get(rb.getText()));
+                    printTTN(docType.getReports().get(i));
                 }
             }
+
         }
     }
 
-    public void printTTN(String name) {
+    public void printTTN(Report report) {
         try {
             if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
                 throw new Exception(LangService.trans("error.notfoundcompanyelevator"));
@@ -830,9 +819,9 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             params.put(":time_in", dataSet.getValueByName("time_in", 0));
             params.put(":time_out", dataSet.getValueByName("time_out", 0));
 
-            DataSet dataSet2 = Libra.libraService.selectDataSet(SearchType.PRINTTTN, params);
+            DataSet dataSet2 = Libra.libraService.selectDataSet(report.getHeaderSQL(), params);
             repData.addDataSet(dataSet2);
-            Libra.reportService.buildReport("templates/" + name, repData);
+            Libra.reportService.buildReport(report.getTemplate(), repData);
         } catch (Exception e1) {
             e1.printStackTrace();
             Libra.eMsg(e1.getMessage());

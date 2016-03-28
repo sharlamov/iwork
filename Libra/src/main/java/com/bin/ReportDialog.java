@@ -1,13 +1,12 @@
 package com.bin;
 
-import com.enums.ReportType;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.model.Report;
 import com.service.LangService;
 import com.service.LibraService;
 import com.util.Libra;
-import com.view.component.editors.NumberEdit;
 import com.view.component.editors.*;
 import com.view.component.editors.validators.NullValidator;
 
@@ -20,7 +19,7 @@ import java.util.*;
 
 public class ReportDialog extends JDialog implements ActionListener, ChangeEditListener {
 
-    private final ReportType type;
+    private final Report report;
     private JPanel dataPanel;
     private Map<String, Object> params = new HashMap<String, Object>();
     private JButton btnYes = new JButton(LangService.trans("yes"));
@@ -29,9 +28,9 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
     private ComboEdit elevator;
     private ComboEdit div;
 
-    public ReportDialog(ReportType type) {
+    public ReportDialog(Report report) {
         super((JFrame) null, LangService.trans("rep.choose"), true);
-        this.type = type;
+        this.report = report;
         setSize(300, 400);
         setResizable(false);
         setLocationRelativeTo(null);
@@ -57,60 +56,55 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
         dataPanel = new JPanel(new GridLayout(14, 1));
         dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        switch (type) {
-            case OUTCOMES:
-            case INCOMES: {
-                addLabel(dataPanel, "rep.datastart");
-                DateEdit datastart = new DateEdit(":datastart");
-                datastart.setValue(new Date());
-                datastart.requestFocus();
-                dataPanel.add(datastart);
+        if (report.getName().equalsIgnoreCase("repttn")) {
+            addLabel(dataPanel, "rep.datastart");
+            DateEdit datastart = new DateEdit(":datastart");
+            datastart.setValue(new Date());
+            datastart.requestFocus();
+            dataPanel.add(datastart);
 
-                addLabel(dataPanel, "rep.dataend");
-                DateEdit dataend = new DateEdit(":dataend");
-                dataend.setValue(new Date());
-                dataPanel.add(dataend);
+            addLabel(dataPanel, "rep.dataend");
+            DateEdit dataend = new DateEdit(":dataend");
+            dataend.setValue(new Date());
+            dataPanel.add(dataend);
 
-                addLabel(dataPanel, "clcelevatort");
-                elevator = new ComboEdit(":elevator", LibraService.user.getElevators());
-                elevator.addChangeEditListener(this);
-                dataPanel.add(elevator);
+            addLabel(dataPanel, "clcelevatort");
+            elevator = new ComboEdit(":elevator", LibraService.user.getElevators());
+            elevator.addChangeEditListener(this);
+            dataPanel.add(elevator);
 
-                addLabel(dataPanel, "clcdivt");
-                div = new ComboEdit(":div", new ArrayList<CustomItem>());
-                dataPanel.add(div);
-                initDiv();
+            addLabel(dataPanel, "clcdivt");
+            div = new ComboEdit(":div", new ArrayList<CustomItem>());
+            dataPanel.add(div);
+            initDiv();
 
-                addLabel(dataPanel, "clcdep_postavt");
-                SearchEdit filt2 = new SearchEdit(":filt2", Libra.libraService, SearchType.UNIVOIE);
-                dataPanel.add(filt2);
+            addLabel(dataPanel, "clcdep_postavt");
+            SearchEdit filt2 = new SearchEdit(":filt2", Libra.libraService, SearchType.UNIVOIE);
+            dataPanel.add(filt2);
 
-                addLabel(dataPanel, "clcsc_mpt");
-                SearchEdit filt3 = new SearchEdit(":filt3", Libra.libraService, SearchType.CROPS);
-                dataPanel.add(filt3);
+            addLabel(dataPanel, "clcsc_mpt");
+            SearchEdit filt3 = new SearchEdit(":filt3", Libra.libraService, SearchType.CROPS);
+            dataPanel.add(filt3);
 
-                JCheckBox cb1 = new CheckBoxEdit(":cb1", LangService.trans("rep.useDayOut"));
-                dataPanel.add(cb1);
-            }
-            break;
-            case REPTTN: {
-                addLabel(dataPanel, "clcelevatort");
-                elevator = new ComboEdit(":elevator", LibraService.user.getElevators());
-                elevator.addChangeEditListener(this);
-                dataPanel.add(elevator);
+            JCheckBox cb1 = new CheckBoxEdit(":cb1", LangService.trans("rep.useDayOut"));
+            dataPanel.add(cb1);
+        } else {
+            addLabel(dataPanel, "clcelevatort");
+            elevator = new ComboEdit(":elevator", LibraService.user.getElevators());
+            elevator.addChangeEditListener(this);
+            dataPanel.add(elevator);
 
-                addLabel(dataPanel, "clcdivt");
-                div = new ComboEdit(":div", new ArrayList<CustomItem>());
-                dataPanel.add(div);
-                initDiv();
+            addLabel(dataPanel, "clcdivt");
+            div = new ComboEdit(":div", new ArrayList<CustomItem>());
+            dataPanel.add(div);
+            initDiv();
 
-                addLabel(dataPanel, "rep.nrdoc");
-                NumberEdit nrdoc = new NumberEdit(":nrdoc", Libra.decimalFormat);
-                nrdoc.addValidator(new NullValidator(LangService.trans("msg.empty")));
-                nrdoc.requestFocus();
-                dataPanel.add(nrdoc);
-            }
-            default:
+            addLabel(dataPanel, "rep.nrdoc");
+            NumberEdit nrdoc = new NumberEdit(":nrdoc", Libra.decimalFormat);
+            nrdoc.addValidator(new NullValidator(LangService.trans("msg.empty")));
+            nrdoc.requestFocus();
+            dataPanel.add(nrdoc);
+
         }
         add(dataPanel, BorderLayout.CENTER);
     }
@@ -124,15 +118,15 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
                 for (int i = 0; i < dataPanel.getComponentCount(); i++) {
                     Component c = dataPanel.getComponent(i);
                     if (c instanceof IEdit) {
-                        if(!((IEdit) c).verify()){
+                        if (!((IEdit) c).verify()) {
                             isCorrect = false;
                             break;
                         }
                         params.put(c.getName(), ((IEdit) c).getValue());
                     }
                 }
-                if(isCorrect){
-                    Libra.reportService.buildReport(type, params);
+                if (isCorrect) {
+                    Libra.reportService.buildReport(report, params);
                     dispose();
                 }
             } catch (Exception ex) {

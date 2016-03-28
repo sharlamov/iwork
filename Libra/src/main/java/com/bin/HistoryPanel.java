@@ -3,6 +3,7 @@ package com.bin;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
+import com.util.Fonts;
 import com.util.Libra;
 
 import javax.swing.*;
@@ -18,8 +19,6 @@ public class HistoryPanel extends JPanel {
 
     private ImageIcon loaded = Libra.createImageIcon("images/loaded.png", 100, 80);
     private ImageIcon unloaded = Libra.createImageIcon("images/unloaded.png", 100, 80);
-    private Font sumaFont = new Font("Courier", Font.BOLD, 24);
-
     private Dimension dimension = new Dimension(Integer.MAX_VALUE, 90);
 
     public HistoryPanel() {
@@ -57,7 +56,7 @@ public class HistoryPanel extends JPanel {
         JLabel weightLabel = new JLabel(String.valueOf(weight), SwingConstants.CENTER);
         p.add(weightLabel, BorderLayout.EAST);
         weightLabel.setForeground(Color.green);
-        weightLabel.setFont(sumaFont);
+        weightLabel.setFont(Fonts.bold24);
         add(p);
     }
 

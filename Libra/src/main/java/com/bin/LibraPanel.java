@@ -1,16 +1,19 @@
 package com.bin;
 
+import com.docs.DocRo;
+import com.docs.LibraEdit;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Doc;
 import com.service.LangService;
 import com.service.LibraService;
-import com.toedter.calendar.JDateChooser;
 import com.util.Fonts;
 import com.util.Libra;
+import com.util.Pictures;
+import com.view.component.db.editors.ChangeEditListener;
 import com.view.component.db.editors.ComboDbEdit;
-import com.view.component.editors.ChangeEditListener;
+import com.view.component.db.editors.DateDbEdit;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.DataGridSetting;
 
@@ -20,19 +23,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.math.BigDecimal;
-import java.util.*;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, PropertyChangeListener, ItemListener, ChangeEditListener {
+public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, ItemListener, ChangeEditListener {
 
-    private JDateChooser date1 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
-    private JDateChooser date2 = new JDateChooser("dd.MM.yyyy", "##.##.####", '_');
-    private JButton addBtn = new JButton(Libra.createImageIcon("images/add.png"));
-    private JButton refreshBtn = new JButton(Libra.createImageIcon("images/reload.png"));
-    private JToggleButton halfBtn = new JToggleButton(Libra.createImageIcon("images/half.png", 100, 30));
+    private DateDbEdit date1;
+    private DateDbEdit date2;
+    private JButton addBtn = new JButton(Pictures.addIcon);
+    private JButton refreshBtn = new JButton(Pictures.reloadIcon);
+    private JToggleButton halfBtn = new JToggleButton(Pictures.halfIcon);
     private ComboDbEdit elevators;
     private ComboDbEdit divs;
     private DataGrid dataGrid;
@@ -58,10 +61,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.addActs(doc);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
-                JTable table = (JTable) me.getSource();
-                int row = table.rowAtPoint(me.getPoint());
+                int row = dataGrid.getSelectedRow();
                 if (me.getClickCount() == 2 && row != -1) {
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), doc);
+                    openDocument(dataGrid.getDataSetByRow(row));
                 }
             }
         });
@@ -69,8 +71,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.setColumnFont("masa_tara", Fonts.bold12);
         dataGrid.setColumnFont("masa_netto", Fonts.bold12);
 
-        List<String> lst = Arrays.asList("d1", "d2", "elevator", "div", "empty");
-        filter = new DataSet(lst, new Object[lst.size()]);
+        filter = new DataSet(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty"));
 
         tableKeyBindings(dataGrid);
 
@@ -91,14 +92,14 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             public void actionPerformed(ActionEvent ae) {
                 int row = table.getSelectedRow();
                 if (row != -1)
-                    new LibraEdit(pan, dataGrid.getDataSetByRow(row), doc);
+                    openDocument(dataGrid.getDataSetByRow(row));
             }
         });
 
         table.getIMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, 0), "Insert");
         table.getAMap().put("Insert", new AbstractAction() {
             public void actionPerformed(ActionEvent ae) {
-                new LibraEdit(pan, dataGrid.getDataSetByRow(-1), doc);
+                openDocument(dataGrid.getDataSetByRow(-1));
             }
         });
 
@@ -146,19 +147,22 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         toolBar.addSeparator();
 
         Date cDate = Libra.truncDate(null);
+        date1 = new DateDbEdit("d1", filter);
+        date2 = new DateDbEdit("d2", filter);
+
         date1.setDate(cDate);
         date1.setMaximumSize(dateSize);
         date1.setPreferredSize(dateSize);
-        date1.getDateEditor().addPropertyChangeListener(this);
+        date1.addChangeEditListener(this);
         date1.setMaxSelectableDate(date2.getDate());
 
         date2.setDate(cDate);
         date2.setMaximumSize(dateSize);
         date2.setPreferredSize(dateSize);
-        date2.getDateEditor().addPropertyChangeListener(this);
+        date2.addChangeEditListener(this);
         date2.setMinSelectableDate(date1.getDate());
 
-        elevators = new ComboDbEdit("elevator", LibraService.user.getElevators(), filter);
+        elevators = new ComboDbEdit<CustomItem>("silos", LibraService.user.getElevators(), filter);
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
         if (LibraService.user.getElevators().size() > 1) {
@@ -170,7 +174,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.addSeparator();
 
-        divs = new ComboDbEdit("div", new ArrayList<CustomItem>(), filter);
+        divs = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), filter);
         divs.setMaximumSize(new Dimension(100, 27));
         divs.addChangeEditListener(this);
         toolBar.add(divs);
@@ -194,10 +198,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    public void lostCarsInit(Map<String, Object> params) {
-        DataSet lostDS = null;
+    public void lostCarsInit() {
         try {
-            lostDS = Libra.libraService.selectDataSet(doc.getId() == 1 ? SearchType.LOSTCARIN : SearchType.LOSTCAROUT, params);
+            DataSet lostDS = Libra.libraService.executeQuery(doc.getId() == 1 ? SearchType.LOSTCARIN.getSql() : SearchType.LOSTCAROUT.getSql(), filter);
             if (lostDS != null && !lostDS.isEmpty()) {
                 lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
             }
@@ -207,67 +210,57 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    public Map<String, Object> refreshMaster() {
-        Map<String, Object> params = new HashMap<String, Object>();
+    public void refreshMaster() {
         try {
-            params.put(":d1", date1.getDate());
-            params.put(":d2", date2.getDate());
+            CustomItem item = (CustomItem) filter.getValueByName("silos", 0);
+            filter.setValueByName("elevator", 0, item.getId() == null ? LibraService.user.getElevators() : item);
+            filter.setValueByName("empty", 0, halfBtn.isSelected() ? null : BigDecimal.ZERO);
+            dataGrid.select(filter);
 
-            CustomItem item = (CustomItem) elevators.getSelectedItem();
-            params.put(":elevator", item.getId() == null ? LibraService.user.getElevators() : item);
-            params.put(":div", divs.getSelectedItem());
-            params.put(":empty", halfBtn.isSelected() ? null : 0);
-
-            dataGrid.select(params);
-
-            int selectedRow = dataGrid.getSelectedRow();
-            if (selectedRow == -1)
-                refreshDetail(0);
+            //refreshDetail();
         } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
-
-        return params;
     }
 
-    public void refreshDetail(int row) {
-        Object obj = dataGrid.getValueByFieldName("ID", row);
-        if (obj != null && obj instanceof BigDecimal)
-            detail.refreshData((BigDecimal) obj);
+    public void refreshDetail() {
+        if (dataGrid.getRowCount() > 0) {
+            int row = dataGrid.getSelectedRow();
+            Object obj = dataGrid.getValueByFieldName("ID", row == -1 ? 0 : row);
+            if (obj != null && obj instanceof BigDecimal)
+                detail.refreshData((BigDecimal) obj);
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(addBtn)) {
-            new LibraEdit(pan, dataGrid.getDataSetByRow(-1), doc);
+            openDocument(dataGrid.getDataSetByRow(-1));
         } else if (e.getSource().equals(refreshBtn)) {
             refreshMaster();
 
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if ("date".equals(evt.getPropertyName())) {
-            if (evt.getNewValue() != evt.getOldValue()) {
-                refreshMaster();
-                date1.setMaxSelectableDate(date2.getDate());
-                date2.setMinSelectableDate(date1.getDate());
-            }
+    public void openDocument(DataSet dataSet) {
+        if (LibraService.user.getProfile().equalsIgnoreCase("mdauto")) {
+            new LibraEdit(pan, dataSet, doc);
+        } else {
+            new DocRo(pan, dataSet, doc);
         }
     }
 
     public void valueChanged(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
-            int n = dataGrid.getSelectedRow();
-            if (n != -1)
-                refreshDetail(n);
+            refreshDetail();
         }
     }
 
     public void itemStateChanged(ItemEvent e) {
         if (e.getSource().equals(halfBtn)) {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                lostCarsInit(refreshMaster());
+                refreshMaster();
+                lostCarsInit();
             } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 lostCarLabel.setText("");
                 refreshMaster();
@@ -293,6 +286,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             refreshMaster();
         } else if (source.equals(divs)) {
             refreshMaster();
+        } else if (source.equals(date1) || source.equals(date2)) {
+            refreshMaster();
+            date1.setMaxSelectableDate(date2.getDate());
+            date2.setMinSelectableDate(date1.getDate());
         }
     }
 }

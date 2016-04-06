@@ -1,4 +1,4 @@
-package com.view.component.editors.validators;
+package com.view.component.db.editors.validators;
 
 abstract public class AbstractValidator {
 

@@ -25,12 +25,14 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
                                                    boolean isSelected, boolean hasFocus, int row, int col) {
 
         JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        int sorterRow = !table.getAutoCreateRowSorter() || table.getRowSorter() == null ? row : table.getRowSorter().convertRowIndexToModel(row);
 
         if (useBGColor) {
-            Color clr = ((DataSetTableModel) table.getModel()).getRowColor(row);
+
+            Color clr = ((DataSetTableModel) table.getModel()).getRowColor(sorterRow);
             label.setBackground(clr);
 
-            if (table.isCellSelected(row, col)) {
+            if (table.isCellSelected(sorterRow, col)) {
                 setBackground(clr.darker());
             } else
                 setForeground(Color.black);

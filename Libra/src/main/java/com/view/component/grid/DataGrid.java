@@ -23,7 +23,7 @@ public class DataGrid extends JPanel {
     private JTable tbl;
     private DataSetTableModel dtm;
     private int dataGridWith;
-    private Map<String, Object> params;
+    private DataSet params;
     private Map<Integer, Font> columnFonts = new HashMap<Integer, Font>();
     private SummaryRow summaryRow;
     private Map<String, String> summaryMap;
@@ -170,7 +170,7 @@ public class DataGrid extends JPanel {
         add(tb, BorderLayout.NORTH);
     }
 
-    public int select(Map<String, Object> params) throws Exception {
+    public int select(DataSet params) throws Exception {
         this.params = params;
         if (tbl.getAutoCreateRowSorter()) {
             tbl.setRowSorter(null);
@@ -178,7 +178,7 @@ public class DataGrid extends JPanel {
             tbl.getTableHeader().revalidate();
             tbl.setAutoCreateRowSorter(true);
         }
-        DataSet d = libraService.selectDataSet(sql, params);
+        DataSet d = libraService.executeQuery(sql, params);
         dtm.publish(d);
 
         refreshSummary();
@@ -194,18 +194,18 @@ public class DataGrid extends JPanel {
     }
 
     public int getSelectedRow() {
-        return tbl.getSelectedRow();
+        return getCurrentRow(tbl.getSelectedRow());
     }
 
     public void setSelectedRow(int row) {
-        if (row != -1){
+        if (row != -1) {
             tbl.setRowSelectionInterval(row, row);
             scrollToVisible(row);
         }
     }
 
     public void scrollToVisible(int rowIndex) {
-        tbl.scrollRectToVisible(tbl.getCellRect(rowIndex,0, true));
+        tbl.scrollRectToVisible(tbl.getCellRect(rowIndex, 0, true));
     }
 
     public Object getValueByFieldName(String id, int row) {
@@ -272,5 +272,9 @@ public class DataGrid extends JPanel {
 
     public int defineLocation(String fieldName, Object value) {
         return dtm.defineLocation(fieldName, value);
+    }
+
+    private int getCurrentRow(int row) {
+        return row == -1 || !tbl.getAutoCreateRowSorter() || tbl.getRowSorter() == null ? row : tbl.getRowSorter().convertRowIndexToModel(row);
     }
 }

@@ -1,8 +1,7 @@
-package com.view.component.editors;
+package com.view.component.db.editors;
 
-import com.model.CustomItem;
 import com.model.DataSet;
-import com.view.component.editors.validators.AbstractValidator;
+import com.view.component.db.editors.validators.AbstractValidator;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.BalloonTipStyle;
 import net.java.balloontip.styles.EdgedBalloonStyle;
@@ -11,26 +10,35 @@ import net.java.balloontip.utils.TimingUtils;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.*;
-import java.math.BigDecimal;
+import java.awt.event.FocusEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, IEdit, ItemListener {
+public class TextDbEdit extends JTextField implements KeyListener, IEdit {
 
+    private final DataSet dataSet;
+    private final Color oldBackground;
+    private final Color editBackground;
+    private Format format = new DecimalFormat("#,###.##");
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
     private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
-    public ComboEdit(String name, List<CustomItem> list) {
-        oldBorder = getBorder();
+    public TextDbEdit(String name, DataSet dataSet) {
+        this.dataSet = dataSet;
         setName(name);
-        addItemListener(this);
-        addKeyListener(this);
+        oldBorder = getBorder();
+        oldBackground = getBackground();
+        editBackground = Color.decode("#FCFCEB");
+
         addFocusListener(this);
-        for (CustomItem o : list) {
-            addItem(o);
-        }
+        addKeyListener(this);
+
+        refresh();
     }
 
     public void addValidator(AbstractValidator validator) {
@@ -54,74 +62,45 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, IEd
         TimingUtils.showTimedBalloon(myBalloonTip, 3000);
     }
 
-    public void changeData(DataSet dataSet) {
-        removeAllItems();
-        for (Object[] o : dataSet) {
-            addItem((CustomItem) o[0]);
-        }
-    }
-
     public void addChangeEditListener(ChangeEditListener listener) {
         listeners.add(listener);
     }
 
     public void fireChangeEditEvent() {
-        if (listeners != null) {
-            for (ChangeEditListener hl : listeners)
-                hl.changeEdit(this);
-        }
+        for (ChangeEditListener hl : listeners)
+            hl.changeEdit(this);
     }
 
     public void setChangeable(boolean isChangeable) {
         setEnabled(isChangeable);
+        setDisabledTextColor(Color.black);
+        setFocusable(isChangeable);
     }
 
     public Object getValue() {
-        return getSelectedItem();
+        return dataSet.getValueByName(getName(), 0);
     }
 
     public void setValue(Object value) {
-        boolean exists = false;
-        int n = getModel().getSize();
-        for (int i = 0; i < n; i++) {
-            Object obj = getModel().getElementAt(i);
-            if(value instanceof BigDecimal && obj instanceof  CustomItem){
-                if (((CustomItem) obj).getId().equals(value)) {
-                    value = obj;
-                    exists = true;
-                    break;
-                }
-            }else if (obj.equals(value)) {
-                exists = true;
-                break;
-            }
+        if (value == null || value.toString().isEmpty()) {
+            dataSet.setValueByName(getName(), 0, null);
+            setText("");
+        } else {
+            dataSet.setValueByName(getName(), 0, value);
+            setText(value.toString());
         }
-        if (!exists) {
-            addItem((CustomItem) value);
-        }
-        setSelectedItem(value);
-    }
-
-    public boolean isEmpty() {
-        return getValue() == null;
+        fireChangeEditEvent();
     }
 
     public void focusGained(FocusEvent e) {
         setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        setBackground(editBackground);
     }
 
     public void focusLost(FocusEvent e) {
+        setValue(getText());
         setBorder(oldBorder);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        fireChangeEditEvent();
-    }
-
-    public void itemStateChanged(ItemEvent e) {
-        if (e.getStateChange() == ItemEvent.SELECTED) {
-            fireChangeEditEvent();
-        }
+        setBackground(oldBackground);
     }
 
     public void keyTyped(KeyEvent e) {
@@ -135,6 +114,28 @@ public class ComboEdit extends JComboBox<CustomItem> implements KeyListener, IEd
     }
 
     public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+            refresh();
+        }
+    }
 
+    public boolean isEmpty() {
+        return getValue() == null;
+    }
+
+    public void refresh() {
+        setValue(getValue());
+    }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
+
+    public Format getFormat() {
+        return format;
+    }
+
+    public void setFormat(Format format) {
+        this.format = format;
     }
 }

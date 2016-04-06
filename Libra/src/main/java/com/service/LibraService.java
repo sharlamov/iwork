@@ -96,6 +96,29 @@ public class LibraService {
         return selectDataSet(type.getSql(), params);
     }
 
+    public DataSet executeQuery(String query, DataSet dataSet) throws Exception {
+        Matcher m = paramsPattern.matcher(query);
+        List<Object> objects = new ArrayList<Object>();
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            Object obj = dataSet.getValueByName(m.group().substring(1), 0);
+
+            if (obj instanceof List) {
+                StringBuilder commaList = new StringBuilder();
+                for (Object item : ((List) obj)) {
+                    commaList.append("?,");
+                    objects.add(item);
+                }
+                m.appendReplacement(sb, commaList.toString().replaceAll(",$", ""));
+            } else {
+                objects.add(obj);
+                m.appendReplacement(sb, "?");
+            }
+        }
+        m.appendTail(sb);
+        return dao.select(sb.toString(), objects.toArray());
+    }
+
     public DataSet selectDataSet(String query, Map<String, Object> params) throws Exception {
         Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
@@ -120,15 +143,6 @@ public class LibraService {
         return dao.select(sb.toString(), objects.toArray());
     }
 
-    public DataSet filterDataSet(SearchType searchType, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
-        StringBuilder query = new StringBuilder("select * from (" + searchType.getSql() + ") where 1 = 1");
-        for (Map.Entry<String, String> entry : filterMap.entrySet()) {
-            query.append(" and lower(").append(entry.getKey()).append(") like :").append(entry.getKey());
-            params.put(":" + entry.getKey(), entry.getValue());
-        }
-        return selectDataSet(query.toString(), params);
-    }
-
     public DataSet filterDataSet(String sql, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
         StringBuilder query = new StringBuilder("select * from (" + sql + ") where 1 = 1");
         for (Map.Entry<String, String> entry : filterMap.entrySet()) {
@@ -136,6 +150,15 @@ public class LibraService {
             params.put(":" + entry.getKey(), entry.getValue());
         }
         return selectDataSet(query.toString(), params);
+    }
+
+    public DataSet filterDataSet(String sql, DataSet params, Map<String, String> filterMap) throws Exception {
+        StringBuilder query = new StringBuilder("select * from (" + sql + ") where 1 = 1");
+        for (Map.Entry<String, String> entry : filterMap.entrySet()) {
+            query.append(" and lower(").append(entry.getKey()).append(") like :").append(entry.getKey());
+            params.addField(entry.getKey(), entry.getValue());
+        }
+        return executeQuery(query.toString(), params);
     }
 
     public void initContext(String adminLevel, String userID, String limit) throws Exception {

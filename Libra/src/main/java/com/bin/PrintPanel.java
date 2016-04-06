@@ -5,8 +5,12 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LangService;
 import com.util.Libra;
-import com.view.component.editors.*;
-import com.view.component.editors.NumberEdit;
+import com.view.component.db.editors.ComboDbEdit;
+import com.view.component.db.editors.DateDbEdit;
+import com.view.component.db.editors.NumberDbEdit;
+import com.view.component.db.editors.TextDbEdit;
+import com.view.component.db.editors.ChangeEditListener;
+import com.view.component.db.editors.IEdit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,24 +23,23 @@ import java.util.Map;
 
 public class PrintPanel extends JPanel implements ChangeEditListener {
 
-    private CommonEdit plc0;
+    private TextDbEdit plc0;
     private DataSet printData;
-    private CommonEdit pl13c;
-    private CommonEdit pl14c;
-    private CommonEdit pl10c;
-    private ComboEdit tva;
-    private NumberEdit price;
-    private NumberEdit priceTva;
+    private TextDbEdit pl13c;
+    private TextDbEdit pl14c;
+    private TextDbEdit pl10c;
+    private ComboDbEdit tva;
+    private NumberDbEdit price;
+    private NumberDbEdit priceTva;
     private DataSet dataSet;
-    private NumberEdit total;
-    private NumberEdit sumaTva;
-    private NumberEdit suma;
-    private CommonEdit pl9c;
+    private NumberDbEdit total;
+    private NumberDbEdit sumaTva;
+    private NumberDbEdit suma;
+    private TextDbEdit pl9c;
 
     public PrintPanel(DataSet dataSet) {
         super(null);
         this.dataSet = dataSet;
-        createField();
 
         try {
             printData = Libra.libraService.selectDataSet(SearchType.SCALEPRINTDATA,
@@ -49,6 +52,8 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
+
+        createField();
     }
 
     public void initFields() {
@@ -65,41 +70,25 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
         add(comp);
     }
 
-    public void blockPanel(boolean blocked) {
-        for (int j = 0; j < getComponentCount(); j++) {
-            Component c = getComponent(j);
-            if (c instanceof IEdit) {
-                ((IEdit) c).setChangeable(blocked);
-            }
-        }
-    }
-
     public DataSet getDataSet() {
-        for (int j = 0; j < getComponentCount(); j++) {
-            Component c = getComponent(j);
-            if (c instanceof IEdit) {
-                printData.setValueByName(c.getName(), 0, ((IEdit) c).getValue());
-            }
-        }
-
         String value1 = printData.getStringValue("pl1c", 0);
-        printData.setValueByName("pl1c", 0, value1.replace(" ", "").toUpperCase());
+        printData.setValueByName("pl1c", 0, value1.replaceAll(" ", "").toUpperCase());
 
         String value2 = printData.getStringValue("pl4c", 0);
-        printData.setValueByName("pl4c", 0, value2.replace(" ", "").toUpperCase());
+        printData.setValueByName("pl4c", 0, value2.replaceAll(" ", "").toUpperCase());
 
         return printData;
     }
 
-    public void initData(Object divId, Object place, Object elevator) {
+    public void initData(IEdit divId, IEdit place, IEdit elevator) {
         plc0.requestFocus();
         setFocusCycleRoot(true);
 
         DataSet set = null;
         try {
             Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":exped", divId);
-            params.put(":clcelevatort", elevator);
+            params.put(":exped", divId.getValue());
+            params.put(":clcelevatort", elevator.getValue());
             set = Libra.libraService.selectDataSet(SearchType.DATABYELEVATOR, params);
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,9 +113,9 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
             }
         }
 
-        if (pl10c.getText().isEmpty()) {
-            if (place instanceof CustomItem) {
-                String str = ((CustomItem) place).getLabel();
+        if (pl10c.getText().isEmpty() && place != null) {
+            if (place.getValue() instanceof CustomItem) {
+                String str = ((CustomItem) place.getValue()).getLabel();
                 int n = str.indexOf(',');
                 if (n != -1) {
                     str = str.substring(0, n);
@@ -142,91 +131,91 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
         addToPanel(10, 10, 100, pl0);
         JLabel pl1 = new JLabel(LangService.trans("print.p1"));
         addToPanel(150, 10, 70, pl1);
-        plc0 = new CommonEdit("pl1c");
+        plc0 = new TextDbEdit("pl1c", printData);
         addToPanel(200, 10, 100, plc0);
         JLabel pl2 = new JLabel(LangService.trans("print.p2"));
         addToPanel(320, 10, 30, pl2);
-        CommonEdit pln0 = new CommonEdit("pl2c");
+        TextDbEdit pln0 = new TextDbEdit("pl2c", printData);
         addToPanel(340, 10, 100, pln0);
         JLabel pl3 = new JLabel(LangService.trans("print.p3"));
         addToPanel(460, 10, 50, pl3);
-        DateEdit pld0 = new DateEdit("pl3c");
+        DateDbEdit pld0 = new DateDbEdit("pl3c", printData);
         addToPanel(500, 10, 100, pld0);
 
         JLabel pl4 = new JLabel(LangService.trans("print.p4"));
         addToPanel(10, 40, 100, pl4);
-        CommonEdit pl4c = new CommonEdit("pl4c");
+        TextDbEdit pl4c = new TextDbEdit("pl4c", printData);
         addToPanel(150, 40, 200, pl4c);
         JLabel pl5 = new JLabel(LangService.trans("print.p5"));
         addToPanel(10, 70, 100, pl5);
-        CommonEdit pl5c = new CommonEdit("pl5c");
+        TextDbEdit pl5c = new TextDbEdit("pl5c", printData);
         addToPanel(150, 70, 200, pl5c);
         JLabel pl6 = new JLabel(LangService.trans("print.p6"));
         addToPanel(360, 40, 100, pl6);
-        DateEdit pl6d = new DateEdit("pl6c");
+        DateDbEdit pl6d = new DateDbEdit("pl6c", printData);
         addToPanel(460, 40, 200, pl6d);
         JLabel pl7 = new JLabel(LangService.trans("print.p7"));
         addToPanel(360, 70, 100, pl7);
-        CommonEdit pl7c = new CommonEdit("pl7c");
+        TextDbEdit pl7c = new TextDbEdit("pl7c", printData);
         addToPanel(460, 70, 200, pl7c);
 
         JLabel pl8 = new JLabel(LangService.trans("print.p8"));
         addToPanel(10, 100, 170, pl8);
-        CommonEdit pl8c = new CommonEdit("pl8c");
+        TextDbEdit pl8c = new TextDbEdit("pl8c", printData);
         addToPanel(200, 100, 460, pl8c);
 
         JLabel pl9 = new JLabel(LangService.trans("print.p9"));
         addToPanel(10, 130, 100, pl9);
-        pl9c = new CommonEdit("pl9c");
+        pl9c = new TextDbEdit("pl9c", printData);
         addToPanel(150, 130, 200, pl9c);
         JLabel pl10 = new JLabel(LangService.trans("print.p10"));
         addToPanel(360, 130, 100, pl10);
-        pl10c = new CommonEdit("pl10c");
+        pl10c = new TextDbEdit("pl10c", printData);
         addToPanel(460, 130, 200, pl10c);
 
         JLabel pl11 = new JLabel(LangService.trans("print.p11"));
         addToPanel(10, 160, 150, pl11);
-        CommonEdit pl11c = new CommonEdit("pl11c");
+        TextDbEdit pl11c = new TextDbEdit("pl11c", printData);
         addToPanel(150, 160, 510, pl11c);
 
         JLabel pl12 = new JLabel(LangService.trans("print.p12"));
         addToPanel(10, 190, 150, pl12);
-        CommonEdit pl12c = new CommonEdit("pl12c");
+        TextDbEdit pl12c = new TextDbEdit("pl12c", printData);
         addToPanel(150, 190, 510, pl12c);
 
         JLabel pl13 = new JLabel(LangService.trans("print.p13"));
         addToPanel(10, 220, 100, pl13);
-        pl13c = new CommonEdit("pl13c");
+        pl13c = new TextDbEdit("pl13c", printData);
         addToPanel(150, 220, 200, pl13c);
         JLabel pl14 = new JLabel(LangService.trans("print.p14"));
         addToPanel(360, 220, 100, pl14);
-        pl14c = new CommonEdit("pl14c");
+        pl14c = new TextDbEdit("pl14c", printData);
         addToPanel(460, 220, 200, pl14c);
 
 
         JLabel pl15 = new JLabel(LangService.trans("print.p15"));
         addToPanel(10, 250, 150, pl15);
-        CommonEdit pl15c = new CommonEdit("pl15c");
+        TextDbEdit pl15c = new TextDbEdit("pl15c", printData);
         addToPanel(150, 250, 510, pl15c);
 
         JLabel pl16 = new JLabel(LangService.trans("print.p16"));
         addToPanel(10, 280, 200, pl16);
-        CommonEdit pl16c = new CommonEdit("pl16c");
+        TextDbEdit pl16c = new TextDbEdit("pl16c", printData);
         addToPanel(250, 280, 410, pl16c);
 
         JLabel pl17 = new JLabel(LangService.trans("print.p17"));
         addToPanel(10, 310, 200, pl17);
-        CommonEdit pl17c = new CommonEdit("pl17c");
+        TextDbEdit pl17c = new TextDbEdit("pl17c", printData);
         addToPanel(250, 310, 410, pl17c);
 
         JLabel pl18 = new JLabel(LangService.trans("print.p18"));
         addToPanel(10, 340, 200, pl18);
-        CommonEdit pl18c = new CommonEdit("pl18c");
+        TextDbEdit pl18c = new TextDbEdit("pl18c", printData);
         addToPanel(250, 340, 410, pl18c);
 
         JLabel pl19 = new JLabel(LangService.trans("print.p19"));
         addToPanel(10, 370, 200, pl19);
-        CommonEdit pl19c = new CommonEdit("pl19c");
+        TextDbEdit pl19c = new TextDbEdit("pl19c", printData);
         addToPanel(250, 370, 410, pl19c);
 
         //--------------
@@ -243,29 +232,33 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
         JLabel totalLabel = new JLabel(LangService.trans("print.total"));
         addToPanel(560, 410, 100, totalLabel);
 
-        tva = new ComboEdit("tva", Arrays.asList(new CustomItem(20, "20%"), new CustomItem(8, "8%"), new CustomItem(0, "0%"), new CustomItem(-1, LangService.trans("print.tvanone"))));
+        tva = new ComboDbEdit("tva", Arrays.asList(new CustomItem(20, "20%"), new CustomItem(8, "8%"), new CustomItem(0, "0%"), new CustomItem(-1, LangService.trans("print.tvanone"))), printData);
         tva.setSelectedIndex(0);
         tva.addChangeEditListener(this);
         addToPanel(10, 435, 100, tva);
-        priceTva = new NumberEdit("priceTva", Libra.decimalFormat);
+        priceTva = new NumberDbEdit("priceTva", printData);
         priceTva.addChangeEditListener(this);
         addToPanel(120, 435, 100, priceTva);
-        price = new NumberEdit("price", Libra.decimalFormat2);
+        price = new NumberDbEdit("price", printData);
+        price.setFormat(Libra.decimalFormat2);
         price.setChangeable(false);
         addToPanel(230, 435, 100, price);
-        suma = new NumberEdit("suma", Libra.decimalFormat2);
+        suma = new NumberDbEdit("suma", printData);
+        suma.setFormat(Libra.decimalFormat2);
         suma.setChangeable(false);
         addToPanel(340, 435, 100, suma);
-        sumaTva = new NumberEdit("sumaTva", Libra.decimalFormat2);
+        sumaTva = new NumberDbEdit("sumaTva", printData);
+        sumaTva.setFormat(Libra.decimalFormat2);
         sumaTva.setChangeable(false);
         addToPanel(450, 435, 100, sumaTva);
-        total = new NumberEdit("total", Libra.decimalFormat2);
+        total = new NumberDbEdit("total", printData);
+        total.setFormat(Libra.decimalFormat2);
         total.setChangeable(false);
         addToPanel(560, 435, 100, total);
 
         JLabel tipTaraLabel = new JLabel(LangService.trans("print.tara"));
         addToPanel(10, 475, 100, tipTaraLabel);
-        CommonEdit tipTara = new CommonEdit("tipTara");
+        TextDbEdit tipTara = new TextDbEdit("tipTara", printData);
         addToPanel(250, 475, 100, tipTara);
     }
 

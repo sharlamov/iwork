@@ -4,6 +4,7 @@ import com.driver.ScalesDriver;
 import com.service.LangService;
 import com.service.SettingsService;
 import com.util.Libra;
+import com.util.Pictures;
 import com.view.component.weightboard.WeightBoard;
 import jssc.SerialPortException;
 
@@ -14,7 +15,7 @@ import java.awt.event.ActionListener;
 
 public class ScaleOnlinePanel extends JPanel implements ActionListener {
 
-    private JButton find = new JButton(LangService.trans("findScales"), Libra.createImageIcon("images/find.png"));
+    private JButton find = new JButton(LangService.trans("findScales"), Pictures.findIcon);
 
     public ScaleOnlinePanel() {
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));

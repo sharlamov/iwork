@@ -8,6 +8,7 @@ import com.util.Fonts;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.util.Random;
 
 public class WeightBoard extends JPanel implements ScaleEventListener {
 
@@ -56,7 +57,8 @@ public class WeightBoard extends JPanel implements ScaleEventListener {
 
     public Integer getWeight() {
         String value = score.getText();
-        return value.isEmpty() ? null : Integer.valueOf(value);
+        //return value.isEmpty() ? null : Integer.valueOf(value);
+        return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
     }
 
     public void setWeight(Integer weight) {

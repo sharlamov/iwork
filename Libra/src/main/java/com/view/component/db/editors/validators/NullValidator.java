@@ -1,4 +1,4 @@
-package com.view.component.editors.validators;
+package com.view.component.db.editors.validators;
 
 public class NullValidator extends AbstractValidator {
 

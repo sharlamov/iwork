@@ -1,37 +1,35 @@
-package com.view.component.editors;
+package com.view.component.db.editors;
 
-import com.view.component.editors.validators.AbstractValidator;
+import com.model.DataSet;
+import com.view.component.db.editors.validators.AbstractValidator;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.BalloonTipStyle;
 import net.java.balloontip.styles.EdgedBalloonStyle;
 import net.java.balloontip.utils.TimingUtils;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CheckBoxEdit extends JCheckBox implements KeyListener, FocusListener, IEdit, ChangeListener {
+public class CheckDbEdit extends JCheckBox implements KeyListener, IEdit, ItemListener {
 
-    private Border oldBorder;
+    private final DataSet dataSet;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
     private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
-    public CheckBoxEdit(String name, String text) {
+    public CheckDbEdit(String name, String text, DataSet dataSet) {
         super(text);
-        oldBorder = getBorder();
+        this.dataSet = dataSet;
         setName(name);
 
-        addChangeListener(this);
+        addItemListener(this);
         addKeyListener(this);
         addFocusListener(this);
+
+        refresh();
     }
 
     public void addValidator(AbstractValidator validator) {
@@ -71,26 +69,25 @@ public class CheckBoxEdit extends JCheckBox implements KeyListener, FocusListene
     }
 
     public Object getValue() {
-        return isSelected() ? 1 : 0;
+        return isSelected() ? BigDecimal.ONE : BigDecimal.ZERO;
     }
 
     public void setValue(Object value) {
-        if (value instanceof Integer) {
-            setSelected(((Integer) value) != 0);
-        } else
-            setSelected(false);
+        setSelected(value instanceof Number && ((Number) value).intValue() > 0);
     }
 
     public boolean isEmpty() {
         return !isSelected();
     }
 
+    public void refresh() {
+        setSelected(dataSet.getNumberValue(getName(), 0).intValue() > 0);
+    }
+
     public void focusGained(FocusEvent e) {
-        setBorder(BorderFactory.createLineBorder(Color.GREEN));
     }
 
     public void focusLost(FocusEvent e) {
-        setBorder(oldBorder);
     }
 
     public void keyTyped(KeyEvent e) {
@@ -107,7 +104,8 @@ public class CheckBoxEdit extends JCheckBox implements KeyListener, FocusListene
 
     }
 
-    public void stateChanged(ChangeEvent e) {
+    public void itemStateChanged(ItemEvent e) {
+        dataSet.setValueByName(getName(), 0, getValue());
         fireChangeEditEvent();
     }
 }

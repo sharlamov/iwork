@@ -5,6 +5,7 @@ import com.service.LangService;
 import com.service.LibraService;
 import com.service.SettingsService;
 import com.util.Libra;
+import com.util.Pictures;
 import com.view.component.panel.CustomPanel;
 import oracle.net.ns.NetException;
 
@@ -39,7 +40,7 @@ public class LoginView extends JFrame implements ActionListener {
         if (Libra.autoLogin == 1) {
             login(userText.getText(), passwordText.getPassword());
         } else {
-            Image img = Libra.getImage("images/logo.jpg", x, y);
+            Image img = Pictures.getImage("images/logo.jpg", x, y);
             CustomPanel panel = new CustomPanel(img);
             add(panel);
             placeComponents(panel);

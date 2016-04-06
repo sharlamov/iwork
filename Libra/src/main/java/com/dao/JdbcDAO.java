@@ -78,7 +78,8 @@ public class JdbcDAO {
             int i = 0;
             for (Map.Entry<String, int[]> entry : map.entrySet()) {
                 if (entry.getValue().length > 1) {
-                    row[i++] = new CustomItem(rs.getObject(entry.getValue()[0]), rs.getObject(entry.getValue()[1]));
+                    Object id = rs.getObject(entry.getValue()[0]);
+                    row[i++] = id == null ? null : new CustomItem(id, rs.getObject(entry.getValue()[1]));
                 } else {
                     row[i++] = rs.getObject(entry.getValue()[0]);
                 }
@@ -121,6 +122,7 @@ public class JdbcDAO {
         int p = params != null ? params.length : 0;
 
         CallableStatement cs = getConnection().prepareCall(query);
+
         initParams(cs, params);
         if (q - p == 1) {
             cs.registerOutParameter(q, Types.DECIMAL);

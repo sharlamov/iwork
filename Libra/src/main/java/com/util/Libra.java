@@ -5,7 +5,6 @@ import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
@@ -53,36 +52,8 @@ public class Libra {
     public static String fMsg(String name, String query, String text, Component parent) {
         return (String) JOptionPane.showInputDialog(
                 parent, LangService.trans(query), LangService.trans(name),
-                JOptionPane.PLAIN_MESSAGE, createImageIcon("images/filter.png"), null, text);
+                JOptionPane.PLAIN_MESSAGE, Pictures.filterIcon, null, text);
     }
-
-    public static Image getImage(String path, int x, int y) {
-        try {
-            java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
-            if (imgURL != null) {
-                return ImageIO.read(imgURL).getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
-    }
-
-    public static ImageIcon createImageIcon(String path, int x, int y) {
-        Image img = getImage(path, x, y);
-        return img != null ? new ImageIcon(img) : null;
-    }
-
 
     public static Object encodePass(char[] pass) {
         BigDecimal TEN = new BigDecimal(10);

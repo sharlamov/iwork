@@ -1,6 +1,6 @@
-package com.view.component.editors;
+package com.view.component.db.editors;
 
-import com.view.component.editors.validators.AbstractValidator;
+import com.view.component.db.editors.validators.AbstractValidator;
 
 import java.awt.event.FocusListener;
 
@@ -25,4 +25,6 @@ public interface IEdit extends FocusListener {
     String getName();
 
     boolean isEmpty();
+
+    void refresh();
 }

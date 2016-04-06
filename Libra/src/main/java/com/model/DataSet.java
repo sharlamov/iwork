@@ -3,6 +3,7 @@ package com.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,8 +21,13 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         this.addAll(Collections.singletonList(list));
     }
 
+    public DataSet(String names) {
+        this.names = Arrays.asList(names.split(","));
+    }
+
     public DataSet(List<String> names) {
         this.names = names;
+        add(new Object[names.size()]);
     }
 
     public DataSet() {
@@ -31,6 +37,11 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
 
     public DataSet(DataSet dataSet) {
         this(dataSet.names, dataSet);
+    }
+
+    public DataSet(String fieldName, Object value) {
+        names = Collections.singletonList(fieldName);
+        add(new Object[]{value});
     }
 
     public int findField(String fieldName) {
@@ -76,6 +87,9 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
     public void setValueByName(String fieldName, int row, Object value) {
         int col = findField(fieldName);
         if (col != -1) {
+            if (isEmpty()) {
+                add(new Object[names.size()]);
+            }
             get(row)[col] = value;
         }
     }
@@ -122,7 +136,8 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
     }
 
     public DataSet copy() {
-        DataSet newDataSet = new DataSet(names);
+        DataSet newDataSet = new DataSet(new ArrayList<String>(names));
+        newDataSet.clear();
 
         for (Object[] row : this) {
             Object[] newRow = new Object[row.length];
@@ -145,21 +160,26 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return newDataSet;
     }
 
-    public boolean isDifferent(DataSet aDataSet) {
-        if (size() != aDataSet.size() || names.size() != aDataSet.names.size())
-            return true;
+    public boolean isEqual(DataSet aDataSet) {
+        if (aDataSet == null || size() != aDataSet.size() || names.size() != aDataSet.names.size())
+            return false;
 
         for (int i = 0; i < this.size(); i++) {
             Object[] fRow = get(i);
             Object[] aRow = aDataSet.get(i);
 
-            for (int i1 = 0; i1 < fRow.length; i1++) {
-                if (fRow[i1].equals(aRow[i1]))
-                    return true;
+            for (int y = 0; y < fRow.length; y++) {
+                if (aRow[y] != null || fRow[y] != null) {
+                    if (aRow[y] == null || fRow[y] == null) {
+                        return false;
+                    } else if (!fRow[y].equals(aRow[y])) {
+                        return false;
+                    }
+                }
             }
         }
 
-        return false;
+        return true;
     }
 
     public List<String> getNames() {

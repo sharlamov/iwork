@@ -5,6 +5,7 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.util.Fonts;
 import com.util.Libra;
+import com.util.Pictures;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -17,20 +18,20 @@ import static com.util.Libra.eMsg;
 
 public class HistoryPanel extends JPanel {
 
-    private ImageIcon loaded = Libra.createImageIcon("images/loaded.png", 100, 80);
-    private ImageIcon unloaded = Libra.createImageIcon("images/unloaded.png", 100, 80);
+
     private Dimension dimension = new Dimension(Integer.MAX_VALUE, 90);
+    private Dimension size = new Dimension(200, 300);
 
     public HistoryPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        setMaximumSize(new Dimension(200, 300));
-        setPreferredSize(new Dimension(200, 300));
+        setMaximumSize(size);
+        setPreferredSize(size);
     }
 
     public void refreshData(BigDecimal id) {
         removeAll();
         try {
-            DataSet dataSet = Libra.libraService.selectDataSet(SearchType.HISTORY, Collections.singletonMap(":id", (Object)id));
+            DataSet dataSet = Libra.libraService.selectDataSet(SearchType.HISTORY, Collections.singletonMap(":id", (Object) id));
             for (Object[] objects : dataSet) {
                 addInfo((BigDecimal) objects[0], (Date) objects[1], (CustomItem) objects[2], (BigDecimal) objects[3]);
             }
@@ -47,7 +48,7 @@ public class HistoryPanel extends JPanel {
         p.setMaximumSize(dimension);
         p.setPreferredSize(dimension);
         p.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        JLabel l = new JLabel(direction.intValue() == 1 ? loaded : unloaded);
+        JLabel l = new JLabel(direction.intValue() == 1 ? Pictures.loadedIcon : Pictures.unloadedIcon);
         p.add(l, BorderLayout.WEST);
         JLabel userLabel = new JLabel(user.toString(), SwingConstants.CENTER);
         p.add(userLabel, BorderLayout.NORTH);

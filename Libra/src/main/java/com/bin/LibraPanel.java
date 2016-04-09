@@ -270,7 +270,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     private void initDiv() {
         try {
-            DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", elevators.getValue()));
+            DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", elevators.getValue()));
             divs.changeData(divSet);
             divs.setSelectedItem(LibraService.user.getDefDiv());
             divs.setVisible(divSet.size() > 1);

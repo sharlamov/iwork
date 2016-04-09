@@ -13,26 +13,30 @@ public class JdbcDAO {
 
     public Connection connection;
 
+    private void addInParam(PreparedStatement stmt, int i, Object value) throws SQLException {
+        if (value == null) {
+            stmt.setNull(i, Types.NULL);
+        } else if (value instanceof Timestamp) {
+            stmt.setTimestamp(i, (Timestamp) value);
+        } else if (value instanceof Date) {
+            stmt.setDate(i, new java.sql.Date(((Date) value).getTime()));
+        } else if (value instanceof BigDecimal) {
+            stmt.setBigDecimal(i, (BigDecimal) value);
+        } else if (value instanceof Integer) {
+            stmt.setInt(i, (Integer) value);
+        } else if (value instanceof Long) {
+            stmt.setLong(i, (Long) value);
+        } else if (value instanceof CustomItem) {
+            stmt.setBigDecimal(i, ((CustomItem) value).getId());
+        } else {
+            stmt.setString(i, value.toString());
+        }
+    }
+
     private void initParams(PreparedStatement stmt, Object[] params) throws SQLException {
         if (params != null) {
             for (int i = 0; i < params.length; i++) {
-                if (params[i] == null) {
-                    stmt.setNull(i + 1, Types.NULL);
-                } else if (params[i] instanceof Timestamp) {
-                    stmt.setTimestamp(i + 1, (Timestamp) params[i]);
-                } else if (params[i] instanceof Date) {
-                    stmt.setDate(i + 1, new java.sql.Date(((Date) params[i]).getTime()));
-                } else if (params[i] instanceof BigDecimal) {
-                    stmt.setBigDecimal(i + 1, (BigDecimal) params[i]);
-                } else if (params[i] instanceof Integer) {
-                    stmt.setInt(i + 1, (Integer) params[i]);
-                } else if (params[i] instanceof Long) {
-                    stmt.setLong(i + 1, (Long) params[i]);
-                } else if (params[i] instanceof CustomItem) {
-                    stmt.setBigDecimal(i + 1, ((CustomItem) params[i]).getId());
-                } else {
-                    stmt.setString(i + 1, params[i].toString());
-                }
+                addInParam(stmt, i + 1, params[i]);
             }
         }
     }
@@ -117,12 +121,34 @@ public class JdbcDAO {
         getConnection().commit();
     }
 
+    public DataSet execute1(String query, List<Object[]> params) throws Exception {
+        CallableStatement cs = getConnection().prepareCall(query);
+
+        DataSet set = new DataSet();
+        for (int i = 0; i < params.size(); i++) {
+            Object[] param = params.get(i);
+            Integer nType = (Integer) param[0];
+            String pName = (String) param[1];
+            if (nType == 1) {
+                cs.registerOutParameter(i + 1, Types.LONGVARCHAR);
+                set.addField(pName, i + 1);
+            } else {
+                addInParam(cs, i + 1, param[2]);
+            }
+        }
+        cs.execute();
+
+        for (String s : set.getNames()) {
+            set.setValueByName(s, 0, cs.getObject((Integer) set.getValueByName(s, 0)));
+        }
+        return set;
+    }
+
     public BigDecimal execute(String query, Object[] params) throws Exception {
         int q = query.length() - query.replace("?", "").length();
         int p = params != null ? params.length : 0;
 
         CallableStatement cs = getConnection().prepareCall(query);
-
         initParams(cs, params);
         if (q - p == 1) {
             cs.registerOutParameter(q, Types.DECIMAL);

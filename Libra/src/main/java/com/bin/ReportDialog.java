@@ -17,7 +17,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 public class ReportDialog extends JDialog implements ActionListener, ChangeEditListener {
@@ -62,12 +61,12 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             dataSet = new DataSet(new ArrayList<String>(Arrays.asList("elevator", "div", "nrdoc")));
 
             addLabel(dataPanel, "clcelevatort");
-            elevator = new ComboDbEdit("elevator", LibraService.user.getElevators(), dataSet);
+            elevator = new ComboDbEdit<CustomItem>("elevator", LibraService.user.getElevators(), dataSet);
             elevator.addChangeEditListener(this);
             dataPanel.add(elevator);
 
             addLabel(dataPanel, "clcdivt");
-            div = new ComboDbEdit("div", new ArrayList<CustomItem>(), dataSet);
+            div = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), dataSet);
             dataPanel.add(div);
             initDiv();
 
@@ -91,12 +90,12 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             dataPanel.add(dataend);
 
             addLabel(dataPanel, "clcelevatort");
-            elevator = new ComboDbEdit("elevator", LibraService.user.getElevators(), dataSet);
+            elevator = new ComboDbEdit<CustomItem>("elevator", LibraService.user.getElevators(), dataSet);
             elevator.addChangeEditListener(this);
             dataPanel.add(elevator);
 
             addLabel(dataPanel, "clcdivt");
-            div = new ComboDbEdit("div", new ArrayList<CustomItem>(), dataSet);
+            div = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), dataSet);
             dataPanel.add(div);
             initDiv();
 
@@ -105,7 +104,7 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             dataPanel.add(filt2);
 
             addLabel(dataPanel, "clcsc_mpt");
-            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, SearchType.CROPS);
+            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, SearchType.CROPSROMIN);
             dataPanel.add(filt3);
 
             JCheckBox cb1 = new CheckDbEdit("cb1", LangService.trans("rep.useDayOut"), dataSet);
@@ -154,7 +153,7 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
 
     private void initDiv() {
         try {
-            DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", elevator.getValue()));
+            DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", elevator.getValue()));
             div.changeData(divSet);
             div.setSelectedItem(LibraService.user.getDefDiv());
         } catch (Exception e) {

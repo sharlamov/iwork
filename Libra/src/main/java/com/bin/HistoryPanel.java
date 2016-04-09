@@ -31,7 +31,7 @@ public class HistoryPanel extends JPanel {
     public void refreshData(BigDecimal id) {
         removeAll();
         try {
-            DataSet dataSet = Libra.libraService.selectDataSet(SearchType.HISTORY, Collections.singletonMap(":id", (Object) id));
+            DataSet dataSet = Libra.libraService.executeQuery(SearchType.HISTORY.getSql(), new DataSet("id", id));
             for (Object[] objects : dataSet) {
                 addInfo((BigDecimal) objects[0], (Date) objects[1], (CustomItem) objects[2], (BigDecimal) objects[3]);
             }

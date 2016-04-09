@@ -41,7 +41,6 @@ public class LibraMenu extends JMenuBar implements ActionListener {
         JMenu menuReport = new JMenu(LangService.trans("report"));
 
         Gson gson = new GsonBuilder().create();
-        //gson.toJson(Libra.reportService.getReportList(), System.out);
         Type type = new TypeToken<List<Report>>() {}.getType();
         List<Report> reports = gson.fromJson(Libra.designs.get("REPORT.LIST"), type);
 

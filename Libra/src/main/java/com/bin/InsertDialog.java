@@ -5,11 +5,11 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LangService;
 import com.util.Libra;
+import com.util.Validators;
 import com.view.component.db.editors.ComboDbEdit;
 import com.view.component.db.editors.DateDbEdit;
 import com.view.component.db.editors.IEdit;
 import com.view.component.db.editors.TextDbEdit;
-import com.view.component.db.editors.validators.NullValidator;
 import com.view.component.panel.DbPanel;
 
 import javax.swing.*;
@@ -28,7 +28,6 @@ public class InsertDialog extends JDialog implements ActionListener {
     private DbPanel dbPanel;
     private JButton btnYes = new JButton(LangService.trans("yes"));
     private JButton btnNo = new JButton(LangService.trans("no"));
-    private NullValidator nullValidator = new NullValidator(LangService.trans("msg.empty"));
 
     public InsertDialog(String title, InsertType type, IEdit edit, Component parent) {
         super((JFrame) null, LangService.trans(title), true);
@@ -60,11 +59,11 @@ public class InsertDialog extends JDialog implements ActionListener {
     private void prepareParams() {
         switch (type) {
             case UNIVOI: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{edit.getValue().toString(), null, "O", "I"});
+                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "I"});
                 dbPanel = new DbPanel(dataSet, 366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
-                de.addValidator(nullValidator);
+                de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
             }
@@ -74,7 +73,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 dbPanel = new DbPanel(dataSet, 366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
-                de.addValidator(nullValidator);
+                de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
             }
@@ -84,7 +83,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 dbPanel = new DbPanel(dataSet, 366, 237);
                 JPanel pan = dbPanel.createPanel(5, null);
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
-                de.addValidator(nullValidator);
+                de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
                 dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new TextDbEdit("seria", dataSet));
@@ -97,7 +96,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 dbPanel = new DbPanel(dataSet, 366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
-                de.addValidator(nullValidator);
+                de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
             }
             break;
@@ -106,7 +105,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 dbPanel = new DbPanel(dataSet, 366, 173);
                 JPanel pan = dbPanel.createPanel(3, null);
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
-                de.addValidator(nullValidator);
+                de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<String>("sort", Arrays.asList("Camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
                 dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new ComboDbEdit<String>("axis", Arrays.asList("3 axe", "4 axe", "5 axe", "6 axe"), dataSet));

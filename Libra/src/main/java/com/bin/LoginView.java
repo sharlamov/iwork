@@ -1,6 +1,8 @@
 package com.bin;
 
+import com.enums.SearchType;
 import com.model.CustomUser;
+import com.model.DataSet;
 import com.service.LangService;
 import com.service.LibraService;
 import com.service.SettingsService;
@@ -13,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 
 public class LoginView extends JFrame implements ActionListener {
 
@@ -101,13 +104,10 @@ public class LoginView extends JFrame implements ActionListener {
         try {
             if (Libra.libraService.login(login, pass)) {
                 CustomUser cUser = LibraService.user;
-                Libra.libraService.initContext(
-                        cUser.getAdminLevel().toString(),
-                        cUser.getId().toString(),
-                        Libra.LIMIT_DIFF_MPFS.toString()
-                );
+                Object[] params = {cUser.getAdminLevel().toString(), cUser.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
+                Libra.libraService.execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
                 dispose();
-                new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + LibraService.user.getElevators());
+                new MainFrame(Libra.TITLE + " - " + cUser.getUsername() + ": " + cUser.getElevators());
             }
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)

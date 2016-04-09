@@ -10,14 +10,9 @@ import com.model.Doc;
 import com.model.Report;
 import com.service.LangService;
 import com.service.LibraService;
-import com.util.CustomFocusTraversalPolicy;
-import com.util.Fonts;
-import com.util.Libra;
-import com.util.Pictures;
+import com.util.*;
 import com.view.component.db.editors.*;
-import com.view.component.db.editors.validators.NegativeValidator;
-import com.view.component.db.editors.validators.NullValidator;
-import com.view.component.db.editors.validators.PositiveValidator;
+import com.view.component.grid.GridField;
 import com.view.component.panel.DbPanel;
 import com.view.component.weightboard.WeightBoard;
 
@@ -30,7 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class DocRo extends JDialog implements ActionListener, ChangeEditListener {
 
@@ -48,11 +44,11 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
     private NumberDbEdit net;
     private NumberDbEdit brutto;
     private NumberDbEdit tara;
-    private TextDbEdit contract_nrmanual;
+    private SearchDbEdit contract_nrmanual;
     private DateDbEdit contract_data;
     private SearchDbEdit auto;
-    private SearchDbEdit nr_remorca;
-    private SearchDbEdit clcsofer_s_14t;
+    private SearchDbEdit clcnr_trailert;
+    private SearchDbEdit clcdrivert;
     private DateDbEdit time_in;
     private DateDbEdit time_out;
     private DbPanel fieldsPanel;
@@ -64,12 +60,10 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
     private ComboDbEdit clcdivt;
     private SearchDbEdit transport;
     private TextDbEdit ttn_n;
-    private NullValidator nullValidator = new NullValidator(LangService.trans("msg.empty"));
-    private NegativeValidator negativeValidator = new NegativeValidator(LangService.trans("msg.negative"));
-    private PositiveValidator positiveValidator = new PositiveValidator(LangService.trans("msg.positive"));
+    private JButton updateBtn;
+    private NumberDbEdit pv;
 
-
-    public DocRo(LibraPanel libraPanel, DataSet dataSet, Doc doc) {
+    public DocRo(LibraPanel libraPanel, final DataSet dataSet, Doc doc) {
         super((JFrame) null, LangService.trans(doc.getName()), true);
         this.libraPanel = libraPanel;
         this.newDataSet = dataSet.copy();
@@ -119,6 +113,8 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
     private void initFieldsPanel() {
         fieldsPanel = new DbPanel(newDataSet, 720, 550);
         policy = new CustomFocusTraversalPolicy();
+        updateBtn = new JButton(Pictures.downloadedIcon);
+        updateBtn.addActionListener(this);
 
         initMain();
         try {
@@ -241,25 +237,25 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         }
     }
 
-    private void saveDocument() {
+    private boolean save() {
+        boolean isSaved;
         try {
-            if (LibraService.user.getScaleType() == 5 && fieldsPanel.verify()) {
+            if (isModified() && LibraService.user.getScaleType() == 5 && fieldsPanel.verify()) {
 
-                int n = JOptionPane.showConfirmDialog(this, LangService.trans("saveConfirmDialog1"), LangService.trans("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
-                if (n == 0) {
+                if (Libra.qMsg("saveConfirmDialog0", "saveConfirmDialog1", this)) {
                     updateDataSet(newDataSet);
 
                     BigDecimal key = (BigDecimal) newDataSet.getValueByName("id", 0);
                     boolean isNewDoc = key == null;
                     if (isNewDoc) {
-                        key = Libra.libraService.execute(SearchType.NEXTVAL, null);
+                        key = Libra.libraService.execute(SearchType.NEXTVAL.getSql(), null);
                         newDataSet.setValueByName("id", 0, key);
                     }
 
                     if (doc.getId() == 1)
-                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEINROM : SearchType.UPDSCALEINROM, newDataSet);
+                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEINROM.getSql() : SearchType.UPDSCALEINROM.getSql(), newDataSet);
                     else {
-                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEOUTROM : SearchType.UPDSCALEOUTROM, newDataSet);
+                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEOUTROM.getSql() : SearchType.UPDSCALEOUTROM.getSql(), newDataSet);
                     }
 
                     if (doc.isUsePrintInfo()) {
@@ -267,36 +263,72 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
                         newInfoSet.setValueByName("clcdelegatt", 0, newDataSet.getValueByName("clcdelegatt", 0));
                         newInfoSet.setValueByName("clcdrivert", 0, newDataSet.getValueByName("clcdrivert", 0));
                         newInfoSet.setValueByName("clccusert", 0, new CustomItem(LibraService.user.getId(), LibraService.user.getUsername()));
-                        Libra.libraService.execute(SearchType.MERGEPRINTDETAILRO, newInfoSet);
+                        Libra.libraService.execute(SearchType.MERGEPRINTDETAILRO.getSql(), newInfoSet);
                     }
 
                     if (!historySet.isEmpty()) {
                         historySet.setValueByName("id", 0, key);
-                        Libra.libraService.execute(SearchType.INSHISTORY, historySet);
+                        Libra.libraService.execute(SearchType.INSHISTORY.getSql(), historySet);
                     }
 
                     Libra.libraService.commit();
-                    libraPanel.refreshMaster();
-                    libraPanel.setRowPosition(key);
-                    dispose();
+
+                    historySet.clear();
+                    oldDataSet = newDataSet.copy();
+                    oldInfoSet = newInfoSet.copy();
                 }
             }
+            isSaved = true;
         } catch (Exception e1) {
             e1.printStackTrace();
+            isSaved = false;
             Libra.eMsg(e1.getMessage());
+        }
+        return isSaved;
+    }
+
+    private void saveDocument() {
+        if (save()) {
+            libraPanel.refreshMaster();
+            libraPanel.setRowPosition(newDataSet.getNumberValue("id", 0));
+            dispose();
         }
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(bSave)) {
+        Object event = e.getSource();
+        if (event.equals(bSave)) {
             saveDocument();
-        } else if (e.getSource().equals(bCancel)) {
+        } else if (event.equals(bCancel)) {
             exitDialog();
-        } else if (e.getSource().equals(bPrint)) {
+        } else if (event.equals(bPrint)) {
             makePrint();
-        } else if (e.getSource().equals(brutto) || e.getSource().equals(tara)) {
+        } else if (event.equals(brutto) || e.getSource().equals(tara)) {
             changeEdit(null);
+        } else if (event.equals(updateBtn)) {
+            loadDocument();
         }
+    }
+
+    private void loadDocument() {
+        BigDecimal nrDoc = newDataSet.getNumberValue("prikaz_id", 0);
+        if (nrDoc.equals(BigDecimal.ZERO)) {
+            Libra.eMsg(LangService.trans("error.empty.nrdoc"));
+        } else {
+            try {
+                DataSet set = Libra.libraService.executeQuery(SearchType.LOADOUTDOC.getSql(), new DataSet("nrdoc", nrDoc));
+                if (set.isEmpty()) {
+                    Libra.eMsg(LangService.trans("error.notfound.nrdoc"));
+                } else {
+                    newDataSet.update(set);
+                    fieldsPanel.refresh();
+                }
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                Libra.eMsg(LangService.trans(e1.getMessage()));
+            }
+        }
+        pv.requestFocus();
     }
 
     public void inForm() throws Exception {
@@ -323,38 +355,39 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         fieldsPanel.addToPanel(250, 8 + stepDown, 100, p0, ticket);
 
         NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", newDataSet);
-        nr_analiz.addValidator(positiveValidator);
+        nr_analiz.addValidator(Validators.POSITIVE);
         fieldsPanel.addToPanel(470, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 ////////////////////
         JPanel p2 = fieldsPanel.createPanel(2, null);
-
-        auto = new SearchDbEdit("clcnr_autot", newDataSet, Libra.libraService, SearchType.AUTO);
+        auto = new SearchDbEdit("clcnr_autot", newDataSet, "clcnr_autot,clcnr_trailert,clcdrivert", new GridField[]{new GridField("clcnr_autot", 90), new GridField("clcnr_trailert", 90), new GridField("clcdrivert", 150)}
+                , Libra.libraService, SearchType.FINDAUTOIN);
+        auto.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 150, p2, auto);
         policy.add(auto);
-        fieldsPanel.addInsertButton(p2, auto, InsertType.UNIVTA);
+        fieldsPanel.addInsertBtn(auto, InsertType.UNIVTA);
 
-        nr_remorca = new SearchDbEdit("clcnr_trailert", newDataSet, Libra.libraService, SearchType.TRAILER);
-        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
-        policy.add(nr_remorca);
-        fieldsPanel.addInsertButton(p2, nr_remorca, InsertType.UNIVTA);
+        clcnr_trailert = new SearchDbEdit("clcnr_trailert", newDataSet, Libra.libraService, SearchType.TRAILER);
+        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, clcnr_trailert);
+        policy.add(clcnr_trailert);
+        fieldsPanel.addInsertBtn(clcnr_trailert, InsertType.UNIVTA);
 
-        clcsofer_s_14t = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
-        fieldsPanel.addToPanel(370, 8, 150, p2, clcsofer_s_14t);
-        policy.add(clcsofer_s_14t);
-        fieldsPanel.addInsertButton(p2, clcsofer_s_14t, InsertType.UNIVOF);
+        clcdrivert = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
+        fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
+        policy.add(clcdrivert);
+        fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
 
         transport = new SearchDbEdit("clcdep_transpt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(370, 8 + stepDown, 200, p2, transport);
         policy.add(transport);
-        fieldsPanel.addInsertButton(p2, transport, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(transport, InsertType.UNIVOE);
 //////////////////
         JPanel p3 = fieldsPanel.createPanel(5, null);
 
         SearchDbEdit clcdep_postavt = new SearchDbEdit("clcdep_postavt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(8, 7, 200, p3, clcdep_postavt);
         policy.add(clcdep_postavt);
-        fieldsPanel.addInsertButton(p3, clcdep_postavt, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(clcdep_postavt, InsertType.UNIVOE);
 
         SearchDbEdit clcppogruz_s_12t = new SearchDbEdit("clcppogruz_s_12t", newDataSet, Libra.libraService, SearchType.PLACES);
         fieldsPanel.addToPanel(8, 7 + stepDown, 200, p3, clcppogruz_s_12t);
@@ -363,27 +396,27 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         SearchDbEdit clcdep_mpt = new SearchDbEdit("clcdep_mpt", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(8, 7 + stepDown + stepDown, 200, p3, clcdep_mpt);
         policy.add(clcdep_mpt);
-        fieldsPanel.addInsertButton(p3, clcdep_mpt, InsertType.UNIVOI);
+        fieldsPanel.addInsertBtn(clcdep_mpt, InsertType.UNIVOI);
 
         SearchDbEdit clcsklad_pogruzkit = new SearchDbEdit("clcsklad_pogruzkit", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(8, 7 + stepDown + stepDown + stepDown, 200, p3, clcsklad_pogruzkit);
         policy.add(clcsklad_pogruzkit);
-        fieldsPanel.addInsertButton(p3, clcsklad_pogruzkit, InsertType.UNIVOI);
+        fieldsPanel.addInsertBtn(clcsklad_pogruzkit, InsertType.UNIVOI);
 
         SearchDbEdit clcsolat = new SearchDbEdit("clcsolat", newDataSet, Libra.libraService, SearchType.SOLA);
         fieldsPanel.addToPanel(8, 7 + stepDown + stepDown + stepDown + stepDown, 200, p3, clcsolat);
         policy.add(clcsolat);
-        fieldsPanel.addInsertButton(p3, clcsolat, InsertType.UNIVOSOLA);
+        fieldsPanel.addInsertBtn(clcsolat, InsertType.UNIVOSOLA);
 
         SearchDbEdit clcdep_gruzootpravitt = new SearchDbEdit("clcdep_gruzootpravitt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(370, 7, 200, p3, clcdep_gruzootpravitt);
         policy.add(clcdep_gruzootpravitt);
-        fieldsPanel.addInsertButton(p3, clcdep_gruzootpravitt, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(clcdep_gruzootpravitt, InsertType.UNIVOE);
 
         SearchDbEdit clcdelegatt = new SearchDbEdit("clcdelegatt", newDataSet, Libra.libraService, SearchType.DELEGAT);
         fieldsPanel.addToPanel(370, 7 + stepDown, 200, p3, clcdelegatt);
         policy.add(clcdelegatt);
-        fieldsPanel.addInsertButton(p3, clcdelegatt, InsertType.UNIVOF);
+        fieldsPanel.addInsertBtn(clcdelegatt, InsertType.UNIVOF);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(1, null);
 
@@ -412,7 +445,11 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
 //////////////////
         JPanel p51 = fieldsPanel.createPanel(1, null);
 
-        contract_nrmanual = new TextDbEdit("contract_nrmanual", newDataSet);
+        contract_nrmanual = new SearchDbEdit("contract_nrmanual", newDataSet, "contract_nr, contract_nrmanual, contract_data"
+                , new GridField[]{new GridField("contractid", 100), new GridField("nr_manual", 100), new GridField("data_contract", 100)}
+                , Libra.libraService, SearchType.FINDCONTRACTROIN);
+        contract_nrmanual.setShouldClear(false);
+        contract_nrmanual.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 100, p51, contract_nrmanual);
         policy.add(contract_nrmanual);
 
@@ -423,7 +460,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         SearchDbEdit clcdep_hozt = new SearchDbEdit("clcdep_hozt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(470, 8, 100, p51, clcdep_hozt);
         policy.add(clcdep_hozt);
-        fieldsPanel.addInsertButton(p51, clcdep_hozt, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(clcdep_hozt, InsertType.UNIVOE);
 //////////////////
         JPanel p6 = fieldsPanel.createPanel(2, null);
 
@@ -465,9 +502,10 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         fieldsPanel.addToPanel(8, 10, 150, p0, oper);
         policy.add(oper);
 
-        NumberDbEdit pv = new NumberDbEdit("prikaz_id", newDataSet);
-        pv.setChangeable(false);
+        pv = new NumberDbEdit("prikaz_id", newDataSet);
         fieldsPanel.addToPanel(8, 10 + stepDown, 100, p0, pv);
+        policy.add(pv);
+        fieldsPanel.addEditBtn(pv, updateBtn);
 
         SearchDbEdit state = new SearchDbEdit("clcstatus_z_100t", newDataSet, Libra.libraService, SearchType.STATUS);
         fieldsPanel.addToPanel(370, 10, 150, p0, state);
@@ -478,7 +516,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         fieldsPanel.addToPanel(250, 8 + stepDown, 100, p0, ticket);
 
         NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", newDataSet);
-        nr_analiz.addValidator(positiveValidator);
+        nr_analiz.addValidator(Validators.NEGATIVE);
         fieldsPanel.addToPanel(470, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 //////////////////
@@ -498,42 +536,44 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
 ////////////////////
         JPanel p2 = fieldsPanel.createPanel(2, null);
 
-        auto = new SearchDbEdit("clcnr_autot", newDataSet, Libra.libraService, SearchType.AUTO);
+        auto = new SearchDbEdit("clcnr_autot", newDataSet, "clcnr_autot,clcnr_trailert,clcdrivert", new GridField[]{new GridField("clcnr_autot", 90), new GridField("clcnr_trailert", 90), new GridField("clcdrivert", 150)}
+                , Libra.libraService, SearchType.FINDAUTOOUT);
+        auto.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 150, p2, auto);
         policy.add(auto);
-        fieldsPanel.addInsertButton(p2, auto, InsertType.UNIVTA);
+        fieldsPanel.addInsertBtn(auto, InsertType.UNIVTA);
 
-        nr_remorca = new SearchDbEdit("clcnr_trailert", newDataSet, Libra.libraService, SearchType.TRAILER);
-        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
-        policy.add(nr_remorca);
-        fieldsPanel.addInsertButton(p2, nr_remorca, InsertType.UNIVTA);
+        clcnr_trailert = new SearchDbEdit("clcnr_trailert", newDataSet, Libra.libraService, SearchType.TRAILER);
+        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, clcnr_trailert);
+        policy.add(clcnr_trailert);
+        fieldsPanel.addInsertBtn(clcnr_trailert, InsertType.UNIVTA);
 
-        clcsofer_s_14t = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
-        fieldsPanel.addToPanel(370, 8, 150, p2, clcsofer_s_14t);
-        policy.add(clcsofer_s_14t);
-        fieldsPanel.addInsertButton(p2, clcsofer_s_14t, InsertType.UNIVOF);
+        clcdrivert = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
+        fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
+        policy.add(clcdrivert);
+        fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
 
         transport = new SearchDbEdit("clcdep_perevozt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(370, 8 + stepDown, 200, p2, transport);
         policy.add(transport);
-        fieldsPanel.addInsertButton(p2, transport, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(transport, InsertType.UNIVOE);
 //////////////////
         JPanel p3 = fieldsPanel.createPanel(4, null);
 
         SearchDbEdit clcdep_postavt = new SearchDbEdit("clcdep_destinatt", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(8, 7, 200, p3, clcdep_postavt);
         policy.add(clcdep_postavt);
-        fieldsPanel.addInsertButton(p3, clcdep_postavt, InsertType.UNIVOE);
+        fieldsPanel.addInsertBtn(clcdep_postavt, InsertType.UNIVOE);
 
         SearchDbEdit clcsklad_pogruzkit = new SearchDbEdit("clcsklad_pogruzkit", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(8, 7 + stepDown + stepDown + stepDown, 200, p3, clcsklad_pogruzkit);
         policy.add(clcsklad_pogruzkit);
-        fieldsPanel.addInsertButton(p3, clcsklad_pogruzkit, InsertType.UNIVOI);
+        fieldsPanel.addInsertBtn(clcsklad_pogruzkit, InsertType.UNIVOI);
 
         SearchDbEdit clcdelegatt = new SearchDbEdit("clcdelegatt", newDataSet, Libra.libraService, SearchType.DELEGAT);
         fieldsPanel.addToPanel(370, 7, 200, p3, clcdelegatt);
         policy.add(clcdelegatt);
-        fieldsPanel.addInsertButton(p3, clcdelegatt, InsertType.UNIVOF);
+        fieldsPanel.addInsertBtn(clcdelegatt, InsertType.UNIVOF);
 
         SearchDbEdit clcpunctto_s_12t = new SearchDbEdit("clcpunctto_s_12t", newDataSet, Libra.libraService, SearchType.PLACES);
         fieldsPanel.addToPanel(370, 7 + stepDown, 200, p3, clcpunctto_s_12t);
@@ -542,12 +582,12 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         SearchDbEdit clcsilo_destt = new SearchDbEdit("clcsilo_destt", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(370, 7 + stepDown + stepDown, 200, p3, clcsilo_destt);
         policy.add(clcsilo_destt);
-        fieldsPanel.addInsertButton(p3, clcsilo_destt, InsertType.UNIVOI);
+        fieldsPanel.addInsertBtn(clcsilo_destt, InsertType.UNIVOI);
 
         SearchDbEdit clccell_destt = new SearchDbEdit("clccell_destt", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(370, 7 + stepDown + stepDown + stepDown, 200, p3, clccell_destt);
         policy.add(clccell_destt);
-        fieldsPanel.addInsertButton(p3, clccell_destt, InsertType.UNIVOI);
+        fieldsPanel.addInsertBtn(clccell_destt, InsertType.UNIVOI);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(1, null);
 
@@ -562,7 +602,11 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
 //////////////////
         JPanel p51 = fieldsPanel.createPanel(1, null);
 
-        contract_nrmanual = new TextDbEdit("contract_nrmanual", newDataSet);
+        contract_nrmanual = new SearchDbEdit("contract_nrmanual", newDataSet, "contract_nr, contract_nrmanual, contract_data"
+                , new GridField[]{new GridField("contractid", 70), new GridField("nr_manual", 70), new GridField("data_contract", 70)}
+                , Libra.libraService, SearchType.FINDCONTRACTROOUT);
+        contract_nrmanual.setShouldClear(false);
+        contract_nrmanual.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 100, p51, contract_nrmanual);
         policy.add(contract_nrmanual);
 
@@ -597,7 +641,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
 
         if (idVal == null) {
             if (!clcelevatort.isEmpty()) {
-                DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
+                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
                 clcdivt.changeData(divSet);
                 clcdivt.setSelectedItem(LibraService.user.getDefDiv());
                 if (!divSet.isEmpty() && divSet.size() > 1)
@@ -682,6 +726,11 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
                 e.printStackTrace();
                 Libra.eMsg(e.getMessage());
             }
+        } else if (source.equals(auto)) {
+            clcdrivert.refresh();
+            clcnr_trailert.refresh();
+        } else if (source.equals(contract_nrmanual)) {
+            contract_data.refresh();
         }
     }
 
@@ -703,63 +752,32 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
     }
 
     private void makePrint() {
-        JPanel p = new JPanel();
-        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        ButtonGroup bg = new ButtonGroup();
-        for (Report report : doc.getReports()) {
-            JRadioButton r0 = new JRadioButton(LangService.trans(report.getName()));
-            bg.add(r0);
-            p.add(r0);
-        }
+        if (save()) {
+            JPanel p = new JPanel();
+            p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+            ButtonGroup bg = new ButtonGroup();
+            for (Report report : doc.getReports()) {
+                JRadioButton r0 = new JRadioButton(LangService.trans(report.getName()));
+                bg.add(r0);
+                p.add(r0);
+            }
 
-        if (JOptionPane.showOptionDialog(null, p, LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
+            if (JOptionPane.showOptionDialog(null, p, LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
 
-            for (int i = 0; i < p.getComponentCount(); i++) {
-                JRadioButton rb = (JRadioButton) p.getComponent(i);
-                if (rb.isSelected()) {
-                    printTTN(doc.getReports().get(i));
+                for (int i = 0; i < p.getComponentCount(); i++) {
+                    JRadioButton rb = (JRadioButton) p.getComponent(i);
+                    if (rb.isSelected()) {
+                        try {
+                            Libra.reportService.buildReport(doc.getReports().get(i), newDataSet);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Libra.eMsg(e.getMessage());
+                        }
+                    }
                 }
+
             }
-
-        }
-    }
-
-    public void printTTN(Report report) {
-        try {
-            if (clcelevatort.isEmpty() || clcdivt.isEmpty()) {
-                throw new Exception(LangService.trans("error.notfoundcompanyelevator"));
-            }
-
-            DataSet repData = new DataSet();
-            repData.addDataSet(updateDataSet(newDataSet));
-         /*   if (printPanel != null) {
-                repData.addDataSet(printPanel.getDataSet());
-            }
-*/
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":exped", clcdivt.getValue());
-            params.put(":dest", newDataSet.getValueByName("clcdep_destinatt", 0));
-            params.put(":sc", sc.getValue());
-            params.put(":transp", transport.getValue());
-            params.put(":net", newDataSet.getValueByName("masa_netto", 0));
-
-            Object mn = newDataSet.getValueByName("masa_netto", 0);
-            Object mt = newDataSet.getValueByName("masa_ttn", 0);
-            BigDecimal delta = BigDecimal.ZERO;
-            if (mn != null && mt != null) {
-                delta = ((BigDecimal) mt).subtract((BigDecimal) mn);
-            }
-            params.put(":delta", delta);
-            params.put(":time_in", newDataSet.getValueByName("time_in", 0));
-            params.put(":time_out", newDataSet.getValueByName("time_out", 0));
-
-            DataSet dataSet2 = Libra.libraService.selectDataSet(report.getHeaderSQL(), params);
-            repData.addDataSet(dataSet2);
-            Libra.reportService.buildReport(report.getTemplate(), repData);
-        } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
         }
     }
 
@@ -841,6 +859,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         if (!isModified()
                 || 0 == JOptionPane.showConfirmDialog(null, LangService.trans("cancelConfirmDialog1"), LangService.trans("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
             dispose();
+        libraPanel.refreshMaster();
     }
 
     public boolean isModified() {

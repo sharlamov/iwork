@@ -5,21 +5,13 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LangService;
 import com.util.Libra;
-import com.view.component.db.editors.ComboDbEdit;
-import com.view.component.db.editors.DateDbEdit;
-import com.view.component.db.editors.NumberDbEdit;
-import com.view.component.db.editors.TextDbEdit;
-import com.view.component.db.editors.ChangeEditListener;
-import com.view.component.db.editors.IEdit;
+import com.view.component.db.editors.*;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PrintPanel extends JPanel implements ChangeEditListener {
 
@@ -42,8 +34,8 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
         this.dataSet = dataSet;
 
         try {
-            printData = Libra.libraService.selectDataSet(SearchType.SCALEPRINTDATA,
-                    Collections.singletonMap(":p_id", dataSet.getValueByName("id", 0)));
+            printData = Libra.libraService.executeQuery(SearchType.SCALEPRINTDATA.getSql(),
+                    new DataSet("p_id", dataSet.getValueByName("id", 0)));
             if (printData.isEmpty()) {
                 printData.add(new Object[printData.getColumnCount()]);
             } else
@@ -86,10 +78,8 @@ public class PrintPanel extends JPanel implements ChangeEditListener {
 
         DataSet set = null;
         try {
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":exped", divId.getValue());
-            params.put(":clcelevatort", elevator.getValue());
-            set = Libra.libraService.selectDataSet(SearchType.DATABYELEVATOR, params);
+            DataSet ds = new DataSet(Arrays.asList("exped", "clcelevatort"), new Object[]{divId.getValue(), elevator.getValue()});
+            set = Libra.libraService.executeQuery(SearchType.DATABYELEVATOR.getSql(), ds);
         } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());

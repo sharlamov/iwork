@@ -26,7 +26,6 @@ public class NumberDbEdit extends TextDbEdit {
 
     @Override
     public void setValue(Object value) {
-
         if (value == null || value.toString().isEmpty()) {
             getDataSet().setValueByName(getName(), 0, null);
             setText("");

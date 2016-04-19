@@ -16,6 +16,7 @@ public class Pictures {
     public static ImageIcon unloadedIcon = createImageIcon("images/unloaded.png", 100, 80);
     public static ImageIcon middleIcon = createImageIcon("images/middle.gif");
     public static ImageIcon findIcon = createImageIcon("images/find.png");
+    public static ImageIcon downloadedIcon = createImageIcon("images/download.png", 20, 20);
 
 
     public static Image getImage(String path, int x, int y) {

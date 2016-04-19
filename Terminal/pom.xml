@@ -34,7 +34,7 @@
                     <finalName>Terminal</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>com.bin.start</mainClass>
+                            <mainClass>com.bin.Start</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

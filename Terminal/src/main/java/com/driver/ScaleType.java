@@ -7,7 +7,8 @@ public enum ScaleType {
     ALEX2400OLD(2400, "([+][0-9]+)"),
     ALEX9600OLD(9600, "([+][0-9]+)"),
     FSI9600(9600, "([,][0-9|\\s]{8}[,])"),
-    VAS9600(9600, "([$][\\s]+[0-9]+)", 7, 20, false);
+    VAS9600(9600, "([$][\\s]+[0-9]+)", 7, 20, false),
+    JEG4800(4800, "([1CH ][0-9]{5})", 7, 20, false);
 
     private int rate;
     private String format;

@@ -9,13 +9,11 @@ public class CustomItem implements Copyable<CustomItem> {
     private String label;
 
     public CustomItem(BigDecimal id, String label) {
-        super();
         this.id = id;
         this.label = label;
     }
 
     public CustomItem(int id, String label) {
-        super();
         this.id = new BigDecimal(id);
         this.label = label;
     }
@@ -24,6 +22,9 @@ public class CustomItem implements Copyable<CustomItem> {
         if (id instanceof BigDecimal) {
             this.id = (BigDecimal) id;
             this.label = label == null ? " " : label.toString();
+        }else if(id instanceof String){
+            this.id = new BigDecimal(id.toString());
+            this.label = label == null ? "" : label.toString();
         }
     }
 

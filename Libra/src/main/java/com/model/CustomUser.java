@@ -14,6 +14,7 @@ public class CustomUser {
     private boolean isHandEditable;
     private String profile;
     private CustomItem defDiv;
+    private CustomItem clcuser_sct;
 
     public String getPassword() {
         return password;
@@ -90,5 +91,13 @@ public class CustomUser {
 
     public void setDefDiv(CustomItem defDiv) {
         this.defDiv = defDiv;
+    }
+
+    public CustomItem getClcuser_sct() {
+        return clcuser_sct;
+    }
+
+    public void setClcuser_sct(CustomItem clcuser_sct) {
+        this.clcuser_sct = clcuser_sct;
     }
 }

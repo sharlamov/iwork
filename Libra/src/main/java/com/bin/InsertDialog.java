@@ -65,7 +65,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
-                dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
+                //dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
             }
             break;
             case UNIVOE: {
@@ -79,10 +79,10 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVOF: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1", "seria", "dataelib", "orgelib"), new Object[]{null, null, "O", "F", null, null, null});
+                dataSet = new DataSet(Arrays.asList("npp", "fiskcod", "tip", "gr1", "seria", "dataelib", "orgelib"), new Object[]{null, null, "O", "F", null, null, null});
                 dbPanel = new DbPanel(dataSet, 366, 237);
                 JPanel pan = dbPanel.createPanel(5, null);
-                TextDbEdit de = new TextDbEdit("clccodt", dataSet);
+                TextDbEdit de = new TextDbEdit("npp", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
@@ -107,7 +107,7 @@ public class InsertDialog extends JDialog implements ActionListener {
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
-                dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<String>("sort", Arrays.asList("Camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
+                dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<String>("sort", Arrays.asList("Auto camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
                 dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new ComboDbEdit<String>("axis", Arrays.asList("3 axe", "4 axe", "5 axe", "6 axe"), dataSet));
             }
             break;

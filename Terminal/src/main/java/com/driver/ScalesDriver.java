@@ -41,10 +41,6 @@ public class ScalesDriver {
         lTime = System.currentTimeMillis();
     }
 
-    private String reverseString(String str) {
-        return new StringBuilder(str).reverse().toString();
-    }
-
     public void addEventListener(ScaleEventListener listener) {
         listeners.add(listener);
     }
@@ -88,7 +84,7 @@ public class ScalesDriver {
     }
 
     public void setWeight(String val) {
-        Integer newValue = Integer.valueOf(isInverse ? reverseString(val) : val);
+        Integer newValue = Integer.valueOf(prs(val, isInverse));
         long cTime = System.currentTimeMillis();
 
         if (weight != null && newValue != null && Math.abs(weight - newValue) <= deviation) {
@@ -126,13 +122,24 @@ public class ScalesDriver {
         return comPort;
     }
 
+    private String prs(String str, boolean rotate){
+        StringBuilder val = new StringBuilder(str);
+        for(int i = 0; i < val.length();){
+            int c = val.charAt(i);
+            if(c < 48 || c > 57){
+                val.deleteCharAt(i);
+            }else
+                i++;
+        }
+        return (rotate ? val.reverse() : val).toString();
+    }
+
     @Override
     public String toString() {
         return deviceName;
     }
 
     class PortReader implements SerialPortEventListener {
-        private final String numberFormat = "[^0-9]+";
         private StringBuilder receivedData = new StringBuilder();
 
         public void serialEvent(SerialPortEvent event) {
@@ -142,7 +149,7 @@ public class ScalesDriver {
                     receivedData.append(serialPort.readString(count));
                     Matcher m = pattern.matcher(receivedData);
                     if (m.find()) {
-                        setWeight(m.group(0).replaceAll(numberFormat, ""));
+                        setWeight(m.group(0));
                         receivedData.setLength(0);
                         fireScaleEvent();
                     }

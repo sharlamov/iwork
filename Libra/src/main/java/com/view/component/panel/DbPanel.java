@@ -31,14 +31,6 @@ public class DbPanel extends JPanel {
         comps = new ArrayList<Component>();
     }
 
-    public DbPanel(DataSet ds) {
-        super(null);
-        this.ds = ds;
-
-        edits = new ArrayList<IEdit>();
-        comps = new ArrayList<Component>();
-    }
-
     public void refresh() {
         for (IEdit edit : edits) {
             edit.refresh();
@@ -136,23 +128,22 @@ public class DbPanel extends JPanel {
         }
     }
 
-    public void addInsertButton(final JPanel panel, final IEdit edit, final InsertType type) {
+    public void addInsertBtn(final IEdit edit, final InsertType type) {
         JButton btn = new JButton(Pictures.saveIcon);
         final JPanel parent = this;
-        final Component comp = (Component) edit;
-        btn.setBounds(comp.getX() + comp.getWidth() + 2, comp.getY(), 24, 24);
-        panel.add(btn);
-        comps.add(btn);
-
         btn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 new InsertDialog("add", type, edit, parent);
             }
         });
+
+        addEditBtn(edit, btn);
     }
 
-    public List<IEdit> getEdits() {
-        return edits;
+    public void addEditBtn(final IEdit edit, JButton btn) {
+        final Component comp = (Component) edit;
+        btn.setBounds(comp.getX() + comp.getWidth() + 2, comp.getY(), 24, 24);
+        comp.getParent().add(btn);
+        comps.add(btn);
     }
-
 }

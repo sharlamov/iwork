@@ -1,6 +1,5 @@
 package com.util;
 
-import com.driver.ScalesManager;
 import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
@@ -11,6 +10,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 public class Libra {
 
@@ -28,7 +28,7 @@ public class Libra {
 
     public static DecimalFormat decimalFormat2 = new DecimalFormat("#,##0.00");
 
-    public static ScalesManager manager = new ScalesManager();
+    public static List<Object[]> scaleDrivers = new ArrayList<Object[]>();
 
     public static Map<String, String> designs = new HashMap<String, String>();
 
@@ -53,6 +53,10 @@ public class Libra {
         return (String) JOptionPane.showInputDialog(
                 parent, LangService.trans(query), LangService.trans(name),
                 JOptionPane.PLAIN_MESSAGE, Pictures.filterIcon, null, text);
+    }
+
+    public static boolean qMsg(String name, String question, Component parent) {
+        return 0 == JOptionPane.showConfirmDialog(parent, LangService.trans(question), LangService.trans(name), JOptionPane.YES_NO_OPTION);
     }
 
     public static Object encodePass(char[] pass) {

@@ -110,13 +110,12 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD) {
             transferFocus();
+        }else if(e.getKeyCode() == KeyEvent.VK_ENTER){
+            setValue(getText());
         }
     }
 
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            refresh();
-        }
     }
 
     public boolean isEmpty() {

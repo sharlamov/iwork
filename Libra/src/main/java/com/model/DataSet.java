@@ -160,15 +160,16 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return newDataSet;
     }
 
-    public boolean isEqual(DataSet aDataSet) {
-        if (aDataSet == null || size() != aDataSet.size() || names.size() != aDataSet.names.size())
+    public boolean isEqual(DataSet set) {
+        if (set == null || size() != set.size() || names.size() != set.names.size())
             return false;
 
         for (int i = 0; i < this.size(); i++) {
             Object[] fRow = get(i);
-            Object[] aRow = aDataSet.get(i);
+            Object[] aRow = set.get(i);
 
-            for (int y = 0; y < fRow.length; y++) {
+            int cnt = (fRow.length + aRow.length) / 2;
+            for (int y = 0; y < cnt; y++) {
                 if (aRow[y] != null || fRow[y] != null) {
                     if (aRow[y] == null || fRow[y] == null) {
                         return false;
@@ -180,6 +181,14 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         }
 
         return true;
+    }
+
+    public void update(DataSet set) {
+        for (int i = 0; i < set.size(); i++) {
+            for (String s : set.getNames()) {
+                setValueByName(s, i, set.getValueByName(s, i));
+            }
+        }
     }
 
     public List<String> getNames() {

@@ -39,6 +39,8 @@ public class LibraService {
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_HAND_EDITABLE') handEditable\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_PROFILE') profile\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_DEFDIV') defdiv\n" +
+                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='USER_SC') user_sc\n" +
+                ",(select denumirea from vms_univers where cod = (select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='USER_SC')) clcuser_sct\n" +
                 "from a$users$v a \n" +
                 "where enabled=1 \n" +
                 "and LOWER(username) = LOWER(?)\n" +
@@ -55,6 +57,7 @@ public class LibraService {
         user.setHandEditable(dataSet.getStringValue("handeditable", 0).equals("true"));
         user.setProfile(dataSet.getStringValue("profile", 0));
         user.setDefDiv(new CustomItem(dataSet.getNumberValue("defdiv", 0), "DEFDIV"));
+        user.setClcuser_sct((CustomItem) dataSet.getValueByName("clcuser_sct", 0));
 
         if (user.getScaleType() != 5) {
             throw new Exception(LangService.trans("error.enterOnlyCantar"));
@@ -92,10 +95,6 @@ public class LibraService {
         return true;
     }
 
-    public DataSet selectDataSet(SearchType type, Map<String, Object> params) throws Exception {
-        return selectDataSet(type.getSql(), params);
-    }
-
     public DataSet executeQuery(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
@@ -119,37 +118,36 @@ public class LibraService {
         return dao.select(sb.toString(), objects.toArray());
     }
 
-    public DataSet selectDataSet(String query, Map<String, Object> params) throws Exception {
+    public DataSet execute1(String query, DataSet dataSet) throws Exception {
+        Matcher m = paramsPattern.matcher(query);
+        List<Object[]> params = new ArrayList<Object[]>();
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String paramName = m.group().substring(1);
+            Object[] param;
+            if (paramName.startsWith("out_")) {
+                param = new Object[]{1, paramName.substring(4), null};
+            } else {
+                param = new Object[]{0, paramName, dataSet.getValueByName(paramName, 0)};
+            }
+            params.add(param);
+            m.appendReplacement(sb, "?");
+        }
+        m.appendTail(sb);
+        return dao.execute1(sb.toString(), params);
+    }
+
+    public BigDecimal execute(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
         List<Object> objects = new ArrayList<Object>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            String param = m.group().toLowerCase();
-            Object obj = params.get(param);
-
-            if (obj instanceof List) {
-                StringBuilder commaList = new StringBuilder();
-                for (Object item : ((List) obj)) {
-                    commaList.append("?,");
-                    objects.add(item);
-                }
-                m.appendReplacement(sb, commaList.toString().replaceAll(",$", ""));
-            } else {
-                objects.add(obj);
-                m.appendReplacement(sb, "?");
-            }
+            String paramName = m.group().substring(1);
+            objects.add(dataSet.getValueByName(paramName, 0));
+            m.appendReplacement(sb, "?");
         }
         m.appendTail(sb);
-        return dao.select(sb.toString(), objects.toArray());
-    }
-
-    public DataSet filterDataSet(String sql, Map<String, Object> params, Map<String, String> filterMap) throws Exception {
-        StringBuilder query = new StringBuilder("select * from (" + sql + ") where 1 = 1");
-        for (Map.Entry<String, String> entry : filterMap.entrySet()) {
-            query.append(" and lower(").append(entry.getKey()).append(") like :").append(entry.getKey());
-            params.put(":" + entry.getKey(), entry.getValue());
-        }
-        return selectDataSet(query.toString(), params);
+        return dao.execute(sb.toString(), objects.toArray());
     }
 
     public DataSet filterDataSet(String sql, DataSet params, Map<String, String> filterMap) throws Exception {
@@ -161,13 +159,8 @@ public class LibraService {
         return executeQuery(query.toString(), params);
     }
 
-    public void initContext(String adminLevel, String userID, String limit) throws Exception {
-        String sql = " begin\n" +
-                "envun4.envsetvalue('INIPARAM_ADMINLEVEL', ?);\n" +
-                "envun4.envsetvalue('PARAM_USERID', ?);\n" +
-                "envun4.envsetvalue('YFSR_LIMIT_DIFF_MPFS', ?);\n" +
-                "end; ";
-        dao.execute(sql, new Object[]{adminLevel, userID, limit});
+    public void commit() throws Exception {
+        dao.commit();
     }
 
     public void close() {
@@ -177,25 +170,5 @@ public class LibraService {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
         }
-    }
-
-    public BigDecimal execute(SearchType searchType, DataSet dataSet) throws Exception {
-        return execute(searchType.getSql(), dataSet);
-    }
-
-    public BigDecimal execute(String query, DataSet dataSet) throws Exception {
-        Matcher m = paramsPattern.matcher(query);
-        List<Object> objects = new ArrayList<Object>();
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            objects.add(dataSet.getValueByName(m.group().substring(1), 0));
-            m.appendReplacement(sb, "?");
-        }
-        m.appendTail(sb);
-        return dao.execute(sb.toString(), objects.toArray());
-    }
-
-    public void commit() throws Exception {
-        dao.commit();
     }
 }

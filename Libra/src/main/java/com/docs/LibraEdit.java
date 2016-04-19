@@ -10,14 +10,8 @@ import com.model.Doc;
 import com.model.Report;
 import com.service.LangService;
 import com.service.LibraService;
-import com.util.CustomFocusTraversalPolicy;
-import com.util.Fonts;
-import com.util.Libra;
-import com.util.Pictures;
+import com.util.*;
 import com.view.component.db.editors.*;
-import com.view.component.db.editors.validators.NegativeValidator;
-import com.view.component.db.editors.validators.NullValidator;
-import com.view.component.db.editors.validators.PositiveValidator;
 import com.view.component.grid.GridField;
 import com.view.component.weightboard.WeightBoard;
 
@@ -30,7 +24,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class LibraEdit extends JDialog implements ActionListener, ChangeEditListener {
@@ -69,9 +65,6 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
     private TextDbEdit ttn_nn_perem;
     private boolean isBloc = false;
     private List<Component> editList;
-    private NullValidator nullValidator = new NullValidator(LangService.trans("msg.empty"));
-    private NegativeValidator negativeValidator = new NegativeValidator(LangService.trans("msg.negative"));
-    private PositiveValidator positiveValidator = new PositiveValidator(LangService.trans("msg.positive"));
 
 
     public LibraEdit(LibraPanel libraPanel, DataSet dataSet, Doc doc) {
@@ -113,9 +106,10 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         }
 
         board.setPreferredSize(new Dimension(220, 70));
-        for (ScalesDriver driver : Libra.manager.getScales()) {
-            final WeightBoard wb = new WeightBoard(driver, false);
-            wb.setWeight(driver.getWeight());
+        for (Object[] data : Libra.scaleDrivers) {
+            ScalesDriver sd = (ScalesDriver) data[0];
+            final WeightBoard wb = new WeightBoard(sd, false, data[1]);
+            wb.setWeight(sd.getWeight());
             if (!net.isEmpty()) {
                 wb.setBlock(true);
             }
@@ -261,26 +255,26 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
                         BigDecimal key;
                         if (id.isEmpty()) {
-                            key = Libra.libraService.execute(SearchType.NEXTVAL, null);
+                            key = Libra.libraService.execute(SearchType.NEXTVAL.getSql(), null);
                             dataSet.setValueByName("id", 0, key);
                         } else {
                             key = (BigDecimal) id.getValue();
                         }
 
                         if (doc.getId() == 1)
-                            Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEIN : SearchType.UPDSCALEIN, dataSet);
+                            Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEIN.getSql() : SearchType.UPDSCALEIN.getSql(), dataSet);
                         else {
-                            Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEOUT : SearchType.UPDSCALEOUT, dataSet);
+                            Libra.libraService.execute(id.isEmpty() ? SearchType.INSSCALEOUT.getSql() : SearchType.UPDSCALEOUT.getSql(), dataSet);
 
                             printPanel.initData(clcdivt, clcprazgruz_s_12t, clcelevatort);
                             DataSet printDetail = printPanel.getDataSet();
                             printDetail.setValueByName("p_id", 0, key);
-                            Libra.libraService.execute(SearchType.MERGEPRINTDETAIL, printDetail);
+                            Libra.libraService.execute(SearchType.MERGEPRINTDETAIL.getSql(), printDetail);
                         }
 
                         if (!historySet.isEmpty()) {
                             historySet.setValueByName("id", 0, key);
-                            Libra.libraService.execute(SearchType.INSHISTORY, historySet);
+                            Libra.libraService.execute(SearchType.INSHISTORY.getSql(), historySet);
                         }
 
                         Libra.libraService.commit();
@@ -317,7 +311,8 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 int n = JOptionPane.showConfirmDialog(comp, message, LangService.trans("saveConfirmDialog0"), JOptionPane.YES_NO_OPTION);
                 if (n == 0) {
                     try {
-                        BigDecimal itemId = Libra.libraService.execute(SearchType.INSUNIV, new DataSet(Arrays.asList("denumirea", "codvechi", "tip", "gr1"), new Object[]{name.getText(), oldCod.getText(), "O", "E"}));
+                        BigDecimal itemId = Libra.libraService.execute(SearchType.INSUNIV.getSql(),
+                                new DataSet(Arrays.asList("denumirea", "codvechi", "tip", "gr1"), new Object[]{name.getText(), oldCod.getText(), "O", "E"}));
                         edit.setValue(new CustomItem(itemId, name.getText()));
                     } catch (Exception e1) {
                         e1.printStackTrace();
@@ -356,7 +351,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 100, p0, id);
 
         NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", dataSet);
-        nr_analiz.addValidator(positiveValidator);
+        nr_analiz.addValidator(Validators.POSITIVE);
         addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 ////////////////////
@@ -383,24 +378,24 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         JPanel p3 = createPanel(fieldsPanel, 3);
 
         SearchDbEdit clcdep_postavt = new SearchDbEdit("clcdep_postavt", dataSet, Libra.libraService, SearchType.UNIVOIE);
-        clcdep_postavt.addValidator(nullValidator);
+        clcdep_postavt.addValidator(Validators.NULL);
         addToPanel(8, 8, 200, p3, clcdep_postavt);
         policy.add(clcdep_postavt);
 
         addInsertButton(p3, clcdep_postavt);
 
         SearchDbEdit clcppogruz_s_12t = new SearchDbEdit("clcppogruz_s_12t", dataSet, Libra.libraService, SearchType.PLACES);
-        clcppogruz_s_12t.addValidator(nullValidator);
+        clcppogruz_s_12t.addValidator(Validators.NULL);
         addToPanel(8, 8 + stepDown, 200, p3, clcppogruz_s_12t);
         policy.add(clcppogruz_s_12t);
 
         sc = new SearchDbEdit("clcsc_mpt", dataSet, Libra.libraService, SearchType.CROPS);
-        sc.addValidator(nullValidator);
+        sc.addValidator(Validators.NULL);
         addToPanel(8, 8 + stepDown + stepDown, 200, p3, sc);
         policy.add(sc);
 
         transport = new SearchDbEdit("clcdep_transpt", dataSet, Libra.libraService, SearchType.UNIVOIE);
-        transport.addValidator(nullValidator);
+        transport.addValidator(Validators.NULL);
         addToPanel(370, 8, 200, p3, transport);
         policy.add(transport);
         addInsertButton(p3, transport);
@@ -417,7 +412,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         JPanel p4 = createPanel(fieldsPanel, 2);
 
         ttn_n = new TextDbEdit("ttn_n", dataSet);
-        ttn_n.addValidator(nullValidator);
+        ttn_n.addValidator(Validators.NULL);
         addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
@@ -489,7 +484,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         addToPanel(8, 8, 100, p0, id);
 
         NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", dataSet);
-        nr_analiz.addValidator(negativeValidator);
+        nr_analiz.addValidator(Validators.NEGATIVE);
         addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 
@@ -527,29 +522,29 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 //////////////////
         JPanel p3 = createPanel(fieldsPanel, 3);
         SearchDbEdit clcdep_destinatt = new SearchDbEdit("clcdep_destinatt", dataSet, Libra.libraService, SearchType.UNIVOIE);
-        clcdep_destinatt.addValidator(nullValidator);
+        clcdep_destinatt.addValidator(Validators.NULL);
         addToPanel(8, 8, 200, p3, clcdep_destinatt);
         policy.add(clcdep_destinatt);
         addInsertButton(p3, clcdep_destinatt);
 
         clcprazgruz_s_12t = new SearchDbEdit("clcprazgruz_s_12t", dataSet, Libra.libraService, SearchType.PLACES);
-        clcprazgruz_s_12t.addValidator(nullValidator);
+        clcprazgruz_s_12t.addValidator(Validators.NULL);
         addToPanel(8, 8 + stepDown, 200, p3, clcprazgruz_s_12t);
         policy.add(clcprazgruz_s_12t);
 
         sc = new SearchDbEdit("clcsct", dataSet, Libra.libraService, SearchType.CROPS);
-        sc.addValidator(nullValidator);
+        sc.addValidator(Validators.NULL);
         addToPanel(8, 8 + stepDown + stepDown, 200, p3, sc);
         policy.add(sc);
 
         transport = new SearchDbEdit("clcdep_perevozt", dataSet, Libra.libraService, SearchType.UNIVOE);
-        transport.addValidator(nullValidator);
+        transport.addValidator(Validators.NULL);
         addToPanel(370, 8, 200, p3, transport);
         policy.add(transport);
         addInsertButton(p3, transport);
 
         SearchDbEdit clcpunctto_s_12t = new SearchDbEdit("clcpunctto_s_12t", dataSet, Libra.libraService, SearchType.PLACES1);
-        clcpunctto_s_12t.addValidator(nullValidator);
+        clcpunctto_s_12t.addValidator(Validators.NULL);
         addToPanel(370, 8 + stepDown, 200, p3, clcpunctto_s_12t);
         policy.add(clcpunctto_s_12t);
 
@@ -560,7 +555,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
         JPanel p4 = createPanel(fieldsPanel, 2);
 
         ttn_n = new TextDbEdit("ttn_n", dataSet);
-        ttn_n.addValidator(nullValidator);
+        ttn_n.addValidator(Validators.NULL);
         addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
@@ -601,7 +596,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
         if (idVal == null) {
             if (!clcelevatort.isEmpty()) {
-                DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
+                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
                 clcdivt.changeData(divSet);
                 clcdivt.setSelectedItem(LibraService.user.getDefDiv());
                 if (!divSet.isEmpty() && divSet.size() > 1)
@@ -682,7 +677,7 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
             checkWeightField(tara);
         } else if (source.equals(clcelevatort)) {
             try {
-                DataSet divSet = Libra.libraService.selectDataSet(SearchType.GETDIVBYSILOS, Collections.singletonMap(":elevator_id", clcelevatort.getValue()));
+                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
                 clcdivt.changeData(divSet);
                 clcdivt.setSelectedItem(LibraService.user.getDefDiv());
             } catch (Exception e) {
@@ -745,26 +740,20 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
                 repData.addDataSet(printPanel.getDataSet());
             }
 
-            Map<String, Object> params = new HashMap<String, Object>();
-            params.put(":exped", clcdivt.getValue());
-            params.put(":dest", dataSet.getValueByName("clcdep_destinatt", 0));
-            params.put(":sc", sc.getValue());
-            params.put(":transp", transport.getValue());
-            params.put(":net", dataSet.getValueByName("masa_netto", 0));
-
             Object mn = dataSet.getValueByName("masa_netto", 0);
             Object mt = dataSet.getValueByName("masa_ttn", 0);
             BigDecimal delta = BigDecimal.ZERO;
             if (mn != null && mt != null) {
                 delta = ((BigDecimal) mt).subtract((BigDecimal) mn);
             }
-            params.put(":delta", delta);
-            params.put(":time_in", dataSet.getValueByName("time_in", 0));
-            params.put(":time_out", dataSet.getValueByName("time_out", 0));
 
-            DataSet dataSet2 = Libra.libraService.selectDataSet(report.getHeaderSQL(), params);
+            DataSet params = new DataSet(Arrays.asList("exped", "dest", "sc", "transp", "net", "delta", "time_in", "time_out")
+                    , new Object[]{clcdivt.getValue(), dataSet.getValueByName("clcdep_destinatt", 0), sc.getValue(),
+                    transport.getValue(), mn, delta, dataSet.getValueByName("time_in", 0), dataSet.getValueByName("time_out", 0)});
+
+            DataSet dataSet2 = Libra.libraService.executeQuery(report.getSql(), params);
             repData.addDataSet(dataSet2);
-            Libra.reportService.buildReport(report.getTemplate(), repData);
+            Libra.reportService.buildReport(report, repData);
         } catch (Exception e1) {
             e1.printStackTrace();
             Libra.eMsg(e1.getMessage());
@@ -773,22 +762,22 @@ public class LibraEdit extends JDialog implements ActionListener, ChangeEditList
 
     public void prepareInfo() throws Exception {
         if (clcsofer_s_14t.getValue() instanceof String) {
-            BigDecimal bd = Libra.libraService.execute(SearchType.INSSYSS, new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "14", clcsofer_s_14t.getText(), ""}));
+            BigDecimal bd = Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "14", clcsofer_s_14t.getText(), ""}));
             clcsofer_s_14t.setValue(new CustomItem(bd, clcsofer_s_14t.getText()));
         }
         if (!auto.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", (Object) auto.getText()));
+            DataSet autoSet = Libra.libraService.executeQuery("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", new DataSet("find", auto.getText()));
             if (autoSet.getNumberValue("cnt", 0).equals(BigDecimal.ZERO)) {
                 String vName = auto.getText().toUpperCase();
-                Libra.libraService.execute(SearchType.INSSYSS, new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "15", vName, vin.getText()}));
+                Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "15", vName, vin.getText()}));
                 auto.setValue(vName);
             }
         }
         if (!nr_remorca.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.selectDataSet("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", Collections.singletonMap(":find", (Object) nr_remorca.getText()));
+            DataSet autoSet = Libra.libraService.executeQuery("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", new DataSet("find", nr_remorca.getText()));
             if (autoSet.getNumberValue("cnt", 0).equals(BigDecimal.ZERO)) {
                 String vName = nr_remorca.getText().toUpperCase();
-                Libra.libraService.execute(SearchType.INSSYSS, new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "16", vName, ""}));
+                Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "16", vName, ""}));
                 nr_remorca.setValue(vName);
             }
         }

@@ -55,4 +55,8 @@ public class ScalesManager {
     public List<ScalesDriver> getScales() {
         return scales;
     }
+
+    public void setScales(List<ScalesDriver> scales) {
+        this.scales = scales;
+    }
 }

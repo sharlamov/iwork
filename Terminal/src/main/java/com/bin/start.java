@@ -1,13 +1,16 @@
 package com.bin;
 
+import com.driver.ScaleEventListener;
+import com.driver.TestDriver;
+import jssc.SerialPortEvent;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class start {
+public class Start implements ScaleEventListener {
     static Integer weight = 50;
 
     public static void main(String[] args) throws Exception {
@@ -15,38 +18,18 @@ public class start {
         //initTestData();
         //testData();
 
-    }
-
-    public static Integer getStableWeight() throws InterruptedException {
-        int lastWeight = weight == null ? 0 : weight;
-        boolean isStable = false;
-        for (int i = 0, c = 0; i < 5 && !isStable && c < 10; i++) {
-            isStable = true;
-            for (int j = 0; j < 100 && c < 10; j++) {
-                TimeUnit.MILLISECONDS.sleep(10);
-                if (weight == null) {
-                    c++;
-                } else {
-                    if (Math.abs(weight - lastWeight) > 20) {
-                        isStable = false;
-                        lastWeight = weight;
-                        break;
-                    }
-                }
-            }
-        }
-        return weight;
+        //new Start().startEmulation();
     }
 
     private static void initTestData() throws IOException {
         StringBuilder receivedData = new StringBuilder();
-        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/com1458826236563.log"));
+        BufferedReader br = new BufferedReader(new FileReader("C:/Users/sharlamov/Desktop/terminal/jegal.log"));
         String strLine;
         while ((strLine = br.readLine()) != null) {
             receivedData.append(strLine);
         }
 
-        Pattern pattern = Pattern.compile("([=][-|0-9|\\s]{8}[\\D])");
+        Pattern pattern = Pattern.compile("([1CH ][0-9]{5})");
         if (receivedData.length() > 0) {
             Matcher m = pattern.matcher(receivedData);
             while (m.find()) {
@@ -57,5 +40,21 @@ public class start {
         }
     }
 
+    public void startEmulation() {
+        long t = System.currentTimeMillis();
+        String text = "\u00021CH 00000\u0003";
+        TestDriver td = new TestDriver("([1CH ][0-9]{5})", text);
+        td.addEventListener(this);
+        int x = text.length();
+        for (int i = 0; i < 10000000; i++) {
+            //long t = System.currentTimeMillis();
+            td.serialEvent(new SerialPortEvent("COM1", 1, x));
+            //System.out.println(System.currentTimeMillis() - t);
+        }
+        System.out.println(System.currentTimeMillis() - t);
+    }
 
+    public void scaleExecuted(Integer weight, boolean isStable) {
+        //System.out.println(weight);
+    }
 }

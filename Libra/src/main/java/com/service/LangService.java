@@ -19,7 +19,7 @@ public class LangService {
         langList = new ArrayList<String>();
 
         try {
-            DataSet dataSet = service.selectDataSet(SearchType.LANGUAGES, new HashMap<String, Object>());
+            DataSet dataSet = service.executeQuery(SearchType.LANGUAGES.getSql(), null);
             for (int i = 1; i < dataSet.getNames().size(); i++) {
                 langList.add(dataSet.getNames().get(i).toUpperCase());
             }

@@ -4,6 +4,7 @@ import com.driver.ScaleEventListener;
 import com.driver.ScalesDriver;
 import com.service.LangService;
 import com.util.Fonts;
+import com.util.Libra;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -12,6 +13,7 @@ import java.util.Random;
 
 public class WeightBoard extends JPanel implements ScaleEventListener {
 
+    private final Integer driverId;
     public JButton btnAdd;
     private JLabel score = new JLabel();
     private Color stableColor = Color.orange;
@@ -19,8 +21,9 @@ public class WeightBoard extends JPanel implements ScaleEventListener {
     private boolean isOnline;
     private boolean isBlock;
 
-    public WeightBoard(final ScalesDriver driver, boolean isOnline) {
+    public WeightBoard(final ScalesDriver driver, boolean isOnline, Object driverId) {
         this.isOnline = isOnline;
+        this.driverId = driverId != null ? Integer.valueOf(driverId.toString()) : null;
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
@@ -55,10 +58,19 @@ public class WeightBoard extends JPanel implements ScaleEventListener {
         btnAdd.setEnabled(!isBlock);
     }
 
+    public Integer getDriverId() {
+        return driverId;
+    }
+
     public Integer getWeight() {
-        String value = score.getText();
-        //return value.isEmpty() ? null : Integer.valueOf(value);
-        return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
+        if (driverId == null) {
+            Libra.eMsg(LangService.trans("error.emptyscalecode"));
+            return null;
+        } else {
+            String value = score.getText();
+            //return value.isEmpty() ? null : Integer.valueOf(value);
+            return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
+        }
     }
 
     public void setWeight(Integer weight) {

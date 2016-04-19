@@ -2,6 +2,7 @@ package com.enums;
 
 public enum SearchType {
 
+    INITCONTEXT("begin Libra_actions_pkg.initcontext(:plevel, :puserid, :plimit); end;"),
     LANGUAGES("select * from libra_translate_tbl where nameid is not null"),
     CROPS("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip = 'M' and gr1 in ('2161','2171','2173') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     CROPSROMIN("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip = 'M' and gr1 = 'P' and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
@@ -16,7 +17,7 @@ public enum SearchType {
     STATUS("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='Z' and cod='100') where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     SOLA("select * from (select cod, denumirea as clccodt from vms_univers where tip = 'O' and gr1='SOLA' and isarhiv is null order by denumirea) where lower(clccodt) like :findQuery and rownum < 31"),
     DELEGAT("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1='F' and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 31"),
-    FINFO("select pasaport||', '||orgeloberat||', '||dataelibpas||', '||(select codfiscal from tms_org o where o.cod = m.cod) info from tms_munc m where cod = :clcnamet"),
+    FINFO("select pasaport||', '||orgeloberat||', '||dataelibpas||', '||(select codvechi from vms_univers o where o.cod = m.cod) info from tms_munc m where cod = :clcnamet"),
     FINDCONTRACT("select * from (\n" +
             "SELECT nrdoc1,nr_manual,data_alccontr,sc_mp,clcsc_mpt\n" +
             ",(select denumirea from vms_univers u where u.cod=div) clcdivt\n" +
@@ -180,13 +181,14 @@ public enum SearchType {
     INSSCALEOUTROM("insert into ytrans_vtf_prohodn_out\n" +
             "  (id, nr_vagon, time_in, time_out, sc, masa_brutto, masa_netto, masa_tara, priznak_arm, commentarii, \n" +
             "  ttn_n, ttn_data, sofer_s_14, nr_remorca, prazgruz_s_12, prikaz_masa, prikaz_masa_max, \n" +
-            "  prikaz_id, nrdoc_out, dep_destinat, nr_analiz, sezon_yyyy, print_chk, dep_perevoz, vin,punctto_s_12, sklad_pogruzki, elevator, div" +
+            "  prikaz_id, nrdoc_out, dep_destinat, nr_analiz, sezon_yyyy, print_chk, dep_perevoz, vin,punctto_s_12, sklad_pogruzki" +
+            "  ,contract_nrmanual,contract_data, elevator, div" +
             "  ,status_z_100, ttn_vagon, ticket, opertype, delegat, driver, nr_auto, nr_trailer,silo_dest, cell_dest)\n" +
             "VALUES\n" +
             "  (:id, :nr_vagon, :time_in, :time_out, :clcsct, :masa_brutto,:masa_netto, :masa_tara, 2, :commentarii, \n" +
             "  :ttn_n, :ttn_data, :clcsofer_s_14t, :nr_remorca, :clcprazgruz_s_12t, :prikaz_masa, :prikaz_masa_max, \n" +
             "  :prikaz_id, :nrdoc_out, :clcdep_destinatt, :nr_analiz, :sezon_yyyy, :print_chk, :clcdep_perevozt, :vin, :clcpunctto_s_12t, :clcsklad_pogruzkit, \n" +
-            "  :clcelevatort, :clcdivt," +
+            "  :contract_nrmanual,:contract_data, :clcelevatort, :clcdivt," +
             "  :clcstatus_z_100t, :ttn_vagon, :ticket,:clcopertypet,:clcdelegatt,:clcdrivert,:clcnr_autot,:clcnr_trailert,:clcsilo_destt, :clccell_destt)"),
     UPDSCALEOUTROM("update ytrans_vtf_prohodn_out set\n" +
             "   nr_vagon = :nr_vagon,\n" +
@@ -221,7 +223,7 @@ public enum SearchType {
             "   status_z_100 = :clcstatus_z_100t, ttn_vagon = :ttn_vagon, ticket = :ticket, opertype = :clcopertypet, delegat = :clcdelegatt," +
             "   driver = :clcdrivert, nr_auto = :clcnr_autot, nr_trailer = :clcnr_trailert, silo_dest = :clcsilo_destt, cell_dest = :clccell_destt\n" +
             "where id = :id"),
-    INSHISTORY("insert into vtf_prohodn_scales (tip,id,nr,dt,br,userid,sc,masa,app) values (:tip,:id,id_tmdb_cm.nextval,:dt,:br,:userid,:sc,:masa,1)"),
+    INSHISTORY("insert into vtf_prohodn_scales (tip,id,nr,dt,br,userid,sc,masa,app,scaleId) values (:tip,:id,id_tmdb_cm.nextval,:dt,:br,:userid,:sc,:masa,1,:scaleId)"),
     NEXTVAL("{call select ID_MP_VESY.NEXTVAL into ? from dual}"),
     PRINTTTN("select\n" +
             " (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'FACTURATVA') expeditor \n" +
@@ -505,10 +507,48 @@ public enum SearchType {
             "-----\n" +
             "Update ytrans_VTF_PROHODN_OUT set nrdoc_out=vCod,PRINT_CHK=NULL where ttn_n=vttn and div=vdiv  and nrdoc_out is null;\n" +
             "------------\n" +
-            "end;");
+            "end;"),
+    FINDAUTOIN("select * from (\n" +
+            " select * from (\n" +
+            "  select distinct nr_auto,clcnr_autot,nr_trailer, clcnr_trailert, driver,clcdrivert from VTF_PROHODN_MPFS where nr_auto is not null\n" +
+            "  union all\n" +
+            "  select cod, denumirea, null, null, null, null from vms_univers where tip='T' and gr1 = 'A' and isarhiv is null\n" +
+            " ) order by instr(lower(clcnr_autot),trim(both '%' from :findquery)) asc, clcnr_autot, clcnr_trailert  desc, clcdrivert desc \n" +
+            ")where lower(clcnr_autot) like :findQuery and rownum < 31"),
+    FINDAUTOOUT("select * from (\n" +
+            " select * from (\n" +
+            "  select distinct nr_auto,clcnr_autot,nr_trailer, clcnr_trailert, driver,clcdrivert from  ytrans_vtf_prohodn_out where nr_auto is not null\n" +
+            "  union all\n" +
+            "  select cod, denumirea, null, null, null, null from vms_univers where tip='T' and gr1 = 'A' and isarhiv is null\n" +
+            " ) order by instr(lower(clcnr_autot),trim(both '%' from :findquery)) asc, clcnr_autot, clcnr_trailert  desc, clcdrivert desc \n" +
+            ")where lower(clcnr_autot) like :findQuery and rownum < 31"),
+    LOADOUTDOC("select \n" +
+            "ctnum2 opertype, (select denumirea from vms_syss where tip='OT' and cod=1 and cod1=ctnum2) clcopertypet\n" +
+            ",ctnum1 punctto_s_12, (select denumirea from vms_syss where tip='S' and cod=12 and cod1=ctnum1) clcpunctto_s_12t\n" +
+            ",DTSC1 driver, CLCDTSC1T clcdrivert\n" +
+            ",DTSC2 nr_auto, CLCDTSC2T clcnr_autot\n" +
+            ",DTSC3 nr_trailer, CLCDTSC3T clcnr_trailert\n" +
+            ",DTSC4 dep_perevoz, CLCDTSC4T clcdep_perevozt\n" +
+            ",DTSC5 delegat, CLCDTSC5T clcdelegatt\n" +
+            ",DTSTR0 ttn_n, dtdata0 ttn_data, DTSTR1 ttn_vagon\n" +
+            ",CTSC0 sc, CLCCTSC0T clcsct\n" +
+            ",DTSTR3 contract_nrmanual, DTDATA3 contract_data\n" +
+            ",DTSC0 dep_destinat,CLCDTSC0T clcdep_destinatt\n" +
+            ",CTSC2 sklad_pogruzki, CLCCTSC2T clcsklad_pogruzkit\n" +
+            ",DTSC6 silo_dest, CLCDTSC6T clcsilo_destt\n" +
+            ",DTSC7 cell_dest, CLCDTSC7T clccell_destt\n" +
+            ",(select sum(ctcant0) from vmdb_reg_a ra where ra.nrdoc = r.nrdoc) prikaz_masa\n" +
+            "from vmdb_reg r where nrdoc = :nrdoc \n" +
+            "and exists(select 1 from vmdb_docs where cod = r.nrdoc and sysfid = 48621)"),
+        FINDCONTRACTROIN("select m.contractid, nr_manual, m.data_contract, datastart, dataend, clcmasa_typet tip_masa, clcdelivery_typet deliver_type\n" +
+                ", clccontract_subtypet, NRMANUAL_CONTR_BASE contr_baza\n" +
+                ", contract_subtype, clcsct, cant, D.PRICE\n" +
+                "from yroVmdb_contract m, YROVMDB_CONTRACT_d d\n" +
+                "where clientid=:clcdep_postavt and d.contractid=m.contractid\n" +
+                "and d.cod_sc=:clcsc_mpt and d.sezon=:sezon_yyyy"),
+        UPDATETICKET("{ :out_ticket = call Libra_actions_pkg.createTicketCintar(:time_out, :id, :priznak_arm, :scaleid) }");
 
-
-    private String sql;
+        private String sql;
 
     SearchType(String sql) {
 

@@ -7,6 +7,7 @@ import java.awt.*;
 public class Pictures {
 
     public static ImageIcon printerIcon = createImageIcon("images/printer.png", 24, 24);
+    public static ImageIcon actionIcon = createImageIcon("images/run.png", 24, 24);
     public static ImageIcon saveIcon = createImageIcon("images/save.png", 20, 20);
     public static ImageIcon addIcon = createImageIcon("images/add.png");
     public static ImageIcon reloadIcon = createImageIcon("images/reload.png");

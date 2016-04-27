@@ -1,7 +1,7 @@
 package com.bin;
 
 import com.docs.DocRo;
-import com.docs.LibraEdit;
+import com.docs.DocMd;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
@@ -26,7 +26,6 @@ import java.awt.event.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, ItemListener, ChangeEditListener {
@@ -36,8 +35,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     private JButton addBtn = new JButton(Pictures.addIcon);
     private JButton refreshBtn = new JButton(Pictures.reloadIcon);
     private JToggleButton halfBtn = new JToggleButton(Pictures.halfIcon);
-    private ComboDbEdit elevators;
-    private ComboDbEdit divs;
+    private ComboDbEdit<CustomItem> elevators;
+    private ComboDbEdit<CustomItem> divs;
     private DataGrid dataGrid;
     private Dimension dateSize = new Dimension(100, 27);
     private HistoryPanel detail;
@@ -58,7 +57,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.increaseRowHeight(1.5f);
         dataGrid.setGridFont(Fonts.plain15);
         dataGrid.addListSelectionListener(this);
-        dataGrid.addActs(doc);
         dataGrid.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent me) {
                 int row = dataGrid.getSelectedRow();
@@ -71,7 +69,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.setColumnFont("masa_tara", Fonts.bold12);
         dataGrid.setColumnFont("masa_netto", Fonts.bold12);
 
-        filter = new DataSet(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty"));
+        filter = new DataSet(new ArrayList<String>(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty")));
 
         tableKeyBindings(dataGrid);
 
@@ -216,8 +214,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             filter.setValueByName("elevator", 0, item.getId() == null ? LibraService.user.getElevators() : item);
             filter.setValueByName("empty", 0, halfBtn.isSelected() ? null : BigDecimal.ZERO);
             dataGrid.select(filter);
-
-            //refreshDetail();
         } catch (Exception e) {
             e.printStackTrace();
             Libra.eMsg(e.getMessage());
@@ -244,8 +240,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void openDocument(DataSet dataSet) {
         if (LibraService.user.getProfile().equalsIgnoreCase("mdauto")) {
-            new LibraEdit(pan, dataSet, doc);
-        } else {
+            new DocMd(pan, dataSet, doc);
+        } else if (LibraService.user.getProfile().equalsIgnoreCase("mdtest")) {
+            new DocMd(pan, dataSet, doc);
+        } else if (LibraService.user.getProfile().equalsIgnoreCase("roauto")) {
             new DocRo(pan, dataSet, doc);
         }
     }

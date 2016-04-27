@@ -65,7 +65,6 @@ public class InsertDialog extends JDialog implements ActionListener {
                 TextDbEdit de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
-                //dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
             }
             break;
             case UNIVOE: {

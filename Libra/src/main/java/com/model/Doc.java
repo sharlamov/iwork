@@ -7,6 +7,7 @@ public class Doc {
     private int id;
     private String name;
     private boolean usePrintInfo;
+    private String printInfoSql;
     private List<Act> actions;
     private List<Report> reports;
 
@@ -55,5 +56,13 @@ public class Doc {
 
     public void setUsePrintInfo(boolean usePrintInfo) {
         this.usePrintInfo = usePrintInfo;
+    }
+
+    public String getPrintInfoSql() {
+        return printInfoSql;
+    }
+
+    public void setPrintInfoSql(String printInfoSql) {
+        this.printInfoSql = printInfoSql;
     }
 }

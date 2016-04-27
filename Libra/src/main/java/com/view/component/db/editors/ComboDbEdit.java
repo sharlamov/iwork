@@ -10,6 +10,7 @@ import net.java.balloontip.utils.TimingUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
     //? refactor setValue()
 
     private final DataSet dataSet;
+    private final Border newBorder;
     private Color oldBackground;
     private Color editBackground;
     private Border oldBorder;
@@ -31,6 +33,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
         this.dataSet = dataSet;
 
         oldBorder = getBorder();
+        newBorder = new LineBorder(Color.decode("#006600"), 2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
 
@@ -67,9 +70,10 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
         TimingUtils.showTimedBalloon(myBalloonTip, 3000);
     }
 
-    public void changeData(DataSet dataSet) {
+    public void changeData(DataSet set) {
         removeAllItems();
-        for (Object[] o : dataSet) {
+        dataSet.setValueByName(getName(), 0, null);
+        for (Object[] o : set) {
             addItem((T) o[0]);
         }
     }
@@ -126,7 +130,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
     }
 
     public void focusGained(FocusEvent e) {
-        setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        setBorder(newBorder);
         setBackground(editBackground);
     }
 

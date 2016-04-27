@@ -11,6 +11,7 @@ import net.java.balloontip.utils.TimingUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -27,6 +28,7 @@ public class DateDbEdit extends JDateChooser implements IEdit {
     private Border oldBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
     private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private Border newBorder;
 
     public DateDbEdit(String name, SimpleDateFormat format, DataSet dataSet) {
         this.dataSet = dataSet;
@@ -48,6 +50,7 @@ public class DateDbEdit extends JDateChooser implements IEdit {
         set.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
         oldBorder = getBorder();
+        newBorder = new LineBorder(Color.decode("#006600"),2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
 
@@ -98,7 +101,7 @@ public class DateDbEdit extends JDateChooser implements IEdit {
     }
 
     public void focusGained(FocusEvent e) {
-        setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        setBorder(newBorder);
         ((JTextFieldDateEditor) getDateEditor()).setBackground(editBackground);
     }
 

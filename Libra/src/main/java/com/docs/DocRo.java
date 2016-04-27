@@ -1,250 +1,75 @@
 package com.docs;
 
 import com.bin.LibraPanel;
-import com.driver.ScalesDriver;
 import com.enums.InsertType;
 import com.enums.SearchType;
-import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Doc;
-import com.model.Report;
 import com.service.LangService;
 import com.service.LibraService;
-import com.util.*;
+import com.util.Libra;
+import com.util.Pictures;
+import com.util.Validators;
 import com.view.component.db.editors.*;
 import com.view.component.grid.GridField;
 import com.view.component.panel.DbPanel;
-import com.view.component.weightboard.WeightBoard;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Date;
 
-public class DocRo extends JDialog implements ActionListener, ChangeEditListener {
+public class DocRo extends ScaleDoc {
 
-    private final Doc doc;
-    private final int stepDown = 27;
-    private LibraPanel libraPanel;
-    private DataSet newDataSet;
-    private DataSet oldDataSet;
-    private DataSet newInfoSet;
-    private DataSet oldInfoSet;
-    private JButton bPrint = new JButton(LangService.trans("print"), Pictures.printerIcon);
-    private JButton bSave = new JButton(LangService.trans("save"));
-    private JButton bCancel = new JButton(LangService.trans("cancel"));
-    private SearchDbEdit sc;
-    private NumberDbEdit net;
-    private NumberDbEdit brutto;
-    private NumberDbEdit tara;
     private SearchDbEdit contract_nrmanual;
     private DateDbEdit contract_data;
     private SearchDbEdit auto;
     private SearchDbEdit clcnr_trailert;
     private SearchDbEdit clcdrivert;
-    private DateDbEdit time_in;
-    private DateDbEdit time_out;
-    private DbPanel fieldsPanel;
-    private DbPanel infoPanel;
-    private JPanel board = new JPanel();
-    private CustomFocusTraversalPolicy policy;
-    private DataSet historySet = new DataSet("tip,id,nr,dt,br,userid,sc,masa,scaleId");
-    private ComboDbEdit clcelevatort;
-    private ComboDbEdit clcdivt;
     private SearchDbEdit transport;
     private TextDbEdit ttn_n;
     private JButton updateBtn;
-    private NumberDbEdit pv;
+    private SearchDbEdit pv;
 
     public DocRo(LibraPanel libraPanel, final DataSet dataSet, Doc doc) {
-        super((JFrame) null, LangService.trans(doc.getName()), true);
-        this.libraPanel = libraPanel;
-        this.newDataSet = dataSet.copy();
-        this.doc = doc;
-
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                exitDialog();
-            }
-        });
-        setSize(940, 700);
-        setResizable(false);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
-
-        initFieldsPanel();
-        initWeightBoard();
-        initStatusPanel();
-
-        setVisible(true);
+        super(libraPanel, dataSet, doc, new Dimension(940, 700));
     }
 
-    private void initWeightBoard() {
-        board.setPreferredSize(new Dimension(220, 70));
-        for (Object[] data : Libra.scaleDrivers) {
-            ScalesDriver sd = (ScalesDriver) data[0];
-            final WeightBoard wb = new WeightBoard(sd, false, data[1]);
-            wb.setWeight(sd.getWeight());
-            if (!net.isEmpty()) {
-                wb.setBlock(true);
-            }
-            wb.btnAdd.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    if (doc.getId() == 1)
-                        fixWeight(wb, brutto, tara);
-                    else
-                        fixWeight(wb, tara, brutto);
-                }
-            });
-
-            board.add(wb);
-        }
-        add(board, BorderLayout.EAST);
-    }
-
-    private void initFieldsPanel() {
-        fieldsPanel = new DbPanel(newDataSet, 720, 550);
-        policy = new CustomFocusTraversalPolicy();
+    @Override
+    public void initMain() {
         updateBtn = new JButton(Pictures.downloadedIcon);
         updateBtn.addActionListener(this);
-
-        initMain();
-        try {
-            if (doc.getId() == 1)
-                inForm();
-            else
-                outForm();
-        } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
-        }
-
-        if (net.isEmpty())
-            setFocusTraversalPolicy(policy);
-        else {
-            fieldsPanel.blockPanel();
-        }
-
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab(LangService.trans("enterData"), fieldsPanel);
-        if (doc.isUsePrintInfo()) {
-            infoPanel = createInfoPanel();
-            initTab();
-            tabbedPane.addTab(LangService.trans("printData"), infoPanel);
-            ChangeListener changeListener = new ChangeListener() {
-                public void stateChanged(ChangeEvent changeEvent) {
-                    JTabbedPane sourceTabbedPane = (JTabbedPane) changeEvent.getSource();
-                    int index = sourceTabbedPane.getSelectedIndex();
-                    if (index == 0) {
-                        setFocusTraversalPolicy(policy);
-                    } else {
-                        setFocusTraversalPolicy(null);
-                        initTab();
-                    }
-                }
-            };
-            tabbedPane.addChangeListener(changeListener);
-        }
-        oldDataSet = newDataSet.copy();
-        oldInfoSet = newInfoSet.copy();
-        add(tabbedPane, BorderLayout.CENTER);
-    }
-
-    private void initMain() {
         newDataSet.setValueByName("sezon_yyyy", 0, Libra.defineSeason());
     }
 
-    private void initTab() {
+    @Override
+    public void initTab(boolean isOpened) {
         infoPanel.setValue("pid", newDataSet.getValueByName("id", 0));
         infoPanel.setValue("clcdelegatt", newDataSet.getValueByName("clcdelegatt", 0));
         infoPanel.setValue("clcdrivert", newDataSet.getValueByName("clcdrivert", 0));
         infoPanel.setValue("clccusert", LibraService.user.getClcuser_sct());
 
         try {
-            infoPanel.setValue("test0", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcdelegatt", 0))).getStringValue("info", 0));
-            infoPanel.setValue("test1", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcgestionart", 0))).getStringValue("info", 0));
-            infoPanel.setValue("test2", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcdrivert", 0))).getStringValue("info", 0));
-            infoPanel.setValue("test3", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clccusert", 0))).getStringValue("info", 0));
+            if (isOpened) {
+                infoPanel.setValue("test0", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcdelegatt", 0))).getStringValue("info", 0));
+                infoPanel.setValue("test1", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcgestionart", 0))).getStringValue("info", 0));
+                infoPanel.setValue("test2", Libra.libraService.executeQuery(SearchType.FINFO.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clcdrivert", 0))).getStringValue("info", 0));
+                infoPanel.setValue("test3", Libra.libraService.executeQuery(SearchType.FINFO1.getSql(), new DataSet("clcnamet", newInfoSet.getValueByName("clccusert", 0))).getStringValue("info", 0));
+            }
         } catch (Exception e) {
             Libra.eMsg(e.getMessage());
         }
-
     }
 
-    private void initStatusPanel() {
-        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        statusPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-
-        bPrint.setMargin(new Insets(0, 0, 0, 0));
-        bPrint.addActionListener(this);
-        bPrint.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bPrint);
-
-        bSave.addActionListener(this);
-        bSave.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bSave);
-
-        bCancel.addActionListener(this);
-        bCancel.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bCancel);
-
-        add(statusPanel, BorderLayout.SOUTH);
-    }
-
-    private void fixWeight(WeightBoard weightBoard, IEdit firstField, IEdit secondField) {
-        Integer weight = weightBoard.getWeight();
-        Integer scaleId = weightBoard.getDriverId();
-        boolean isEmptyCar;
-
-        if (weight != null && weight != 0) {
-            int n = JOptionPane.showConfirmDialog(this, LangService.trans("scale.fixedweight") + " (" + weight + ")", LangService.trans("scale.take"), JOptionPane.YES_NO_OPTION);
-            if (n == 0) {
-                Date cTime = new Date();
-                if (firstField.isEmpty()) {
-                    firstField.setValue(weight);
-                    time_in.setValue(cTime);
-                    isEmptyCar = firstField.equals(tara);
-                } else {
-                    secondField.setValue(weight);
-                    time_out.setValue(cTime);
-                    isEmptyCar = secondField.equals(tara);
-                }
-
-                firstField.setChangeable(false);
-                secondField.setChangeable(false);
-
-                historySet.add(new Object[]{doc.getId(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight, scaleId});
-                blockWeightBoards();
-            }
-        } else {
-            Libra.eMsg(LangService.trans("error.zeroweight"));
-        }
-    }
-
-    private void blockWeightBoards() {
-        for (int i = 0; i < board.getComponentCount(); i++) {
-            Component comp = board.getComponent(i);
-            if (comp instanceof WeightBoard) {
-                ((WeightBoard) comp).setBlock(true);
-            }
-        }
-    }
-
-    private boolean save() {
+    @Override
+    public boolean save() {
         boolean isSaved = !isModified();
         try {
             if (!isSaved && LibraService.user.getScaleType() == 5 && fieldsPanel.verify()) {
 
                 if (Libra.qMsg("saveConfirmDialog0", "saveConfirmDialog1", this)) {
-                    updateDataSet(newDataSet);
+                    updateDataSet();
 
                     BigDecimal key = (BigDecimal) newDataSet.getValueByName("id", 0);
                     boolean isNewDoc = key == null;
@@ -253,9 +78,9 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
                         newDataSet.setValueByName("id", 0, key);
                     }
 
-                    if(!newDataSet.isEqual(oldDataSet)){
+                    if (!newDataSet.isEqual(oldDataSet)) {
 
-                        if(!newDataSet.getNumberValue("masa_netto", 0).equals(BigDecimal.ZERO) && newDataSet.getNumberValue("ticket", 0).equals(BigDecimal.ZERO)){
+                        if (!newDataSet.getNumberValue("masa_netto", 0).equals(BigDecimal.ZERO) && newDataSet.getNumberValue("ticket", 0).equals(BigDecimal.ZERO)) {
                             DataSet ds = new DataSet();
                             ds.addField("id", key);
                             ds.addField("time_out", newDataSet.getValueByName("time_out", 0));
@@ -265,7 +90,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
                             newDataSet.setValueByName("ticket", 0, ticketSet.getNumberValue("ticket", 0));
                         }
 
-                        if (doc.getId() == 1){
+                        if (doc.getId() == 1) {
                             Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEINROM.getSql() : SearchType.UPDSCALEINROM.getSql(), newDataSet);
                         } else {
                             Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEOUTROM.getSql() : SearchType.UPDSCALEOUTROM.getSql(), newDataSet);
@@ -273,10 +98,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
                     }
 
                     if (doc.isUsePrintInfo()) {
-                        newInfoSet.setValueByName("pid", 0, key);
-                        newInfoSet.setValueByName("clcdelegatt", 0, newDataSet.getValueByName("clcdelegatt", 0));
-                        newInfoSet.setValueByName("clcdrivert", 0, newDataSet.getValueByName("clcdrivert", 0));
-                        newInfoSet.setValueByName("clccusert", 0, LibraService.user.getClcuser_sct());
+                        initTab(false);
                         Libra.libraService.execute(SearchType.MERGEPRINTDETAILRO.getSql(), newInfoSet);
                     }
 
@@ -300,25 +122,10 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         return isSaved;
     }
 
-    private void saveDocument() {
-        if (save()) {
-            libraPanel.refreshMaster();
-            libraPanel.setRowPosition(newDataSet.getNumberValue("id", 0));
-            dispose();
-        }
-    }
-
     public void actionPerformed(ActionEvent e) {
+        super.actionPerformed(e);
         Object event = e.getSource();
-        if (event.equals(bSave)) {
-            saveDocument();
-        } else if (event.equals(bCancel)) {
-            exitDialog();
-        } else if (event.equals(bPrint)) {
-            makePrint();
-        } else if (event.equals(brutto) || e.getSource().equals(tara)) {
-            changeEdit(null);
-        } else if (event.equals(updateBtn)) {
+        if (event.equals(updateBtn)) {
             loadDocument();
         }
     }
@@ -518,7 +325,9 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         fieldsPanel.addToPanel(8, 10, 150, p0, oper);
         policy.add(oper);
 
-        pv = new NumberDbEdit("prikaz_id", newDataSet);
+        pv = new SearchDbEdit("prikaz_id", newDataSet, "prikaz_id"
+                , new GridField[]{new GridField("nrdoc", 50), new GridField("aviz", 65), new GridField("dtdata0", 80), new GridField("clcdtsc0t", 90), new GridField("clcdtsc2t", 80), new GridField("clcdtsc1t", 90), new GridField("clclocalitatet", 100)}
+                , Libra.libraService, SearchType.FINDPRIKAZ);
         fieldsPanel.addToPanel(8, 10 + stepDown, 100, p0, pv);
         policy.add(pv);
         fieldsPanel.addEditBtn(pv, updateBtn);
@@ -608,7 +417,7 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(1, null);
 
-        sc = new SearchDbEdit("clcsct", newDataSet, Libra.libraService, SearchType.CROPSROMIN);
+        sc = new SearchDbEdit("clcsct", newDataSet, Libra.libraService, SearchType.CROPSROMOUT);
         fieldsPanel.addToPanel(8, 8, 200, p4, sc);
         sc.addValidator(Validators.NULL);
         policy.add(sc);
@@ -636,112 +445,9 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         createCalculationPanel();
     }
 
-    public void createHeadPanel() throws Exception {
-        JPanel headPanel = fieldsPanel.createPanel(1, null);
-
-        clcelevatort = new ComboDbEdit<CustomItem>("clcelevatort", LibraService.user.getElevators(), newDataSet);
-        fieldsPanel.addToPanel(8, 8, 200, headPanel, clcelevatort);
-
-        clcdivt = new ComboDbEdit<CustomItem>("clcdivt", new ArrayList<CustomItem>(), newDataSet);
-        fieldsPanel.addToPanel(370, 8, 200, headPanel, clcdivt);
-
-        Object idVal = newDataSet.getValueByName("id", 0);
-        if (idVal == null) {
-            clcelevatort.addChangeEditListener(this);
-            if (LibraService.user.getElevators().size() > 1)
-                policy.add(clcelevatort);
-        } else {
-            clcelevatort.setChangeable(false);
-        }
-
-        if (idVal == null) {
-            if (!clcelevatort.isEmpty()) {
-                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
-                clcdivt.changeData(divSet);
-                clcdivt.setSelectedItem(LibraService.user.getDefDiv());
-                if (!divSet.isEmpty() && divSet.size() > 1)
-                    policy.add(clcdivt);
-            }
-        } else {
-            clcdivt.setChangeable(false);
-        }
-
-    }
-
-    public void createCalculationPanel() {
-        int editHeight = 23;
-
-        JPanel sumaPanel = fieldsPanel.createPanel(3, null);
-        JLabel bruttoLabel = new JLabel(LangService.trans("masa_brutto"), SwingConstants.CENTER);
-
-        bruttoLabel.setBounds(120, 4, 120, editHeight);
-        sumaPanel.add(bruttoLabel);
-        JLabel taraLabel = new JLabel(LangService.trans("masa_tara"), SwingConstants.CENTER);
-        taraLabel.setBounds(260, 4, 120, editHeight);
-        sumaPanel.add(taraLabel);
-        JLabel nettoLabel = new JLabel(LangService.trans("masa_netto"), SwingConstants.CENTER);
-        nettoLabel.setBounds(400, 4, 120, editHeight);
-        sumaPanel.add(nettoLabel);
-
-        JLabel weightLabel = new JLabel(LangService.trans("weight"));
-        weightLabel.setBounds(8, 8 + stepDown, 120, editHeight);
-        sumaPanel.add(weightLabel);
-        JLabel timeLabel = new JLabel(LangService.trans("time"));
-        timeLabel.setBounds(8, 8 + stepDown + stepDown, 120, editHeight);
-        sumaPanel.add(timeLabel);
-
-        brutto = new NumberDbEdit("masa_brutto", newDataSet);
-        brutto.setBounds(120, 4 + stepDown, 120, editHeight);
-        brutto.setFont(Fonts.bold18);
-        brutto.addChangeEditListener(this);
-        sumaPanel.add(brutto);
-        checkWeightField(brutto);
-
-        tara = new NumberDbEdit("masa_tara", newDataSet);
-        tara.setBounds(260, 4 + stepDown, 120, editHeight);
-        tara.setFont(Fonts.bold18);
-        tara.addChangeEditListener(this);
-        sumaPanel.add(tara);
-        checkWeightField(tara);
-
-        net = new NumberDbEdit("masa_netto", newDataSet);
-        net.addChangeEditListener(this);
-        net.setChangeable(false);
-        net.setBounds(400, 4 + stepDown, 120, editHeight);
-        net.setFont(Fonts.bold18);
-        sumaPanel.add(net);
-
-        time_in = new DateDbEdit("time_in", Libra.dateTimeFormat, newDataSet);
-        time_in.setChangeable(false);
-        time_in.setBounds(doc.getId() == 1 ? 120 : 260, 8 + stepDown + stepDown, 120, editHeight);
-        sumaPanel.add(time_in);
-
-        time_out = new DateDbEdit("time_out", Libra.dateTimeFormat, newDataSet);
-        time_out.setChangeable(false);
-        time_out.setBounds(doc.getId() == 1 ? 260 : 120, 8 + stepDown + stepDown, 120, editHeight);
-        sumaPanel.add(time_out);
-    }
-
     public void changeEdit(Object source) {
-        if (source.equals(brutto) || source.equals(tara)) {
-            BigDecimal b = brutto.getNumberValue();
-            BigDecimal t = tara.getNumberValue();
-            if (b.intValue() > 0 && t.intValue() > 0) {
-                net.setValue(b.subtract(t));
-            }
-        } else if (source.equals(net)) {
-            checkWeightField(brutto);
-            checkWeightField(tara);
-        } else if (source.equals(clcelevatort)) {
-            try {
-                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
-                clcdivt.changeData(divSet);
-                clcdivt.setSelectedItem(LibraService.user.getDefDiv());
-            } catch (Exception e) {
-                e.printStackTrace();
-                Libra.eMsg(e.getMessage());
-            }
-        } else if (source.equals(auto)) {
+        super.changeEdit(source);
+        if (source.equals(auto)) {
             clcdrivert.refresh();
             clcnr_trailert.refresh();
         } else if (source.equals(contract_nrmanual)) {
@@ -749,55 +455,17 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         }
     }
 
-    public void checkWeightField(NumberDbEdit edit) {
-        if (edit.isEmpty() && LibraService.user.isHandEditable()) {
-            edit.setChangeable(true);
-            policy.add(edit);
-        } else {
-            edit.setChangeable(false);
-            policy.remove(edit);
-        }
+    @Override
+    public void updateDataSet() {
+        newDataSet.setValueByName("time_in", 0, new Timestamp(newDataSet.getDateValue("time_in", 0).getTime()));
+        newDataSet.setValueByName("time_out", 0, new Timestamp(newDataSet.getDateValue("time_out", 0).getTime()));
     }
 
-    public DataSet updateDataSet(DataSet data) {
-        newDataSet.setValueByName("time_in", 0, new Timestamp(time_in.isEmpty() ? System.currentTimeMillis() : time_in.getDate().getTime()));
-        newDataSet.setValueByName("time_out", 0, new Timestamp(time_out.isEmpty() ? System.currentTimeMillis() : time_out.getDate().getTime()));
-
-        return data;
-    }
-
-    private void makePrint() {
-        if (save()) {
-            JPanel p = new JPanel();
-            p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            ButtonGroup bg = new ButtonGroup();
-            for (Report report : doc.getReports()) {
-                JRadioButton r0 = new JRadioButton(LangService.trans(report.getName()));
-                bg.add(r0);
-                p.add(r0);
-            }
-
-            if (JOptionPane.showOptionDialog(null, p, LangService.trans("rep.choose"), JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE, null, null, null) == 0) {
-
-                for (int i = 0; i < p.getComponentCount(); i++) {
-                    JRadioButton rb = (JRadioButton) p.getComponent(i);
-                    if (rb.isSelected()) {
-                        try {
-                            Libra.reportService.buildReport(doc.getReports().get(i), newDataSet);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Libra.eMsg(e.getMessage());
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    @Override
     public DbPanel createInfoPanel() {
+        int stepDown = 27;
         try {
-            newInfoSet = Libra.libraService.executeQuery("select * from LIBRA_PRINTINFO_VIEW where pid = :id", newDataSet);
+            newInfoSet = Libra.libraService.executeQuery(doc.getPrintInfoSql(), newDataSet);
         } catch (Exception e) {
             Libra.eMsg(e.getMessage());
         }
@@ -830,6 +498,10 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
             ip.addToPanel(8, 15, 150, p1, new NumberDbEdit("umiditate", newInfoSet));
             ip.addToPanel(370, 15, 150, p1, new NumberDbEdit("impuritati", newInfoSet));
         }
+
+        JPanel p11 = ip.createPanel(1, LangService.trans("Loturi"));
+        ip.addToPanel(8, 15, 150, p11, new TextDbEdit("Lot", newInfoSet));
+
         JPanel p2 = ip.createPanel(4, LangService.trans("info.grp.comisiereceptie"));
         SearchDbEdit delegat = new SearchDbEdit("clcdelegatt", newInfoSet, Libra.libraService, SearchType.DELEGAT);
         delegat.setChangeable(false);
@@ -883,17 +555,6 @@ public class DocRo extends JDialog implements ActionListener, ChangeEditListener
         ip.addToGroup(p2, l3);
 
         return ip;
-    }
-
-    private void exitDialog() {
-        if (!isModified()
-                || 0 == JOptionPane.showConfirmDialog(null, LangService.trans("cancelConfirmDialog1"), LangService.trans("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
-            dispose();
-        libraPanel.refreshMaster();
-    }
-
-    public boolean isModified() {
-        return !newDataSet.isEqual(oldDataSet) || !newInfoSet.isEqual(oldInfoSet);
     }
 
     public BigDecimal calcNetto(BigDecimal brutto, BigDecimal tara) {

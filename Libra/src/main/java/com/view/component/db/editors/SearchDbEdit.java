@@ -202,7 +202,7 @@ public class SearchDbEdit extends TextDbEdit {
         } else if (value == null || value.toString().isEmpty()) {
             getDataSet().setValueByName(getName(), 0, null);
             setText(null);
-        } else if (value instanceof String && !shouldClear) {
+        } else if ((value instanceof String || value instanceof Number) && !shouldClear) {
             getDataSet().setValueByName(getName(), 0, value);
             setText(value.toString());
             setCaretPosition(0);

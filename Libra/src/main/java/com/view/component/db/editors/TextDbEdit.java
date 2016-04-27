@@ -9,6 +9,7 @@ import net.java.balloontip.utils.TimingUtils;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
@@ -25,6 +26,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     private final Color editBackground;
     private Format format = new DecimalFormat("#,###.##");
     private Border oldBorder;
+    private Border newBorder;
     private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
     private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
@@ -32,6 +34,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
         this.dataSet = dataSet;
         setName(name);
         oldBorder = getBorder();
+        newBorder = new LineBorder(Color.decode("#006600"),2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
 
@@ -93,7 +96,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     }
 
     public void focusGained(FocusEvent e) {
-        setBorder(BorderFactory.createLineBorder(Color.GREEN));
+        setBorder(newBorder);
         setBackground(editBackground);
     }
 

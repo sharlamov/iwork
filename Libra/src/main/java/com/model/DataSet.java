@@ -2,10 +2,7 @@ package com.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
 
@@ -82,6 +79,11 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
     public String getStringValue(String fieldName, int row) {
         Object obj = getValueByName(fieldName, row);
         return obj != null ? obj.toString() : "";
+    }
+
+    public Date getDateValue(String fieldName, int row) {
+        Object obj = getValueByName(fieldName, row);
+        return obj instanceof Date ? (Date) obj : new Date();
     }
 
     public void setValueByName(String fieldName, int row, Object value) {

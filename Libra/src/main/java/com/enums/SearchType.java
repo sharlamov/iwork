@@ -6,6 +6,7 @@ public enum SearchType {
     LANGUAGES("select * from libra_translate_tbl where nameid is not null"),
     CROPS("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip = 'M' and gr1 in ('2161','2171','2173') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     CROPSROMIN("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip = 'M' and gr1 = 'P' and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
+    CROPSROMOUT("select * from (select cod, cod||', '||denumirea as clccodt from vms_univers where tip in ('P','M') and gr1 in ('P','R','F') and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     UNIVOIE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 in ('I','E') and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 31"),
     UNIVOE("select * from (select cod, denumirea__1 as clccodt from vms_univers where tip='O' and gr1 = 'E' and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 31"),
     UNIVOI("select * from (select cod, cod||', '||denumirea clccodt from vms_univers where tip='O' and gr1 = 'I' and isarhiv is null) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
@@ -13,11 +14,15 @@ public enum SearchType {
     PLACES1("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='S' and cod='12' and cod1 in (21973, 17518, 2072, 17051, 22040, 22932)) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     AUTO("select * from (select cod, denumirea as clccodt from vms_univers where tip='T' and gr1 = 'A' and isarhiv is null order by denumirea) where lower(clccodt) like :findQuery and rownum < 31"),
     TRAILER("select * from (select cod, denumirea as clccodt from vms_univers where tip='T' and gr1 = 'A' and isarhiv is null order by denumirea) where lower(clccodt) like :findQuery and rownum < 31"),
+    DRIVERMD("select * from (select cod1 as cod ,denumirea as clccodt from vms_syss s where tip='S' and  cod=14 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
+    AUTOMD("select * from (select denumirea clccodt from vms_syss s where tip='S' and  cod=15 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 31 order by 1"),
+    TRAILERMD("select * from (select denumirea clccodt  from vms_syss s where tip='S' and  cod=16 and cod1<>0) where lower(clccodt) like :findQuery and rownum < 31 order by 1"),
     OPERTYPE("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='OT' and cod='1') where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     STATUS("select * from (select cod1 as cod, denumirea as clccodt from vms_syss s where tip='Z' and cod='100') where lower(clccodt) like :findQuery and rownum < 31 order by 2"),
     SOLA("select * from (select cod, denumirea as clccodt from vms_univers where tip = 'O' and gr1='SOLA' and isarhiv is null order by denumirea) where lower(clccodt) like :findQuery and rownum < 31"),
     DELEGAT("select * from (select cod, denumirea as clccodt from vms_univers where tip='O' and gr1='F' and isarhiv is null order by cod, denumirea, codvechi) where lower(clccodt) like :findQuery and rownum < 31"),
-    FINFO("select pasaport||', '||orgeloberat||', '||dataelibpas||', '||(select codvechi from vms_univers o where o.cod = m.cod) info from tms_munc m where cod = :clcnamet"),
+    FINFO("select pasaport||', '||orgeloberat||', '||dataelibpas||', '||(select codvechi from vms_univers o where o.cod = m.cod)||KADR_FISC_COD info from tms_munc m where cod = :clcnamet"),
+    FINFO1("select pasaport_seria||pasaport||', '||orgeloberat||', '||dataelibpas||', '||KADR_FISC_COD info from tms_munc m where cod = :clcnamet"),
     FINDCONTRACT("select * from (\n" +
             "SELECT nrdoc1,nr_manual,data_alccontr,sc_mp,clcsc_mpt\n" +
             ",(select denumirea from vms_univers u where u.cod=div) clcdivt\n" +
@@ -225,44 +230,12 @@ public enum SearchType {
             "where id = :id"),
     INSHISTORY("insert into vtf_prohodn_scales (tip,id,nr,dt,br,userid,sc,masa,app,scaleId) values (:tip,:id,id_tmdb_cm.nextval,:dt,:br,:userid,:sc,:masa,1,:scaleId)"),
     NEXTVAL("{call select ID_MP_VESY.NEXTVAL into ? from dual}"),
-    PRINTTTN("select\n" +
-            " (select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'FACTURATVA') expeditor \n" +
-            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'CODFISCAL') expedFisc \n" +
-            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'CODTVA') expedCodTva \n" +
-            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'NAME') clcdivnamet \n" +
-            ",(SELECT denumirea FROM vms_univers WHERE cod=:dest)||',  '|| nvl((SELECT u1.adress FROM vms_org u1 WHERE :dest=U1.COD(+))\n" +
-            ",(select nvl(domiciliu,kadr_adress1) from vms_munc where cod=:dest))||', '||nvl((select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
-            ",(select case when nvl(length(replace(account1,' ')),0) < 24 then 'c/d ' else 'IBAN ' end||account1 from vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
-            ",(select clccod_bankt1 from  vms_org_accounts where cod_org=:dest and rownum=1))||', '||nvl((select clcmfo_bankt from  vms_org_accounts where cod_org=:dest and rekvizit1 like '1')\n" +
-            ",(select clcmfo_bankt from  vms_org_accounts where cod_org=:dest and rownum=1))destinatar \n" +
-            ",(select codfiscal from vms_org where cod = :dest) destFisc\n" +
-            ",(select codvechi from vms_univers where cod = :sc )sccodvechi\n" +
-            ",(select um from vms_univers where cod = :sc )scum \n" +
-            ",(select denumirea from vms_univers where cod = :sc )clcnamet \n" +
-            ",(select denumirea from vms_univers u where cod = :transp )transport \n" +
-            ",(select denumirea ||', '|| (select adress from tms_org o where o.cod = u.cod) from vms_univers u where cod = :transp )clctransportert \n" +
-            ",(select codvechi from vms_univers u where cod = :transp )transpfisk \n" +
-            ",(select spec1 from tms_org where cod = :transp )transpcodtva \n" +
-            ",nvl((SELECT spec1 FROM VMS_ORG WHERE cod=:dest),(select kadr_fisc_cod from vms_munc where cod=:dest))destcodtva \n" +
-            ",Pk_Spell.SPELL (:net) neto \n" +
-            ",Pk_Spell.SPELL (:delta) delta \n" +
-            ",:delta deltanr \n" +
-            ",to_char(sysdate,'dd') dd \n" +
-            ",to_char(sysdate,'MONTH yyyy') mon \n" +
-            ",to_char(:time_in,'dd.mm.yyyy hh24-mi-ss') tin \n" +
-            ",to_char(:time_out,'dd.mm.yyyy hh24-mi-ss') tout \n" +
-            ",to_char(:time_in,'hh24') hhin \n" +
-            ",to_char(:time_out,'hh24') hhout \n" +
-            ",to_char(:time_in,'mi') mmin \n" +
-            ",to_char(:time_out,'mi') mmout \n" +
-            "from dual"),
     GETUSERPROP("select prop from (\n" +
             "      select trim((select value from a$adp$v p where key = ? and obj_id = a.obj_id)) prop \n" +
             "      from a$adm a connect by obj_id = prior parent_id start with obj_id = (select obj_id from a$adp$v p where key='ID' and value=?) order by level\t\n" +
             ")where prop is not null and rownum = 1"),
     GETSILOSBYUSER("select elevator, clcelevatort from vms_user_elevator where userid = ?"),
     GETDIVBYSILOS("select distinct div_id, clcdiv_idt from vms_elevator_company where elevator_id = :elevator_id"),
-    SCALEPRINTDATA("select * from libra_printinfo_tbl where p_id = :p_id"),
     DATABYELEVATOR("select\n" +
             "(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'SIGN1') DIRECTOR,\n" +
             "(select value from a$adp$v p WHERE section = 'COMPANY'||:exped and key = 'SIGN2') CONT_SEF,\n" +
@@ -286,134 +259,18 @@ public enum SearchType {
             "  , b.tva, b.pricetva, b.tiptara, b.suma, b.sumaTva, b.total, b.price)"),
     MERGEPRINTDETAILRO("MERGE INTO libra_printinfo_view a\n" +
             "   USING (SELECT :pid pid, :masa_brutto masa_brutto, :masa_tara masa_tara, :masa_netto masa_netto, :umiditate umiditate, :impuritati impuritati\n" +
-            "   ,:clcdelegatt delegat, :clcgestionart gestionar, :clcdrivert driver, :clccusert cuser, :alte alte\n" +
+            "   ,:clcdelegatt delegat, :clcgestionart gestionar, :clcdrivert driver, :clccusert cuser, :alte alte, :lot lot\n" +
             "            FROM DUAL) b\n" +
             "   ON (a.pid = b.pid)\n" +
             "   WHEN MATCHED THEN\n" +
             "      UPDATE\n" +
             "         SET masa_brutto = b.masa_brutto, masa_tara = b.masa_tara, masa_netto = b.masa_netto,\n" +
             "             umiditate = b.umiditate, impuritati = b.impuritati, delegat = b.delegat, gestionar = b.gestionar,\n" +
-            "             driver = b.driver, cuser = b.cuser, alte = b.alte\n" +
+            "             driver = b.driver, cuser = b.cuser, alte = b.alte, lot = b.lot\n" +
             "   WHEN NOT MATCHED THEN\n" +
-            "      INSERT (pid, masa_brutto, masa_tara, masa_netto, umiditate, impuritati, delegat, gestionar, driver, cuser, alte)\n" +
-            "      VALUES (b.pid, b.masa_brutto, b.masa_tara, b.masa_netto, b.umiditate, b.impuritati, b.delegat, b.gestionar, b.driver, b.cuser, b.alte)\n"),
-    REPINCOMEH("SELECT :datastart||' - '||:dataend  shapka\n" +
-            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'NAME') AS Company\n" +
-            ",(select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CODFISCAL') AS cfcod\n" +
-            ",'приход' as type_movement, 'погрузки' as type_place\n" +
-            "FROM dual\n"),
-    REPINCOMEM("select rownum rn, to_char(time_in, 'dd.mm.yyyy hh24-mi-ss') time_in_text, to_char(time_out, 'dd.mm.yyyy hh24-mi-ss') time_out_text" +
-            ",a. *, (select lng(denumirea,namerus,nameeng) from vms_univers u where u.cod=sc_mp) CLCSC_MPT2 \n" +
-            "from (SELECT b.*\n" +
-            ", anlz_vlajn vlajn,anlz_sorn sorn,trunc(time_in) data , b.clcppogruz_s_12t place\n" +
-            ",CASE WHEN b.priznak_arm=1 THEN b.AUTO ELSE b.nr_remorca END transport\n" +
-            "FROM VTF_PROHODN_MPFS b,VTF_LABOR_MP a\n" +
-            "WHERE TRUNC(case when nvl(:cb1,0)=1 then time_IN else time_OUT end) BETWEEN :datastart AND :dataend\n" +
-            "AND   NVL(b.DEP_POSTAV,0)=nvl2(:filt2,:filt2,NVL(b.DEP_POSTAV,0))\n" +
-            "AND   NVL(b.SC_MP,0)=nvl2(:filt3,:filt3,NVL(b.SC_MP,0))\n" +
-            "and b.div=:div and a.div(+)=b.div and b.nr_analiz=a.nr_analiz(+)  and b.ELEVATOR=a.ELEVATOR(+)\n" +
-            "and b.sezon_yyyy=a.sezon_yyyy(+)\n" +
-            "AND NVL(b.elevator,0)=nvl2(:elevator,:elevator,NVL(b.elevator,0)) and b.priznak_arm = 1\n" +
-            "ORDER BY trunc(time_in),b.clcsc_mpt,b.CLCDEP_POSTAVT)a"),
-    REPOUTCOMEM("select rownum rn, to_char(time_in, 'dd.mm.yyyy hh24-mi-ss') time_in_text, to_char(time_out, 'dd.mm.yyyy hh24-mi-ss') time_out_text" +
-            ",a.* from(\n" +
-            "SELECT b.time_in,b.time_out,b.CLCDEP_DESTINATT CLCDEP_POSTAVT, anlz_vlajn vlajn,anlz_sorn sorn,trunc(time_in) data \n" +
-            ",b.nr_vagon transport, b.clcsct clcsc_mpt,b.MASA_BRUTTO MASA_BRUTTO_ro,b.MASA_TARA MASA_TARA_RO,b.MASA_NETTO  MASA_NETTO_RO\n" +
-            ",CLCSOFER_S_14T sofer,b.priznak_arm,b.TTN_N,b.nr_analiz\n" +
-            ", nvl(b.CLCPRAZGRUZ_S_12T,v.CLCDESCARCAREA_S_12T) AS Place\n" +
-            "FROM ytrans_VTF_PROHODN_OUT b,VTF_LABOR_MP a, vmdb01m_vinz v \n" +
-            "WHERE TRUNC(time_OUT) BETWEEN :datastart AND :dataend\n" +
-            "AND   NVL(b.DEP_DESTINAT,0)=nvl2(:filt2,:filt2,NVL(b.DEP_DESTINAT,0))\n" +
-            "AND   NVL(b.SC,0)=nvl2(:filt3,:filt3,NVL(b.SC,0))\n" +
-            "and   NVL(b.elevator,0)=nvl2(:elevator,:elevator,NVL(b.elevator,0))\n" +
-            "and b.div=:div\n" +
-            "and a.div(+)=b.div\n" +
-            "and b.nr_analiz=a.nr_analiz(+)\n" +
-            "and b.elevator = a.elevator(+)\n" +
-            "and b.sezon_yyyy=a.sezon_yyyy(+)\n" +
-            "and b.nrdoc_out=v.cod(+)\n" +
-            "ORDER BY trunc(time_in),b.clcsct,b.CLCDEP_DESTINATT\n" +
-            ")a where a.PRIZNAK_ARM = 2"),
-    REPTTNH("SELECT (SELECT DATAMANUAL FROM VMDB_DOCS WHERE COD=:nrdoc) AS DATA\n" +
-            ", d.nrdoc\n" +
-            ", v.cod\n" +
-            ", decode(:div, 3335, 'Maistru Danilesco Alexandru', '') as MOL\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'DIRECTOR') AS Director\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CONT_SEF') AS Cont_sef\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CFFE') AS ExpCFTVA\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'FACTURATVA') AS EXPEDITOR\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CODTVA') AS TVCFEXP\n" +
-            ", (select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CODFISCAL') AS ExpCFiscal\n" +
-            ", (SELECT valuta FROM vmdb_st201m  WHERE nrdoc=:nrdoc) AS valuta\n" +
-            ", DECODE(un.gr1,'I',(select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CODFISCAL'),un.codvechi) AS ExpCFDst\n" +
-            ", DECODE(un.gr1,'I',(select value from a$adp$v p WHERE section = 'COMPANY'||:div and key = 'CODTVA'),U1.Spec1) AS ExpTvCFDst\n" +
-            ", (select denumirea from vms_univers where cod=dtdep1)||', '||u1.adress AS Destinatar\n" +
-            ", v.CLCINCARCAREA_S_12T AS LocIncarc\n" +
-            ", v.CLCDESCARCAREA_S_12T AS LocDescarc\n" +
-            ", v.PRFACT_SERIA AS FESeria\n" +
-            ", v.PRFACT_NR AS FENumar\n" +
-            ", v.PRFACT_DATA AS FEData\n" +
-            ", nvl(v.scomment,v.PRTVA_SERIA||' '||v.PRTVA_NR) AS DocAnexate\n" +
-            ", v.PRTVA_SERIA FTVASeria\n" +
-            ", v.PRTVA_NR AS FTVANumar\n" +
-            ", v.PRTVA_DATA AS FTVAdata\n" +
-            ", v.PRPARC_SERIA AS FPSeria\n" +
-            ", v.PRPARC_NR FPNumar\n" +
-            ", v.PRPARC_DATA FPData\n" +
-            ", v.AUTOMOBIL AS AUTO\n" +
-            ", v.REMORCANR AS remorca\n" +
-            ", v.SOFER AS sofer\n" +
-            ", v.SOFERNRPERMISULUI permis\n" +
-            ", v.EXPEDITOR_SC\n" +
-            ", v.CLCEXPEDITOR_SCT\n" +
-            ", v.INTREPAUTO_SC\n" +
-            ", v.CLCINTREPAUTO_SCT\n" +
-            ", v.INCARCAREA_S_12\n" +
-            ", v.CLCINCARCAREA_S_12T\n" +
-            ", v.DESCARCAREA_S_12\n" +
-            ", v.CLCDESCARCAREA_S_12T\n" +
-            ", v.PRCONTR_SERIA contractseria\n" +
-            ", v.PRCONTR_NR contractnr\n" +
-            ", v.PRCONTR_DATA contractdata\n" +
-            ", v.PERSRESPCONTR_UNV\n" +
-            ", v.CLCPERSRESPCONTR_UNVT\n" +
-            ", v.ACHITAREA_S_8\n" +
-            ", v.CLCACHITAREA_S_8T\n" +
-            ", v.DATAACHIT\n" +
-            ", v.INCOTERMS_S_45\n" +
-            ", v.CLCINCOTERMS_S_45T\n" +
-            ", v.CMR\n" +
-            ", v.PRPROC_SERIA AS seriaproc\n" +
-            ", v.PRPROC_NR AS NrProc\n" +
-            ", v.PRPROC_DATA AS dataPROC\n" +
-            ", v.PERSOANARESP AS persproc\n" +
-            ", INTREPAUTO_SC AS transorg\n" +
-            ", (select uu.codfiscal||', '||uu.adress from vms_org uu where uu.cod = v.intrepauto_univ_sc) AS transorg_adress\n" +
-            ", 'de la pastrare' AS Number_contract\n" +
-            ", d.ctnrdoc AS number_order\n" +
-            ",(select UN$CURRENCYTOTXT.spell(SUMA) from(select sum(nvl(d.cant,0)) suma from vmdb_st201d d where d.nrdoc=:nrdoc)) TXTSumaT\n" +
-            "FROM  (SELECT a.*, NVL(dtdep,ctdep) AS dtdep1 FROM vmdb_st201m a) D\n" +
-            ", VMDB01M_VINZ V, vms_org U1, vms_univers UN, vparams_company vc\n" +
-            "WHERE d.nrdoc=:nrdoc\n" +
-            "AND d.nrdoc=V.cod(+)\n" +
-            "AND d.dtdep1=U1.COD(+)\n" +
-            "AND d.dtdep1=UN.COD(+)"),
-    REPTTNM("select\n" +
-            "d.dtsc AS sc\n" +
-            ",(select codvechi from vms_univers where cod=d.dtsc) codvechi\n" +
-            ",(select denumirea from vms_univers where cod=d.dtsc) denumirea\n" +
-            ",(select um from vms_univers where cod=d.dtsc) um\n" +
-            ",d.cant cant\n" +
-            ",d.pret pret\n" +
-            ",d.sumavaldt tva\n" +
-            ",d.suma sumaftva\n" +
-            ",d.suma+nvl(d.sumavaldt,0) sumat\n" +
-            ",d.dtcant1 brutto\n" +
-            ",0 tara\n" +
-            "from vmdb_st201d d \n" +
-            "where d.nrdoc=:nrdoc"),
+            "      INSERT (pid, masa_brutto, masa_tara, masa_netto, umiditate, impuritati, delegat, gestionar, driver, cuser, alte, lot)\n" +
+            "      VALUES (b.pid, b.masa_brutto, b.masa_tara, b.masa_netto, b.umiditate, b.impuritati, b.delegat, b.gestionar, b.driver, b.cuser, b.alte, b.lot)\n"),
     INSSYSS("{call insert into tms_syss (tip, cod, denumirea, um, cod1) values (:tip, :cod, :denumirea, :um, (select nvl(max(cod1),0) + 1 from vms_syss where tip = :tip  and cod = :cod )) RETURNING cod1 INTO ? }"),
-    INSUNIV("{call insert into vms_univers (cod, denumirea, codvechi, tip, gr1) values (id_tms_univers.nextval, :clccodt, :fiskcod, :tip, :gr1) RETURNING cod INTO ? }"),
     HISTORY("select br, dt,userid, (select username from vms_users u where u.cod=s.userid) clcuseridt, masa  from tf_prohodn_scales s where id = :id"),
     LOSTCARIN("select to_char(time_out, 'dd.mm.yyyy') dd from vtf_prohodn_mpfs a\n" +
             "where priznak_arm = 1 \n" +
@@ -426,88 +283,6 @@ public enum SearchType {
             "and decode(:div, null, 1, div) = nvl(:div, 1)\n" +
             "and masa_netto is null\n" +
             "and rownum = 1 order by time_out"),
-    ACTOUT0("Declare\n" +
-            "vCod number;\n" +
-            "vnrdoc_out number;\n" +
-            "vttn varchar2(20);\n" +
-            "vsysfid number;\n" +
-            "prikaz number;\n" +
-            "vdiv number;\n" +
-            "BEGIN \n" +
-            "envun4.envsetvalue('SysfIdList_AlwaysEditable', '48610,48623,48623,48608,48626');\n" +
-            "Un$div.set_def(:div);\n" +
-            "begin\n" +
-            "SELECT sysfid,s.cod,s.div  INTO vsysfid, prikaz, vdiv  FROM vmdb_docs s,ytrans_VTF_PROHODN_OUT t WHERE s.cod=t.prikaz_id AND ID=:ID AND t.div=s.div;\n" +
-            "If vsysfid not in (48621,48622,48618,48307) then \n" +
-            "msg('Такой № приказа не существует!');\n" +
-            "end if;\n" +
-            "exception when no_data_found then\n" +
-            "msg('Неправильный № документа!');\n" +
-            "end;\n" +
-            "select nvl(nrdoc_out,0) into vnrdoc_out from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "Select ttn_n into vttn from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "If vnrdoc_out=0 then\n" +
-            "select id_tmdb_docs.nextval into vCod from dual;\n" +
-            "INSERT INTO vmdb_docs (cod,sysfid,datamanual,nrmanual,div,nrset)\n" +
-            "Select vcod,decode(vsysfid,48621,48610,48622,48623,48618,48608,48307,48626),time_out,ttn_n\n" +
-            ",div,:nrset\n" +
-            "from ytrans_VTF_PROHODN_OUT where id=:id;\n" +
-            "-----\n" +
-            "Insert into VMDB_ST201M (nrdoc,dtdep,ctdep,ctsc1,ctnrdoc,sa)\n" +
-            "Select vcod,DEP_DESTINAT,(Select nvl(m.ctsc1,d.ctsc1) from VMDB_ST201M m, VMDB_ST201D d where m.nrdoc=d.nrdoc and m.nrdoc=prikaz_id and d.dtsc=sc)\n" +
-            ",(Select nvl(m.ctsc,d.ctstrsc) from VMDB_ST201M m, VMDB_ST201D d where m.nrdoc=d.nrdoc and m.nrdoc=prikaz_id and d.dtsc=sc)\n" +
-            ",prikaz_id,0\n" +
-            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv and prikaz_id=prikaz;\n" +
-            "-----\n" +
-            "Insert into VMDB_ST201d (nrdoc,ct,dtsc,ctdep,ctsc1,cant,txtcoment,ctcant,rrowid,ctnrdoc,dtcant1,ctcant1,dtnrdoc,suma,ctstrsc,dtstrsc)\n" +
-            "Select vcod,d.ct,d.dtsc,d.ctdep,nvl(m.ctsc1,d.ctsc1),nvl(masa_netto,masa_brutto),decode(t.priznak_arm,2,t.nr_vagon,3,t.commentarii)\n" +
-            ",nvl(d.cant,d.ctcant),t.id,t.nr_analiz,anlz_vlajn,anlz_sorn,t.sezon_yyyy,d.suma,nvl(m.ctsc,d.ctstrsc),t.TTN_N\n" +
-            " from ytrans_VTF_PROHODN_OUT t,VMDB_ST201d d,VMDB_ST201m m,VTF_LABOR_MP l\n" +
-            " where t.ttn_n=vttn and d.nrdoc=t.prikaz_id and t.sc=d.dtsc \n" +
-            "and d.nrdoc=m.nrdoc and (t.nr_analiz=l.nr_analiz(+) and t.sezon_yyyy=l.sezon_yyyy(+)\n" +
-            "and (t.div=vdiv and t.div=l.div(+))) and t.id=:id;\n" +
-            "-----\n" +
-            "Insert into VMDB01M_VINZ (cod,PRFACT_SERIA,prfact_nr,prfact_data)\n" +
-            "Select vcod,substr(ttn_n,1,2),substr(ttn_n,3),ttn_data\n" +
-            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "-----\n" +
-            "Update ytrans_VTF_PROHODN_OUT set nrdoc_out=vCod,PRINT_CHK=NULL where ttn_n=vttn and prikaz_id=prikaz and div=vdiv and nrdoc_out is null;\n" +
-            "end if;\n" +
-            "end;\n"),
-    ACTOUT1("Declare\n" +
-            "vCod number;\n" +
-            "vnrdoc_out number;\n" +
-            "vttn varchar2(20);\n" +
-            "vsysfid number;\n" +
-            "prikaz number;\n" +
-            "vdiv number;\n" +
-            "BEGIN\n" +
-            "envun4.envsetvalue('SysfIdList_AlwaysEditable', '48613');\n" +
-            "Un$div.set_def(:div);\n" +
-            "SELECT div,ttn_n INTO vdiv,vttn  FROM ytrans_VTF_PROHODN_OUT t WHERE ID=:ID;\n" +
-            "select id_tmdb_docs.nextval into vCod from dual;\n" +
-            "---\n" +
-            "INSERT INTO vmdb_docs (cod,sysfid,datamanual,nrmanual,div,nrset)\n" +
-            "Select vcod,48613,time_out,ttn_n,vdiv,:nrset\n" +
-            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "-----\n" +
-            "Insert into VMDB_ST201M (nrdoc,dtdep)\n" +
-            "Select vcod,DEP_DESTINAT from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "---------------------------------------------\n" +
-            "Insert into VMDB_ST201d (nrdoc,ct,ct1,dtsc,cant,ctcant,rrowid,ctnrdoc,dtcant1,ctcant1,dtnrdoc)\n" +
-            "Select vcod,2163,3,t.sc,t.masa_netto,l.anlz_zernprim,t.id,t.nr_analiz,l.anlz_vlajn,l.anlz_sorn,t.sezon_yyyy\n" +
-            " from ytrans_VTF_PROHODN_OUT t,VTF_LABOR_MP l\n" +
-            " where t.ttn_n=vttn \n" +
-            "and (t.nr_analiz=l.nr_analiz(+) and t.sezon_yyyy=l.sezon_yyyy(+)\n" +
-            "and (t.div=vdiv and t.div=l.div(+))) and t.id=:id;\n" +
-            "--------------\n" +
-            "Insert into VMDB01M_VINZ (cod,PRFACT_SERIA,prfact_nr,prfact_data)\n" +
-            "Select vcod,substr(ttn_n,1,2),substr(ttn_n,3),ttn_data\n" +
-            "from ytrans_VTF_PROHODN_OUT where id=:id and div=vdiv;\n" +
-            "-----\n" +
-            "Update ytrans_VTF_PROHODN_OUT set nrdoc_out=vCod,PRINT_CHK=NULL where ttn_n=vttn and div=vdiv  and nrdoc_out is null;\n" +
-            "------------\n" +
-            "end;"),
     FINDAUTOIN("select * from (\n" +
             " select * from (\n" +
             "  select distinct nr_auto,clcnr_autot,nr_trailer, clcnr_trailert, driver,clcdrivert from VTF_PROHODN_MPFS where nr_auto is not null\n" +
@@ -530,7 +305,7 @@ public enum SearchType {
             ",DTSC3 nr_trailer, CLCDTSC3T clcnr_trailert\n" +
             ",DTSC4 dep_perevoz, CLCDTSC4T clcdep_perevozt\n" +
             ",DTSC5 delegat, CLCDTSC5T clcdelegatt\n" +
-            ",DTSTR0 ttn_n, dtdata0 ttn_data, DTSTR1 ttn_vagon\n" +
+            ",DTSTR0||DTSTR4 ttn_n, dtdata0 ttn_data, DTSTR1 ttn_vagon\n" +
             ",CTSC0 sc, CLCCTSC0T clcsct\n" +
             ",DTSTR3 contract_nrmanual, DTDATA3 contract_data\n" +
             ",DTSC0 dep_destinat,CLCDTSC0T clcdep_destinatt\n" +
@@ -546,7 +321,11 @@ public enum SearchType {
                 "from yroVmdb_contract m, YROVMDB_CONTRACT_d d\n" +
                 "where clientid=:clcdep_postavt and d.contractid=m.contractid\n" +
                 "and d.cod_sc=:clcsc_mpt and d.sezon=:sezon_yyyy"),
-        UPDATETICKET("{ :out_ticket = call Libra_actions_pkg.createTicketCintar(:time_out, :id, :priznak_arm, :scaleid) }");
+        UPDATETICKET("{ :out_ticket = call Libra_actions_pkg.createTicketCintar(:time_out, :id, :priznak_arm, :scaleid) }"),
+        FINDPRIKAZ("select nrdoc, dtstr0||' '||dtstr4 aviz, dtdata0, CLCDTSC0T, CLCDTSC2T, CLCDTSC1T\n" +
+                ",(select denumirea from vms_syss where tip='S' and cod=12 and cod1=ctnum1) CLCLOCALITATET \n" +
+                "from vmdb_reg a where ctnum3 in (1,2) and nrdoc in \n" +
+                "(select cod  from tmdb_docs where sysfid = 48621 and datamanual >= trunc(sysdate) - 3)");
 
         private String sql;
 

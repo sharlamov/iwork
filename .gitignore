@@ -6,4 +6,6 @@ target/
 *.log
 *.jar
 Libra/setting.json
-Libra/setting.ini
+*.ini
+Libra/templates/*.xls
+Libra/templates/*.xlsx

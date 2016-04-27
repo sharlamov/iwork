@@ -3,10 +3,10 @@ package com.util;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class CustomFocusTraversalPolicy extends FocusTraversalPolicy {
+public class FocusPolicy extends FocusTraversalPolicy {
     java.util.List<Component> order;
 
-    public CustomFocusTraversalPolicy() {
+    public FocusPolicy() {
         this.order = new ArrayList<Component>();
     }
 

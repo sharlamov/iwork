@@ -37,6 +37,15 @@ public class DbPanel extends JPanel {
         }
     }
 
+    public void refresh(String name) {
+        for (IEdit edit : edits) {
+            if (edit.getName().equalsIgnoreCase(name)) {
+                edit.refresh();
+                break;
+            }
+        }
+    }
+
     public boolean verify() {
         boolean result = true;
         for (IEdit edit : edits) {
@@ -117,10 +126,17 @@ public class DbPanel extends JPanel {
     }
 
     public void addToPanel(int x, int y, int size, JPanel panelTo, JComponent comp) {
-        JLabel label = new JLabel(LangService.trans(comp.getName()));
-        label.setBounds(x, y, 100, 23);
-        panelTo.add(label);
-        comp.setBounds(x + 110, y, size, 23);
+        String name = comp.getName();
+        if (name != null) {
+            String text = LangService.trans(comp.getName());
+            if (text.length() > 0 && !name.equals(text)) {
+                JLabel label = new JLabel(LangService.trans(comp.getName()));
+                label.setBounds(x, y, 100, 23);
+                panelTo.add(label);
+                x += 110;
+            }
+        }
+        comp.setBounds(x, y, size, 23);
         panelTo.add(comp);
 
         if (comp instanceof IEdit) {

@@ -7,7 +7,6 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Doc;
 import com.service.LangService;
-import com.service.LibraService;
 import com.util.Libra;
 import com.util.Validators;
 import com.view.component.db.editors.*;
@@ -18,19 +17,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.util.Arrays;
 
 public class DocMd extends ScaleDoc {
 
     private SearchDbEdit contract_nrmanual;
-    private SearchDbEdit auto;
-    private SearchDbEdit nr_remorca;
-    private SearchDbEdit clcsofer_s_14t;
-    private TextDbEdit vin;
-    private TextDbEdit ttn_n;
-    private TextDbEdit ttn_nn_perem;
-
+    private SearchDbEdit clcvehiclet;
+    private SearchDbEdit clctrailert;
+    private SearchDbEdit clcdrivert;
 
     public DocMd(LibraPanel libraPanel, DataSet dataSet, Doc doc) {
         super(libraPanel, dataSet, doc, new Dimension(940, 650));
@@ -40,24 +34,21 @@ public class DocMd extends ScaleDoc {
     public boolean save() {
         boolean isSaved = !isModified();
         try {
-            if (!isSaved && LibraService.user.getScaleType() == 5 && fieldsPanel.verify()) {
+            if (!isSaved && fieldsPanel.verify()) {
                 if (Libra.qMsg("saveConfirmDialog0", "saveConfirmDialog1", this)) {
-                    prepareInfo();
                     updateDataSet();
 
-                    BigDecimal key = (BigDecimal) newDataSet.getValueByName("id", 0);
+                    BigDecimal key = (BigDecimal) oldDataSet.getValueByName("id", 0);
                     boolean isNewDoc = key == null;
                     if (isNewDoc) {
                         key = Libra.libraService.execute(SearchType.NEXTVAL.getSql(), null);
                         newDataSet.setValueByName("id", 0, key);
                     }
 
-                    if (doc.getId() == 1)
-                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEIN.getSql() : SearchType.UPDSCALEIN.getSql(), newDataSet);
-                    else
-                        Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEOUT.getSql() : SearchType.UPDSCALEOUT.getSql(), newDataSet);
+                    Libra.libraService.execute(isNewDoc ? SearchType.INSSCALEIN.getSql() : SearchType.UPDSCALEIN.getSql(), newDataSet);
 
                     if (doc.isUsePrintInfo()) {
+                        newInfoSet.setValueByName("pid", 0, key);
                         initTab(false);
                         Libra.libraService.execute(SearchType.MERGEPRINTDETAIL.getSql(), newInfoSet);
                     }
@@ -95,92 +86,93 @@ public class DocMd extends ScaleDoc {
         id.setChangeable(false);
         fieldsPanel.addToPanel(8, 8, 100, p0, id);
 
-        NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", newDataSet);
+        NumberDbEdit nr_analiz = new NumberDbEdit("nr_analysis", newDataSet);
         nr_analiz.addValidator(Validators.POSITIVE);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 ////////////////////
         JPanel p2 = fieldsPanel.createPanel(2, null);
 
-        auto = new SearchDbEdit("auto", newDataSet, Libra.libraService, SearchType.AUTOMD);
-        auto.setShouldClear(false);
-        fieldsPanel.addToPanel(8, 8, 150, p2, auto);
-        policy.add(auto);
+        clcvehiclet = new SearchDbEdit("clcvehiclet", newDataSet, "clcvehiclet,clctrailert,clcdrivert", new GridField[]{new GridField("clcvehiclet", 90), new GridField("clctrailert", 90), new GridField("clcdrivert", 150)}
+                , Libra.libraService, SearchType.FINDAUTOIN);
+        clcvehiclet.addChangeEditListener(this);
+        fieldsPanel.addToPanel(8, 8, 150, p2, clcvehiclet);
+        policy.add(clcvehiclet);
+        fieldsPanel.addInsertBtn(clcvehiclet, InsertType.UNIVTA);
 
-        nr_remorca = new SearchDbEdit("nr_remorca", newDataSet, Libra.libraService, SearchType.TRAILERMD);
-        nr_remorca.setShouldClear(false);
-        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
-        policy.add(nr_remorca);
+        clctrailert = new SearchDbEdit("clctrailert", newDataSet, Libra.libraService, SearchType.TRAILER);
+        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, clctrailert);
+        policy.add(clctrailert);
+        fieldsPanel.addInsertBtn(clctrailert, InsertType.UNIVTA);
 
-        vin = new TextDbEdit("vin", newDataSet);
-        fieldsPanel.addToPanel(370, 8, 150, p2, vin);
-
-        clcsofer_s_14t = new SearchDbEdit("clcsofer_s_14t", newDataSet, Libra.libraService, SearchType.DRIVERMD);
-        clcsofer_s_14t.setShouldClear(false);
-        fieldsPanel.addToPanel(370, 8 + stepDown, 150, p2, clcsofer_s_14t);
-        policy.add(clcsofer_s_14t);
+        clcdrivert = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
+        fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
+        policy.add(clcdrivert);
+        fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
 //////////////////
         JPanel p3 = fieldsPanel.createPanel(3, null);
 
-        SearchDbEdit clcdep_postavt = new SearchDbEdit("clcdep_postavt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
+        SearchDbEdit clcdep_postavt = new SearchDbEdit("clcclientt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
         clcdep_postavt.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8, 200, p3, clcdep_postavt);
         fieldsPanel.addInsertBtn(clcdep_postavt, InsertType.UNIVOE);
         policy.add(clcdep_postavt);
 
 
-        SearchDbEdit clcppogruz_s_12t = new SearchDbEdit("clcppogruz_s_12t", newDataSet, Libra.libraService, SearchType.PLACES);
+        SearchDbEdit clcppogruz_s_12t = new SearchDbEdit("clcplace_loadt", newDataSet, Libra.libraService, SearchType.PLACES);
         clcppogruz_s_12t.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8 + stepDown, 200, p3, clcppogruz_s_12t);
         policy.add(clcppogruz_s_12t);
 
-        sc = new SearchDbEdit("clcsc_mpt", newDataSet, Libra.libraService, SearchType.CROPS);
+        sc = new SearchDbEdit("clcsct", newDataSet, Libra.libraService, SearchType.CROPS);
         sc.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p3, sc);
         policy.add(sc);
 
-        SearchDbEdit transport = new SearchDbEdit("clcdep_transpt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
+        SearchDbEdit transport = new SearchDbEdit("clctransportert", newDataSet, Libra.libraService, SearchType.UNIVOIE);
         transport.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(370, 8, 200, p3, transport);
         fieldsPanel.addInsertBtn(transport, InsertType.UNIVOE);
         policy.add(transport);
 
-        SearchDbEdit clcdep_gruzootpravitt = new SearchDbEdit("clcdep_gruzootpravitt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
+        SearchDbEdit clcdep_gruzootpravitt = new SearchDbEdit("clcshippert", newDataSet, Libra.libraService, SearchType.UNIVOIE);
         fieldsPanel.addToPanel(370, 8 + stepDown, 200, p3, clcdep_gruzootpravitt);
         fieldsPanel.addInsertBtn(clcdep_gruzootpravitt, InsertType.UNIVOE);
         policy.add(clcdep_gruzootpravitt);
 
-        NumberDbEdit sezon_yyyy = new NumberDbEdit("sezon_yyyy", newDataSet);
+        NumberDbEdit sezon_yyyy = new NumberDbEdit("season", newDataSet);
         fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 100, p3, sezon_yyyy);
         policy.add(sezon_yyyy);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(2, null);
 
-        ttn_n = new TextDbEdit("ttn_n", newDataSet);
+        TextDbEdit ttn_n = new TextDbEdit("inv_nr", newDataSet);
         ttn_n.addValidator(Validators.NULL);
+        ttn_n.setAlphaNum(true);
         fieldsPanel.addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
-        DateDbEdit ttn_data = new DateDbEdit("ttn_data", newDataSet);
+        DateDbEdit ttn_data = new DateDbEdit("inv_data", newDataSet);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p4, ttn_data);
         policy.add(ttn_data.getDateEditor().getUiComponent());
 
-        NumberDbEdit masa_ttn = new NumberDbEdit("masa_ttn", newDataSet);
+        NumberDbEdit masa_ttn = new NumberDbEdit("inv_cant", newDataSet);
         fieldsPanel.addToPanel(370, 8, 100, p4, masa_ttn);
         policy.add(masa_ttn);
 
 //////////////////
         JPanel p5 = fieldsPanel.createPanel(2, null);
 
-        SearchDbEdit clcdep_hozt = new SearchDbEdit("clcdep_hozt", newDataSet, Libra.libraService, SearchType.UNIVOE);
+        SearchDbEdit clcdep_hozt = new SearchDbEdit("clcpartenert", newDataSet, Libra.libraService, SearchType.UNIVOE);
         fieldsPanel.addToPanel(370, 8, 200, p5, clcdep_hozt);
         fieldsPanel.addInsertBtn(clcdep_hozt, InsertType.UNIVOE);
 
 
-        contract_nrmanual = new SearchDbEdit("contract_nrmanual", newDataSet, "contract_nr, contract_nrmanual, contract_data,clcdep_hozt"
-                , new GridField[]{new GridField("nrdoc1", 70), new GridField("nr_manual", 70), new GridField("data_alccontr", 70), new GridField("clcdep_hozt", 150)}
+        contract_nrmanual = new SearchDbEdit("contract_nr", newDataSet, "contract_id, contract_nr, contract_data,clcpartenert"
+                , new GridField[]{new GridField("nrdoc1", 70), new GridField("nr_manual", 70), new GridField("data_alccontr", 70), new GridField("clcpartenert", 150)}
                 , Libra.libraService, SearchType.FINDCONTRACT);
         contract_nrmanual.setShouldClear(false);
+        contract_nrmanual.setAlphaNum(true);
         contract_nrmanual.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 100, p5, contract_nrmanual);
         policy.add(contract_nrmanual);
@@ -192,28 +184,28 @@ public class DocMd extends ScaleDoc {
 //////////////////
         JPanel p6 = fieldsPanel.createPanel(2, null);
 
-        JLabel nrActNedLabel = new JLabel(LangService.trans("nr_act_nedostaci"));
+        JLabel nrActNedLabel = new JLabel(LangService.trans("act_loss"));
         nrActNedLabel.setBounds(8, 8, 200, editHeight);
         p6.add(nrActNedLabel);
 
-        NumberDbEdit nr_act_nedostaci = new NumberDbEdit("nr_act_nedostaci", newDataSet);
+        NumberDbEdit nr_act_nedostaci = new NumberDbEdit("act_loss", newDataSet);
         nr_act_nedostaci.setBounds(8 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedostaci);
 
 
-        JLabel nrActNedovigrLabel = new JLabel(LangService.trans("nr_act_nedovygruzki"));
+        JLabel nrActNedovigrLabel = new JLabel(LangService.trans("act_rest"));
         nrActNedovigrLabel.setBounds(370, 8, 200, editHeight);
         p6.add(nrActNedovigrLabel);
 
-        NumberDbEdit nr_act_nedovygruzki = new NumberDbEdit("nr_act_nedovygruzki", newDataSet);
+        NumberDbEdit nr_act_nedovygruzki = new NumberDbEdit("act_rest", newDataSet);
         nr_act_nedovygruzki.setBounds(370 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedovygruzki);
 
-        JLabel masaReturnLabel = new JLabel(LangService.trans("masa_return"));
+        JLabel masaReturnLabel = new JLabel(LangService.trans("cant_return"));
         masaReturnLabel.setBounds(370, 8 + stepDown, 200, editHeight);
         p6.add(masaReturnLabel);
 
-        NumberDbEdit masa_return = new NumberDbEdit("masa_return", newDataSet);
+        NumberDbEdit masa_return = new NumberDbEdit("cant_return", newDataSet);
         masa_return.setBounds(370 + 210, 8 + stepDown, 100, editHeight);
         p6.add(masa_return);
 
@@ -231,52 +223,51 @@ public class DocMd extends ScaleDoc {
         id.setChangeable(false);
         fieldsPanel.addToPanel(8, 8, 100, p0, id);
 
-        NumberDbEdit nr_analiz = new NumberDbEdit("nr_analiz", newDataSet);
+        NumberDbEdit nr_analiz = new NumberDbEdit("nr_analysis", newDataSet);
         nr_analiz.addValidator(Validators.NEGATIVE);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
 
-        TextDbEdit prikaz_id = new TextDbEdit("prikaz_id", newDataSet);
+        NumberDbEdit prikaz_id = new NumberDbEdit("order_shipment", newDataSet);
         fieldsPanel.addToPanel(370, 8, 150, p0, prikaz_id);
         policy.add(prikaz_id);
 
-        SearchDbEdit clcsklad_pogruzkit = new SearchDbEdit("clcsklad_pogruzkit", newDataSet, Libra.libraService, SearchType.UNIVOI);
+        SearchDbEdit clcsklad_pogruzkit = new SearchDbEdit("clcdep_loadt", newDataSet, Libra.libraService, SearchType.UNIVOI);
         fieldsPanel.addToPanel(370, 8 + stepDown, 200, p0, clcsklad_pogruzkit);
         policy.add(clcsklad_pogruzkit);
 
-        NumberDbEdit prikaz_masa = new NumberDbEdit("prikaz_masa", newDataSet);
+        NumberDbEdit prikaz_masa = new NumberDbEdit("inv_cant", newDataSet);
         fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 100, p0, prikaz_masa);
         policy.add(prikaz_masa);
 ////////////////////
         JPanel p2 = fieldsPanel.createPanel(2, null);
 
-        auto = new SearchDbEdit("nr_vagon", newDataSet, Libra.libraService, SearchType.AUTO);
-        auto.setShouldClear(false);
-        fieldsPanel.addToPanel(8, 8, 150, p2, auto);
-        policy.add(auto);
+        clcvehiclet = new SearchDbEdit("clcvehiclet", newDataSet, "clcvehiclet,clctrailert,clcdrivert", new GridField[]{new GridField("clcvehiclet", 90), new GridField("clctrailert", 90), new GridField("clcdrivert", 150)}
+                , Libra.libraService, SearchType.FINDAUTOIN);
+        clcvehiclet.addChangeEditListener(this);
+        fieldsPanel.addToPanel(8, 8, 150, p2, clcvehiclet);
+        policy.add(clcvehiclet);
+        fieldsPanel.addInsertBtn(clcvehiclet, InsertType.UNIVTA);
 
-        nr_remorca = new SearchDbEdit("nr_remorca", newDataSet, Libra.libraService, SearchType.TRAILER);
-        nr_remorca.setShouldClear(false);
-        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, nr_remorca);
-        policy.add(nr_remorca);
+        clctrailert = new SearchDbEdit("clctrailert", newDataSet, Libra.libraService, SearchType.TRAILER);
+        fieldsPanel.addToPanel(8, 8 + stepDown, 150, p2, clctrailert);
+        policy.add(clctrailert);
+        fieldsPanel.addInsertBtn(clctrailert, InsertType.UNIVTA);
 
-        vin = new TextDbEdit("vin", newDataSet);
-        fieldsPanel.addToPanel(370, 8, 150, p2, vin);
-
-        clcsofer_s_14t = new SearchDbEdit("clcsofer_s_14t", newDataSet, Libra.libraService, SearchType.DELEGAT);
-        clcsofer_s_14t.setShouldClear(false);
-        fieldsPanel.addToPanel(370, 8 + stepDown, 150, p2, clcsofer_s_14t);
-        policy.add(clcsofer_s_14t);
+        clcdrivert = new SearchDbEdit("clcdrivert", newDataSet, Libra.libraService, SearchType.DELEGAT);
+        fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
+        policy.add(clcdrivert);
+        fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
 //////////////////
         JPanel p3 = fieldsPanel.createPanel(3, null);
-        SearchDbEdit clcdep_destinatt = new SearchDbEdit("clcdep_destinatt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
+        SearchDbEdit clcdep_destinatt = new SearchDbEdit("clcclientt", newDataSet, Libra.libraService, SearchType.UNIVOIE);
         clcdep_destinatt.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8, 200, p3, clcdep_destinatt);
         fieldsPanel.addInsertBtn(clcdep_destinatt, InsertType.UNIVOE);
         policy.add(clcdep_destinatt);
 
 
-        SearchDbEdit clcprazgruz_s_12t = new SearchDbEdit("clcprazgruz_s_12t", newDataSet, Libra.libraService, SearchType.PLACES);
+        SearchDbEdit clcprazgruz_s_12t = new SearchDbEdit("clcplace_unloadt", newDataSet, Libra.libraService, SearchType.PLACES);
         clcprazgruz_s_12t.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8 + stepDown, 200, p3, clcprazgruz_s_12t);
         policy.add(clcprazgruz_s_12t);
@@ -286,40 +277,41 @@ public class DocMd extends ScaleDoc {
         fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p3, sc);
         policy.add(sc);
 
-        SearchDbEdit transport = new SearchDbEdit("clcdep_perevozt", newDataSet, Libra.libraService, SearchType.UNIVOE);
+        SearchDbEdit transport = new SearchDbEdit("clctransportert", newDataSet, Libra.libraService, SearchType.UNIVOE);
         transport.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(370, 8, 200, p3, transport);
         fieldsPanel.addInsertBtn(transport, InsertType.UNIVOE);
         policy.add(transport);
 
-        SearchDbEdit clcpunctto_s_12t = new SearchDbEdit("clcpunctto_s_12t", newDataSet, Libra.libraService, SearchType.PLACES1);
+        SearchDbEdit clcpunctto_s_12t = new SearchDbEdit("clcplace2_unloadt", newDataSet, Libra.libraService, SearchType.PLACES1);
         clcpunctto_s_12t.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(370, 8 + stepDown, 200, p3, clcpunctto_s_12t);
 
         policy.add(clcpunctto_s_12t);
 
-        NumberDbEdit sezon_yyyy = new NumberDbEdit("sezon_yyyy", newDataSet);
+        NumberDbEdit sezon_yyyy = new NumberDbEdit("season", newDataSet);
         fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 100, p3, sezon_yyyy);
         policy.add(sezon_yyyy);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(2, null);
 
-        ttn_n = new TextDbEdit("ttn_n", newDataSet);
-        ttn_n.addValidator(Validators.NULL);
+        TextDbEdit ttn_n = new TextDbEdit("inv_nr", newDataSet);
+        ttn_n.setAlphaNum(true);
         fieldsPanel.addToPanel(8, 8, 100, p4, ttn_n);
         policy.add(ttn_n);
 
-        DateDbEdit ttn_data = new DateDbEdit("ttn_data", newDataSet);
+        DateDbEdit ttn_data = new DateDbEdit("inv_data", newDataSet);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p4, ttn_data);
         policy.add(ttn_data.getDateEditor().getUiComponent());
 
 
-        JLabel masaReturnLabel = new JLabel(LangService.trans("ttn_nn_perem"));
+        JLabel masaReturnLabel = new JLabel(LangService.trans("inv2_nr"));
         masaReturnLabel.setBounds(370, 8, 200, 23);
         p4.add(masaReturnLabel);
 
-        ttn_nn_perem = new TextDbEdit("ttn_nn_perem", newDataSet);
+        TextDbEdit ttn_nn_perem = new TextDbEdit("inv2_nr", newDataSet);
         ttn_nn_perem.setBounds(370 + 210, 8, 100, 23);
+        ttn_nn_perem.setAlphaNum(true);
         p4.add(ttn_nn_perem);
         policy.add(ttn_nn_perem);
 
@@ -328,33 +320,24 @@ public class DocMd extends ScaleDoc {
 
     public void changeEdit(Object source) {
         super.changeEdit(source);
-        if (source.equals(contract_nrmanual)) {
-            fieldsPanel.refresh("data_alccontr");
-            fieldsPanel.refresh("clcdep_hozt");
+        if (source.equals(clcvehiclet)) {
+            clcdrivert.refresh();
+            clctrailert.refresh();
+        } else if (source.equals(contract_nrmanual)) {
+            fieldsPanel.refresh("contract_data");
+            fieldsPanel.refresh("clcpartenert");
         }
     }
 
     @Override
-    public void updateDataSet() {
-        newDataSet.setValueByName("time_in", 0, new Timestamp(newDataSet.getDateValue("time_in", 0).getTime()));
-        newDataSet.setValueByName("time_out", 0, new Timestamp(newDataSet.getDateValue("time_out", 0).getTime()));
-        newDataSet.setValueByName("sofer", 0, clcsofer_s_14t.getText());
-
-        newInfoSet.setValueByName("pl1c", 0, newInfoSet.getStringValue("pl1c", 0).replaceAll(" ", "").toUpperCase());
-        newInfoSet.setValueByName("pl4c", 0, newInfoSet.getStringValue("pl4c", 0).replaceAll(" ", "").toUpperCase());
-    }
-
-    @Override
     public void initMain() {
-        newDataSet.setValueByName("sezon_yyyy", 0, Libra.defineSeason());
+        newDataSet.setValueByName("season", 0, Libra.defineSeason());
     }
 
     @Override
     public void initTab(boolean isOpened) {
         try {
-            infoPanel.setValue("p_id", newDataSet.getValueByName("id", 0));
-            DataSet ds = new DataSet(Arrays.asList("exped", "clcelevatort"), new Object[]{newDataSet.getValueByName("clcdivt", 0), newDataSet.getValueByName("clcelevatort", 0)});
-            DataSet set = Libra.libraService.executeQuery(SearchType.DATABYELEVATOR.getSql(), ds);
+            DataSet set = Libra.libraService.executeQuery(SearchType.DATABYELEVATOR.getSql(), newDataSet);
             if (newInfoSet.getValueByName("pl13c", 0) == null)
                 infoPanel.setValue("pl13c", set.getValueByName("DIRECTOR", 0));
             if (newInfoSet.getValueByName("pl14c", 0) == null)
@@ -362,7 +345,7 @@ public class DocMd extends ScaleDoc {
             if (newInfoSet.getValueByName("pl9c", 0) == null)
                 infoPanel.setValue("pl9c", set.getValueByName("oras", 0));
             if (newInfoSet.getValueByName("pl10c", 0) == null) {
-                Object obj = newDataSet.getValueByName("clcprazgruz_s_12t", 0);
+                Object obj = newDataSet.getValueByName("clcplace_unloadt", 0);
                 if (obj instanceof CustomItem) {
                     String str = ((CustomItem) obj).getLabel();
                     int n = str.indexOf(',');
@@ -386,7 +369,7 @@ public class DocMd extends ScaleDoc {
             Libra.eMsg(e.getMessage());
         }
 
-        DbPanel ip = new DbPanel(newInfoSet, 720, 550);
+        DbPanel ip = new DbPanel(720, 550);
         JPanel p0 = ip.createPanel(17, null);
 
         JLabel pl0 = new JLabel(LangService.trans("print.p0"));
@@ -395,20 +378,24 @@ public class DocMd extends ScaleDoc {
         JLabel pl1 = new JLabel(LangService.trans("print.p1"));
         pl1.setBounds(150, 10, 70, 23);
         p0.add(pl1);
-        ip.addToPanel(200, 10, 100, p0, new TextDbEdit("pl1c", newInfoSet));
+        TextDbEdit pl1c = new TextDbEdit("pl1c", newInfoSet);
+        pl1c.setAlphaNum(true);
+        ip.addToPanel(200, 10, 100, p0, pl1c);
         JLabel pl2 = new JLabel(LangService.trans("print.p2"));
         pl2.setBounds(320, 10, 30, 23);
         p0.add(pl2);
-        ip.addToPanel(340, 10, 100, p0, new TextDbEdit("pl2c", newInfoSet));
+        TextDbEdit pl2c = new TextDbEdit("pl2c", newInfoSet);
+        pl2c.setAlphaNum(true);
+        ip.addToPanel(340, 10, 100, p0, pl2c);
         JLabel pl3 = new JLabel(LangService.trans("print.p3"));
         pl3.setBounds(460, 10, 50, 23);
         p0.add(pl3);
         ip.addToPanel(500, 10, 100, p0, new DateDbEdit("pl3c", newInfoSet));
 
-
         JLabel pl4 = new JLabel(LangService.trans("print.p4"));
         ip.addToPanel(10, 40, 100, p0, pl4);
         TextDbEdit pl4c = new TextDbEdit("pl4c", newInfoSet);
+        pl4c.setAlphaNum(true);
         ip.addToPanel(150, 40, 200, p0, pl4c);
         JLabel pl5 = new JLabel(LangService.trans("print.p5"));
         ip.addToPanel(10, 70, 100, p0, pl5);
@@ -534,37 +521,6 @@ public class DocMd extends ScaleDoc {
         ip.addToPanel(250, 475, 100, p0, tipTara);
 
         return ip;
-    }
-
-    public void prepareInfo() throws Exception {
-        if (clcsofer_s_14t.getValue() instanceof String) {
-            BigDecimal bd = Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "14", clcsofer_s_14t.getText(), ""}));
-            clcsofer_s_14t.setValue(new CustomItem(bd, clcsofer_s_14t.getText()));
-        }
-        if (!auto.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.executeQuery("select count(*) cnt from vms_syss where tip='S' and cod = '15' and upper(denumirea) = upper(:find)", new DataSet("find", auto.getText()));
-            if (autoSet.getNumberValue("cnt", 0).equals(BigDecimal.ZERO)) {
-                String vName = auto.getText().toUpperCase();
-                Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "15", vName, vin.getText()}));
-                auto.setValue(vName);
-            }
-        }
-        if (!nr_remorca.getText().isEmpty()) {
-            DataSet autoSet = Libra.libraService.executeQuery("select count(*) cnt from vms_syss where tip='S' and cod = '16' and upper(denumirea) = upper(:find)", new DataSet("find", nr_remorca.getText()));
-            if (autoSet.getNumberValue("cnt", 0).equals(BigDecimal.ZERO)) {
-                String vName = nr_remorca.getText().toUpperCase();
-                Libra.libraService.execute(SearchType.INSSYSS.getSql(), new DataSet(Arrays.asList("tip", "cod", "denumirea", "um"), new Object[]{"S", "16", vName, ""}));
-                nr_remorca.setValue(vName);
-            }
-        }
-
-        if (!ttn_n.getText().isEmpty()) {
-            ttn_n.setValue(ttn_n.getText().replace(" ", "").toUpperCase());
-        }
-
-        if (ttn_nn_perem != null && !ttn_nn_perem.getText().isEmpty()) {
-            ttn_nn_perem.setValue(ttn_nn_perem.getText().replace(" ", "").toUpperCase());
-        }
     }
 
     public void calcPrices() {

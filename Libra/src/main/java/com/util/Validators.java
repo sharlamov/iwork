@@ -5,9 +5,6 @@ import com.view.component.db.editors.validators.NegativeValidator;
 import com.view.component.db.editors.validators.NullValidator;
 import com.view.component.db.editors.validators.PositiveValidator;
 
-/**
- * Created by sharlamov on 06.04.2016.
- */
 public class Validators {
 
     public static NullValidator NULL = new NullValidator(LangService.trans("msg.empty"));

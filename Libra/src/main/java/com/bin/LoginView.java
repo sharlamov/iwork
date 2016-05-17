@@ -22,12 +22,10 @@ public class LoginView extends JFrame implements ActionListener {
     JTextField userText = new JTextField(20);
     JPasswordField passwordText = new JPasswordField(20);
     private JButton loginButton;
-    private int x = 400;
-    private int y = 250;
 
     public LoginView() throws HeadlessException {
         super(Libra.TITLE);
-        setSize(x, y);
+        setSize(400, 250);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -43,7 +41,7 @@ public class LoginView extends JFrame implements ActionListener {
         if (Libra.autoLogin == 1) {
             login(userText.getText(), passwordText.getPassword());
         } else {
-            Image img = Pictures.getImage("images/logo.jpg", x, y);
+            Image img = Pictures.getImage("images/logo.jpg", getSize().width, getSize().height);
             CustomPanel panel = new CustomPanel(img);
             add(panel);
             placeComponents(panel);
@@ -107,7 +105,7 @@ public class LoginView extends JFrame implements ActionListener {
                 Object[] params = {cUser.getAdminLevel().toString(), cUser.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
                 Libra.libraService.execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
                 dispose();
-                new MainFrame(Libra.TITLE + " - " + cUser.getUsername() + ": " + cUser.getElevators());
+                new MainFrame(Libra.TITLE + " - " + cUser.getUsername() + ": " + Libra.filials.keySet());
             }
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)

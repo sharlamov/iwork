@@ -15,8 +15,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SearchDbEdit extends TextDbEdit {
     //?search with delay!!!
@@ -203,9 +201,7 @@ public class SearchDbEdit extends TextDbEdit {
             getDataSet().setValueByName(getName(), 0, null);
             setText(null);
         } else if ((value instanceof String || value instanceof Number) && !shouldClear) {
-            getDataSet().setValueByName(getName(), 0, value);
-            setText(value.toString());
-            setCaretPosition(0);
+            super.setValue(value);
         } else if (value instanceof DataSet) {
             DataSet selDataSet = (DataSet) value;
             int count = selDataSet.getColumnCount();
@@ -222,8 +218,8 @@ public class SearchDbEdit extends TextDbEdit {
                 }
                 setText(getValue().toString());
             }
-            setCaretPosition(0);
         }
+        setCaretPosition(0);
         fireChangeEditEvent();
     }
 

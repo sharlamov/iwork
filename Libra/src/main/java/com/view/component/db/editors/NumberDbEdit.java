@@ -5,16 +5,10 @@ import com.model.DataSet;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
-import java.text.Format;
 
 public class NumberDbEdit extends TextDbEdit {
 
     public NumberDbEdit(String name, DataSet dataSet) {
-        super(name, dataSet);
-        setHorizontalAlignment(JTextField.RIGHT);
-    }
-
-    public NumberDbEdit(String name, DataSet dataSet, Format format) {
         super(name, dataSet);
         setHorizontalAlignment(JTextField.RIGHT);
     }

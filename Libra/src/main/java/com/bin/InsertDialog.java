@@ -28,6 +28,7 @@ public class InsertDialog extends JDialog implements ActionListener {
     private DbPanel dbPanel;
     private JButton btnYes = new JButton(LangService.trans("yes"));
     private JButton btnNo = new JButton(LangService.trans("no"));
+    private TextDbEdit de;
 
     public InsertDialog(String title, InsertType type, IEdit edit, Component parent) {
         super((JFrame) null, LangService.trans(title), true);
@@ -57,21 +58,23 @@ public class InsertDialog extends JDialog implements ActionListener {
     }
 
     private void prepareParams() {
+
+
         switch (type) {
             case UNIVOI: {
                 dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "I"});
-                dbPanel = new DbPanel(dataSet, 366, 141);
+                dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
-                TextDbEdit de = new TextDbEdit("clccodt", dataSet);
+                de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
             }
             break;
             case UNIVOE: {
                 dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "E"});
-                dbPanel = new DbPanel(dataSet, 366, 141);
+                dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
-                TextDbEdit de = new TextDbEdit("clccodt", dataSet);
+                de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
@@ -79,9 +82,9 @@ public class InsertDialog extends JDialog implements ActionListener {
             break;
             case UNIVOF: {
                 dataSet = new DataSet(Arrays.asList("npp", "fiskcod", "tip", "gr1", "seria", "dataelib", "orgelib"), new Object[]{null, null, "O", "F", null, null, null});
-                dbPanel = new DbPanel(dataSet, 366, 237);
+                dbPanel = new DbPanel(366, 237);
                 JPanel pan = dbPanel.createPanel(5, null);
-                TextDbEdit de = new TextDbEdit("npp", dataSet);
+                de = new TextDbEdit("npp", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
@@ -92,18 +95,27 @@ public class InsertDialog extends JDialog implements ActionListener {
             break;
             case UNIVOSOLA: {
                 dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "SOLA"});
-                dbPanel = new DbPanel(dataSet, 366, 141);
+                dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
-                TextDbEdit de = new TextDbEdit("clccodt", dataSet);
+                de = new TextDbEdit("clccodt", dataSet);
+                de.addValidator(Validators.NULL);
+                dbPanel.addToPanel(8, 8, 200, pan, de);
+            }
+            break;
+            case UNIVCELL: {
+                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "CELL"});
+                dbPanel = new DbPanel(366, 141);
+                JPanel pan = dbPanel.createPanel(2, null);
+                de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
             }
             break;
             case UNIVTA: {
                 dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1", "axis", "sort"), new Object[]{null, null, "T", "A", null, null});
-                dbPanel = new DbPanel(dataSet, 366, 173);
+                dbPanel = new DbPanel(366, 173);
                 JPanel pan = dbPanel.createPanel(3, null);
-                TextDbEdit de = new TextDbEdit("clccodt", dataSet);
+                de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<String>("sort", Arrays.asList("Auto camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
@@ -120,13 +132,14 @@ public class InsertDialog extends JDialog implements ActionListener {
             try {
                 if (dbPanel.verify()) {
                     BigDecimal bd = Libra.libraService.execute(type.getSql(), dataSet);
+                    edit.setValue(new CustomItem(bd, de.getValue()));
                     Libra.libraService.commit();
-                    edit.setValue(new CustomItem(bd, dataSet.getStringValue("clccodt", 0)));
                     dispose();
                     ((Component) edit).transferFocus();
                 }
             } catch (Exception e1) {
                 e1.printStackTrace();
+                Libra.eMsg(e1.getMessage());
             }
         } else if (e.getSource().equals(btnNo)) {
             dispose();

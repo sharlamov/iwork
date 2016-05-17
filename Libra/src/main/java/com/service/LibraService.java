@@ -9,9 +9,7 @@ import com.util.Libra;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +34,6 @@ public class LibraService {
                 ",username\n" +
                 ",nvl(admin,0) as admin\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
-                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_HAND_EDITABLE') handEditable\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_PROFILE') profile\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_DEFDIV') defdiv\n" +
                 ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='USER_SC') user_sc\n" +
@@ -54,25 +51,31 @@ public class LibraService {
         user.setUsername(dataSet.getStringValue("USERNAME", 0));
         user.setAdminLevel(dataSet.getNumberValue("ADMIN", 0).intValue());
         user.setScaleType(dataSet.getNumberValue("scaleType", 0).intValue());
-        user.setHandEditable(dataSet.getStringValue("handeditable", 0).equals("true"));
         user.setProfile(dataSet.getStringValue("profile", 0));
         user.setDefDiv(new CustomItem(dataSet.getNumberValue("defdiv", 0), "DEFDIV"));
         user.setClcuser_sct((CustomItem) dataSet.getValueByName("clcuser_sct", 0));
 
-        if (user.getScaleType() != 5) {
+        if (user.getScaleType() > 5 || user.getScaleType() < 4) {
             throw new Exception(LangService.trans("error.enterOnlyCantar"));
         }
 
         //load elevators
-        DataSet dataElevator = dao.select(SearchType.GETSILOSBYUSER.getSql(), new Object[]{user.getId()});
+        DataSet dataElevator = dao.select(SearchType.GETFILIALS.getSql(), new Object[]{user.getId()});
         if (dataElevator.isEmpty()) {
             throw new Exception(LangService.trans("error.notfoundelevator"));
         } else {
-            List<CustomItem> items = new ArrayList<CustomItem>();
-            for (Object[] aDataElevator : dataElevator) {
-                items.add((CustomItem) aDataElevator[0]);
+            Libra.filials = new HashMap<CustomItem, List<CustomItem>>(dataElevator.size());
+            for (Object[] row : dataElevator) {
+                CustomItem key = (CustomItem) row[0];
+                CustomItem value = (CustomItem) row[1];
+                if (Libra.filials.containsKey(key)) {
+                    Libra.filials.get(key).add(value);
+                } else {
+                    List<CustomItem> lst = new ArrayList<CustomItem>();
+                    lst.add(value);
+                    Libra.filials.put(key, lst);
+                }
             }
-            user.setElevators(items);
         }
 
         //run sql
@@ -102,9 +105,9 @@ public class LibraService {
         while (m.find()) {
             Object obj = dataSet.getValueByName(m.group().substring(1), 0);
 
-            if (obj instanceof List) {
+            if (obj instanceof Collection) {
                 StringBuilder commaList = new StringBuilder();
-                for (Object item : ((List) obj)) {
+                for (Object item : ((Collection) obj)) {
                     commaList.append("?,");
                     objects.add(item);
                 }

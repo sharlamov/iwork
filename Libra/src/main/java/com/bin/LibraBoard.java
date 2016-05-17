@@ -21,36 +21,11 @@ public class LibraBoard extends JPanel {
     public LibraBoard() {
         super(new BorderLayout());
         add(new ScaleOnlinePanel(), BorderLayout.NORTH);
-/*
-        List<Doc> docList = new ArrayList<Doc>(2);
-        Doc incomeDoc = new Doc(1, "tabName0", new ArrayList<Act>(),
-                Arrays.asList(
-                        new Report("rep0", new File("templates/bon.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep1", new File("templates/act1.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep2", new File("templates/act2.xls"), SearchType.PRINTTTN.getSql())
-                ));
-        Doc consumeDoc = new Doc(2, "tabName1", Arrays.asList(new Act("out.act1", SearchType.ACTOUT0.getSql()), new Act("out.act2", SearchType.ACTOUT1.getSql())),
-                Arrays.asList(
-                        new Report("rep3", new File("templates/TTN_horiz_graf.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep4", new File("templates/TTN_vertic_graf.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep5", new File("templates/TTN_horiz_negraf.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep6", new File("templates/TTN_horiz_negraf_sum.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep7", new File("templates/NN_vertic_graf.xls"), SearchType.PRINTTTN.getSql()),
-                        new Report("rep8", new File("templates/NN_horiz_graf.xls"), SearchType.PRINTTTN.getSql())
-                ));
 
-        incomeDoc.setUsePrintInfo(true);
-        docList.add(incomeDoc);
-        consumeDoc.setUsePrintInfo(true);
-        docList.add(consumeDoc);
-              gson.toJson(docList, System.out);
-
-*/
         Gson gson = new GsonBuilder().create();
         Type type = new TypeToken<List<Doc>>() {
         }.getType();
         List<Doc> docList = gson.fromJson(Libra.designs.get("DOC.LIST"), type);
-
 
         JTabbedPane tabbedPane = new JTabbedPane();
         for (Doc doc : docList) {

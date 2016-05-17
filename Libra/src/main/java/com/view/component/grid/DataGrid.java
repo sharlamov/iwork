@@ -18,7 +18,7 @@ import java.util.*;
 
 public class DataGrid extends JPanel {
 
-    private LibraService libraService;
+    private final LibraService libraService;
     private String sql;
     private JTable tbl;
     private DataSetTableModel dtm;
@@ -224,7 +224,7 @@ public class DataGrid extends JPanel {
         tbl.setFocusable(isFocusable);
     }
 
-    public int filter() throws Exception {
+    public void filter() throws Exception {
         int r = tbl.getSelectedRow();
         int c = tbl.getSelectedColumn();
         if (r != -1 && c != -1) {
@@ -249,11 +249,10 @@ public class DataGrid extends JPanel {
                 if (!d.isEmpty()) {
                     setSelectedRow(0);
                     tbl.setColumnSelectionInterval(c, c);
-                    return d.size();
                 }
             }
         }
-        return 0;
+
     }
 
     private Component getFrame() {

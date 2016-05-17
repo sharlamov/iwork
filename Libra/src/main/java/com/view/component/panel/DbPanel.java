@@ -2,7 +2,6 @@ package com.view.component.panel;
 
 import com.bin.InsertDialog;
 import com.enums.InsertType;
-import com.model.DataSet;
 import com.service.LangService;
 import com.util.Pictures;
 import com.view.component.db.editors.IEdit;
@@ -18,13 +17,11 @@ import java.util.List;
 
 public class DbPanel extends JPanel {
 
-    private final DataSet ds;
     private List<IEdit> edits;
     private List<Component> comps;
 
-    public DbPanel(DataSet ds, int pWidth, int pHeight) {
+    public DbPanel(int pWidth, int pHeight) {
         super(null);
-        this.ds = ds;
         setSize(pWidth, pHeight);
 
         edits = new ArrayList<IEdit>();

@@ -17,8 +17,8 @@ import java.util.List;
 public class CheckDbEdit extends JCheckBox implements KeyListener, IEdit, ItemListener {
 
     private final DataSet dataSet;
-    private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
-    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private final List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
+    private final List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
     public CheckDbEdit(String name, String text, DataSet dataSet) {
         super(text);

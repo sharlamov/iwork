@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class CustomPanel extends JPanel {
 
-    private Image backgroundImage;
+    private final Image backgroundImage;
 
     public CustomPanel(Image backgroundImage) {
         this.backgroundImage = backgroundImage;

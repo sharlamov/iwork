@@ -1,8 +1,10 @@
 package com.util;
 
+import com.model.CustomItem;
 import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
+import com.view.component.db.editors.ComboDbEdit;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +33,8 @@ public class Libra {
     public static List<Object[]> scaleDrivers = new ArrayList<Object[]>();
 
     public static Map<String, String> designs = new HashMap<String, String>();
+
+    public static Map<CustomItem, List<CustomItem>> filials;
 
     public static Integer LIMIT_DIFF_MPFS = -20;
 
@@ -113,4 +117,22 @@ public class Libra {
         return url.toString();
     }
 
+    public static void initFilial(ComboDbEdit<CustomItem> siloses, ComboDbEdit<CustomItem> filials, boolean useHide) {
+        try {
+            CustomItem ci = (CustomItem) siloses.getValue();
+            if (ci.getId() == null) {
+                filials.changeData(null);
+            } else {
+                filials.changeData(Libra.filials.get(ci));
+            }
+
+            filials.setSelectedItem(LibraService.user.getDefDiv());
+            if (useHide)
+                filials.setVisible(filials.getItemCount() > 1);
+            else
+                filials.setChangeable(filials.getItemCount() > 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

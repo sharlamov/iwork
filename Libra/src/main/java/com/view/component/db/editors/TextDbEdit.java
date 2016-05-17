@@ -24,6 +24,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     private final DataSet dataSet;
     private final Color oldBackground;
     private final Color editBackground;
+    private boolean isAlphaNum = false;
     private Format format = new DecimalFormat("#,###.##");
     private Border oldBorder;
     private Border newBorder;
@@ -34,7 +35,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
         this.dataSet = dataSet;
         setName(name);
         oldBorder = getBorder();
-        newBorder = new LineBorder(Color.decode("#006600"),2);
+        newBorder = new LineBorder(Color.decode("#006600"), 2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
 
@@ -88,6 +89,10 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
         if (value == null || value.toString().isEmpty()) {
             dataSet.setValueByName(getName(), 0, null);
             setText("");
+        } else if (value instanceof String && isAlphaNum){
+            String text = value.toString().replaceAll("[^A-Za-z0-9]|\\s", "").toUpperCase();
+            dataSet.setValueByName(getName(), 0, text);
+            setText(text);
         } else {
             dataSet.setValueByName(getName(), 0, value);
             setText(value.toString());
@@ -113,7 +118,7 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getKeyLocation() == KeyEvent.KEY_LOCATION_NUMPAD) {
             transferFocus();
-        }else if(e.getKeyCode() == KeyEvent.VK_ENTER){
+        } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             setValue(getText());
         }
     }
@@ -139,5 +144,13 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
 
     public void setFormat(Format format) {
         this.format = format;
+    }
+
+    public boolean isAlphaNum() {
+        return isAlphaNum;
+    }
+
+    public void setAlphaNum(boolean isAlphaNum) {
+        this.isAlphaNum = isAlphaNum;
     }
 }

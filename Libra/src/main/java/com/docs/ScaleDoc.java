@@ -2,7 +2,6 @@ package com.docs;
 
 import com.bin.LibraPanel;
 import com.driver.ScalesDriver;
-import com.enums.SearchType;
 import com.model.*;
 import com.service.LangService;
 import com.service.LibraService;
@@ -29,6 +28,7 @@ import java.util.Date;
 public abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditListener {
 
     protected final Doc doc;
+    protected Integer scaleId;
     protected LibraPanel libraPanel;
     protected DataSet newDataSet;
     protected DataSet oldDataSet;
@@ -49,8 +49,8 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     private DateDbEdit time_in;
     private DateDbEdit time_out;
     private JPanel board = new JPanel();
-    private ComboDbEdit clcelevatort;
-    private ComboDbEdit clcdivt;
+    private ComboDbEdit<CustomItem> clcelevatort;
+    private ComboDbEdit<CustomItem> clcdivt;
 
     public ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
         super((JFrame) null, LangService.trans(doc.getName()), true);
@@ -90,7 +90,22 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
 
     public abstract DbPanel createInfoPanel();
 
-    public abstract void updateDataSet();
+    public void updateDataSet() {
+        Date d1 = newDataSet.getDateValue("time_in", 0);
+        Date d2 = newDataSet.getDateValue("time_out", 0);
+        d2 = d2.before(d1) ? d1 : d2;
+
+        newDataSet.setValueByName("time_in", 0, new Timestamp(d1.getTime()));
+        newDataSet.setValueByName("time_out", 0, new Timestamp(d2.getTime()));
+
+        newDataSet.setValueByName("clctype_vehiclet", 0, new CustomItem(doc.getType(), ""));
+        newDataSet.setValueByName("in_out", 0, doc.getId());
+
+        newDataSet.setValueByName("userid", 0, LibraService.user.getId());
+
+        if(scaleId != null && newDataSet.getValueByName("masa_netto", 0) != null)
+            newDataSet.setValueByName("scaleid", 0, scaleId);
+    }
 
     private void initWeightBoard() {
         board.setPreferredSize(new Dimension(220, 70));
@@ -115,7 +130,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     }
 
     private void initFieldsPanel() {
-        fieldsPanel = new DbPanel(newDataSet, 720, 550);
+        fieldsPanel = new DbPanel(720, 550);
         policy = new FocusPolicy();
 
         initMain();
@@ -165,15 +180,19 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         statusPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        bAction.setMargin(new Insets(0, 0, 0, 0));
-        bAction.addActionListener(this);
-        bAction.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bAction);
+        if (!doc.getActions().isEmpty()) {
+            bAction.setMargin(new Insets(0, 0, 0, 0));
+            bAction.addActionListener(this);
+            bAction.setPreferredSize(Libra.buttonSize);
+            statusPanel.add(bAction);
+        }
 
-        bPrint.setMargin(new Insets(0, 0, 0, 0));
-        bPrint.addActionListener(this);
-        bPrint.setPreferredSize(Libra.buttonSize);
-        statusPanel.add(bPrint);
+        if (!doc.getReports().isEmpty()) {
+            bPrint.setMargin(new Insets(0, 0, 0, 0));
+            bPrint.addActionListener(this);
+            bPrint.setPreferredSize(Libra.buttonSize);
+            statusPanel.add(bPrint);
+        }
 
         bSave.addActionListener(this);
         bSave.setPreferredSize(Libra.buttonSize);
@@ -267,7 +286,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
 
     private void fixWeight(WeightBoard weightBoard, IEdit firstField, IEdit secondField) {
         Integer weight = weightBoard.getWeight();
-        Integer scaleId = weightBoard.getDriverId();
+        scaleId = weightBoard.getDriverId();
         boolean isEmptyCar;
 
         if (weight != null && weight != 0) {
@@ -307,7 +326,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     public void createHeadPanel() throws Exception {
         JPanel headPanel = fieldsPanel.createPanel(1, null);
 
-        clcelevatort = new ComboDbEdit<CustomItem>("clcelevatort", LibraService.user.getElevators(), newDataSet);
+        clcelevatort = new ComboDbEdit<CustomItem>("clcelevatort", Libra.filials.keySet(), newDataSet);
         fieldsPanel.addToPanel(8, 8, 200, headPanel, clcelevatort);
 
         clcdivt = new ComboDbEdit<CustomItem>("clcdivt", new ArrayList<CustomItem>(), newDataSet);
@@ -316,24 +335,21 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         Object idVal = newDataSet.getValueByName("id", 0);
         if (idVal == null) {
             clcelevatort.addChangeEditListener(this);
-            if (LibraService.user.getElevators().size() > 1)
+            Libra.initFilial(clcelevatort, clcdivt, false);
+
+            if (clcelevatort.getItemCount() > 1)
                 policy.add(clcelevatort);
+            else {
+                clcelevatort.setChangeable(false);
+            }
+
+            if (clcdivt.getItemCount() > 1)
+                policy.add(clcdivt);
+
         } else {
             clcelevatort.setChangeable(false);
-        }
-
-        if (idVal == null) {
-            if (!clcelevatort.isEmpty()) {
-                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
-                clcdivt.changeData(divSet);
-                clcdivt.setSelectedItem(LibraService.user.getDefDiv());
-                if (!divSet.isEmpty() && divSet.size() > 1)
-                    policy.add(clcdivt);
-            }
-        } else {
             clcdivt.setChangeable(false);
         }
-
     }
 
     public void createCalculationPanel() {
@@ -392,7 +408,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     }
 
     public void checkWeightField(NumberDbEdit edit) {
-        if (edit.isEmpty() && LibraService.user.isHandEditable()) {
+        if (edit.isEmpty() && LibraService.user.getScaleType() == 4) {
             edit.setChangeable(true);
             policy.add(edit);
         } else {
@@ -427,15 +443,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
             checkWeightField(brutto);
             checkWeightField(tara);
         } else if (source.equals(clcelevatort)) {
-            try {
-                DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", clcelevatort.getValue()));
-                clcdivt.changeData(divSet);
-                clcdivt.setSelectedItem(LibraService.user.getDefDiv());
-            } catch (Exception e) {
-                e.printStackTrace();
-                Libra.eMsg(e.getMessage());
-            }
+            Libra.initFilial(clcelevatort, clcdivt, false);
         }
     }
-
 }

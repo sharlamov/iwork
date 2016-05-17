@@ -11,7 +11,6 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
 
 import static com.util.Libra.eMsg;
@@ -20,10 +19,10 @@ public class HistoryPanel extends JPanel {
 
 
     private Dimension dimension = new Dimension(Integer.MAX_VALUE, 90);
-    private Dimension size = new Dimension(200, 300);
 
     public HistoryPanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        Dimension size = new Dimension(200, 300);
         setMaximumSize(size);
         setPreferredSize(size);
     }

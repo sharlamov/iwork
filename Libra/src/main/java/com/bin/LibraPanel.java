@@ -1,7 +1,7 @@
 package com.bin;
 
-import com.docs.DocRo;
 import com.docs.DocMd;
+import com.docs.DocRo;
 import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
@@ -69,7 +69,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.setColumnFont("masa_tara", Fonts.bold12);
         dataGrid.setColumnFont("masa_netto", Fonts.bold12);
 
-        filter = new DataSet(new ArrayList<String>(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty")));
+        filter = new DataSet(new ArrayList<String>(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty", "in_out", "type")));
 
         tableKeyBindings(dataGrid);
 
@@ -160,10 +160,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         date2.addChangeEditListener(this);
         date2.setMinSelectableDate(date1.getDate());
 
-        elevators = new ComboDbEdit<CustomItem>("silos", LibraService.user.getElevators(), filter);
+        elevators = new ComboDbEdit<CustomItem>("silos", Libra.filials.keySet(), filter);
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
-        if (LibraService.user.getElevators().size() > 1) {
+        if (Libra.filials.size() > 1) {
             elevators.insertItemAt(new CustomItem(null, LangService.trans("all")), 0);
             elevators.setSelectedIndex(0);
             elevators.addChangeEditListener(this);
@@ -176,8 +176,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         divs.setMaximumSize(new Dimension(100, 27));
         divs.addChangeEditListener(this);
         toolBar.add(divs);
-        initDiv();
-
+        Libra.initFilial(elevators, divs, true);
 
         toolBar.addSeparator();
         toolBar.add(date1);
@@ -198,7 +197,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void lostCarsInit() {
         try {
-            DataSet lostDS = Libra.libraService.executeQuery(doc.getId() == 1 ? SearchType.LOSTCARIN.getSql() : SearchType.LOSTCAROUT.getSql(), filter);
+            DataSet lostDS = Libra.libraService.executeQuery(SearchType.LOSTCAR.getSql(), filter);
             if (lostDS != null && !lostDS.isEmpty()) {
                 lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
             }
@@ -211,8 +210,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void refreshMaster() {
         try {
             CustomItem item = (CustomItem) filter.getValueByName("silos", 0);
-            filter.setValueByName("elevator", 0, item.getId() == null ? LibraService.user.getElevators() : item);
+            filter.setValueByName("elevator", 0, item.getId() == null ? Libra.filials.keySet() : item);
             filter.setValueByName("empty", 0, halfBtn.isSelected() ? null : BigDecimal.ZERO);
+            filter.setValueByName("in_out", 0, doc.getId());
+            filter.setValueByName("type", 0, doc.getType());
             dataGrid.select(filter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -243,6 +244,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             new DocMd(pan, dataSet, doc);
         } else if (LibraService.user.getProfile().equalsIgnoreCase("mdtest")) {
             new DocMd(pan, dataSet, doc);
+        } else if (LibraService.user.getProfile().equalsIgnoreCase("rotest")) {
+            new DocRo(pan, dataSet, doc);
         } else if (LibraService.user.getProfile().equalsIgnoreCase("roauto")) {
             new DocRo(pan, dataSet, doc);
         }
@@ -266,21 +269,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    private void initDiv() {
-        try {
-            DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", elevators.getValue()));
-            divs.changeData(divSet);
-            divs.setSelectedItem(LibraService.user.getDefDiv());
-            divs.setVisible(divSet.size() > 1);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
-        }
-    }
-
     public void changeEdit(Object source) {
         if (source.equals(elevators)) {
-            initDiv();
+            Libra.initFilial(elevators, divs, true);
             refreshMaster();
         } else if (source.equals(divs)) {
             refreshMaster();

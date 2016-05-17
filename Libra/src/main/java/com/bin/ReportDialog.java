@@ -5,7 +5,6 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Report;
 import com.service.LangService;
-import com.service.LibraService;
 import com.util.Libra;
 import com.view.component.db.editors.*;
 import com.view.component.db.editors.validators.NullValidator;
@@ -27,8 +26,8 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
     private JButton btnNo = new JButton(LangService.trans("no"));
     private DataSet dataSet;
 
-    private ComboDbEdit elevator;
-    private ComboDbEdit div;
+    private ComboDbEdit<CustomItem> elevator;
+    private ComboDbEdit<CustomItem> div;
 
     public ReportDialog(Report report) {
         super((JFrame) null, LangService.trans("rep.choose"), true);
@@ -61,14 +60,14 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             dataSet = new DataSet(new ArrayList<String>(Arrays.asList("elevator", "div", "nrdoc")));
 
             addLabel(dataPanel, "clcelevatort");
-            elevator = new ComboDbEdit<CustomItem>("elevator", LibraService.user.getElevators(), dataSet);
+            elevator = new ComboDbEdit<CustomItem>("elevator", Libra.filials.keySet(), dataSet);
             elevator.addChangeEditListener(this);
             dataPanel.add(elevator);
 
             addLabel(dataPanel, "clcdivt");
             div = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), dataSet);
             dataPanel.add(div);
-            initDiv();
+            Libra.initFilial(elevator, div, false);
 
             addLabel(dataPanel, "rep.nrdoc");
             NumberDbEdit nrdoc = new NumberDbEdit("nrdoc", dataSet);
@@ -90,21 +89,21 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             dataPanel.add(dataend);
 
             addLabel(dataPanel, "clcelevatort");
-            elevator = new ComboDbEdit<CustomItem>("elevator", LibraService.user.getElevators(), dataSet);
+            elevator = new ComboDbEdit<CustomItem>("elevator", Libra.filials.keySet(), dataSet);
             elevator.addChangeEditListener(this);
             dataPanel.add(elevator);
 
             addLabel(dataPanel, "clcdivt");
             div = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), dataSet);
             dataPanel.add(div);
-            initDiv();
+            Libra.initFilial(elevator, div, false);
 
-            addLabel(dataPanel, "clcdep_postavt");
+            addLabel(dataPanel, "clcclientt");
             SearchDbEdit filt2 = new SearchDbEdit("filt2", dataSet, Libra.libraService, SearchType.UNIVOIE);
             dataPanel.add(filt2);
 
-            addLabel(dataPanel, "clcsc_mpt");
-            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, SearchType.CROPSROMIN);
+            addLabel(dataPanel, "clcsct");
+            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, report.getName().equalsIgnoreCase("income") ? SearchType.CROPSROMIN : SearchType.CROPSROMOUT);
             dataPanel.add(filt3);
 
             JCheckBox cb1 = new CheckDbEdit("cb1", LangService.trans("rep.useDayOut"), dataSet);
@@ -142,23 +141,12 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
 
     public void changeEdit(Object source) {
         if (source.equals(elevator)) {
-            initDiv();
+            Libra.initFilial(elevator, div, false);
         }
     }
 
     private void addLabel(JComponent p, String text) {
         JLabel label = new JLabel(LangService.trans(text));
         p.add(label);
-    }
-
-    private void initDiv() {
-        try {
-            DataSet divSet = Libra.libraService.executeQuery(SearchType.GETDIVBYSILOS.getSql(), new DataSet("elevator_id", elevator.getValue()));
-            div.changeData(divSet);
-            div.setSelectedItem(LibraService.user.getDefDiv());
-        } catch (Exception e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
-        }
     }
 }

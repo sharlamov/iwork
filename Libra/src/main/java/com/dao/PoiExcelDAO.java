@@ -37,7 +37,7 @@ public class PoiExcelDAO {
             if (rangeName.getNameName().equalsIgnoreCase("TITLE") && header != null) {
                 processHeader(sheet, crList, header);
             } else if (rangeName.getNameName().equalsIgnoreCase("DETAIL") && master != null) {
-                processMaster(wb, sheet, crList, master);
+                processMaster(sheet, crList, master);
             } else if (rangeName.getNameName().equalsIgnoreCase("SUMMARY") && master != null) {
                 processSummary(sheet, crList, master);
             }
@@ -83,7 +83,7 @@ public class PoiExcelDAO {
         }
     }
 
-    public void processMaster(Workbook workbook, Sheet sheet, CellReference[] crList, DataSet dataSet) {
+    public void processMaster(Sheet sheet, CellReference[] crList, DataSet dataSet) {
         int count = dataSet.getColumnCount() == 0 ? 0 : dataSet.size() - 1;
 
         Row row = null;

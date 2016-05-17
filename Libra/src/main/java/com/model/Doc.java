@@ -5,18 +5,12 @@ import java.util.List;
 public class Doc {
 
     private int id;
+    private int type;
     private String name;
     private boolean usePrintInfo;
     private String printInfoSql;
     private List<Act> actions;
     private List<Report> reports;
-
-    public Doc(int id, String name, List<Act> actions, List<Report> reports) {
-        this.id = id;
-        this.name = name;
-        this.actions = actions;
-        this.reports = reports;
-    }
 
     public int getId() {
         return id;
@@ -64,5 +58,13 @@ public class Doc {
 
     public void setPrintInfoSql(String printInfoSql) {
         this.printInfoSql = printInfoSql;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

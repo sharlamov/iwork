@@ -17,17 +17,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, ItemListener {
     //? refactor setValue()
 
     private final DataSet dataSet;
     private final Border newBorder;
-    private Color oldBackground;
-    private Color editBackground;
-    private Border oldBorder;
-    private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
-    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private final Color oldBackground;
+    private final Color editBackground;
+    private final Border oldBorder;
+    private final List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
+    private final List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
 
     public ComboDbEdit(String name, Collection<T> list, DataSet dataSet) {
         this.dataSet = dataSet;
@@ -42,11 +43,14 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
         addKeyListener(this);
         addFocusListener(this);
 
+        Object value = dataSet.getValueByName(getName(), 0);
+
         for (T o : list) {
             addItem(o);
         }
 
-        refresh();
+        if (value != null)
+            setValue(value);
     }
 
     public void addValidator(AbstractValidator validator) {
@@ -70,12 +74,21 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
         TimingUtils.showTimedBalloon(myBalloonTip, 3000);
     }
 
-    public void changeData(DataSet set) {
+   /* public void changeData(DataSet set) {
         removeAllItems();
         dataSet.setValueByName(getName(), 0, null);
         for (Object[] o : set) {
             addItem((T) o[0]);
         }
+    }*/
+
+    public void changeData(Collection<T> set) {
+        removeAllItems();
+        dataSet.setValueByName(getName(), 0, null);
+        if (set != null)
+            for (T o : set) {
+                addItem(o);
+            }
     }
 
     public void addChangeEditListener(ChangeEditListener listener) {

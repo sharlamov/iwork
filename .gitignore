@@ -9,3 +9,5 @@ Libra/setting.json
 *.ini
 Libra/templates/*.xls
 Libra/templates/*.xlsx
+*.ini
+*.xls

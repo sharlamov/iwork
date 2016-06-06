@@ -21,7 +21,7 @@ public class MainFrame extends JFrame {
         add(new LibraBoard());
         setSize(1000, 700);
         setLocationRelativeTo(null);
-        if (Libra.autoLogin != 1)
+        if (!Libra.SETTINGS.isAuto())
             setExtendedState(JFrame.MAXIMIZED_BOTH);
         setVisible(true);
     }

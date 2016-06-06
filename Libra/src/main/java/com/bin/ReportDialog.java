@@ -5,6 +5,7 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Report;
 import com.service.LangService;
+import com.service.LibraService;
 import com.util.Libra;
 import com.view.component.db.editors.*;
 import com.view.component.db.editors.validators.NullValidator;
@@ -102,8 +103,12 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
             SearchDbEdit filt2 = new SearchDbEdit("filt2", dataSet, Libra.libraService, SearchType.UNIVOIE);
             dataPanel.add(filt2);
 
+            SearchType st = SearchType.CROPS;
+            if(LibraService.user.getProfile().equalsIgnoreCase("ROAUTO")){
+                st = report.getName().equalsIgnoreCase("income") ? SearchType.CROPSROMIN : SearchType.CROPSROMOUT;
+            }
             addLabel(dataPanel, "clcsct");
-            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, report.getName().equalsIgnoreCase("income") ? SearchType.CROPSROMIN : SearchType.CROPSROMOUT);
+            SearchDbEdit filt3 = new SearchDbEdit("filt3", dataSet, Libra.libraService, st);
             dataPanel.add(filt3);
 
             JCheckBox cb1 = new CheckDbEdit("cb1", LangService.trans("rep.useDayOut"), dataSet);

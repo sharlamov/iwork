@@ -1,13 +1,14 @@
 package com.bin;
 
-import com.enums.SearchType;
-import com.model.CustomUser;
-import com.model.DataSet;
+import com.enums.LangType;
+import com.model.settings.Settings;
+import com.service.JsonService;
 import com.service.LangService;
 import com.service.LibraService;
-import com.service.SettingsService;
+import com.util.Fonts;
 import com.util.Libra;
 import com.util.Pictures;
+import com.view.component.custom.LoginField;
 import com.view.component.panel.CustomPanel;
 import oracle.net.ns.NetException;
 
@@ -15,17 +16,21 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class LoginView extends JFrame implements ActionListener {
 
-    JTextField userText = new JTextField(20);
-    JPasswordField passwordText = new JPasswordField(20);
+    private LoginField userText;
+    private LoginField passwordText;
     private JButton loginButton;
+    private int lWidth = 640;
+    private int lHeight = 380;
 
     public LoginView() throws HeadlessException {
-        super(Libra.TITLE);
-        setSize(400, 250);
+        super();
+        setIconImage(Pictures.scaleIcon);
+        setSize(lWidth, lHeight);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
@@ -36,15 +41,15 @@ public class LoginView extends JFrame implements ActionListener {
         });
 
         initParams();
-        loginButton = new JButton(LangService.trans("enter"));
 
-        if (Libra.autoLogin == 1) {
-            login(userText.getText(), passwordText.getPassword());
+        if (Libra.SETTINGS.isAuto()) {
+            login(Libra.SETTINGS.getUsername(), Libra.SETTINGS.getPassword());
         } else {
             Image img = Pictures.getImage("images/logo.jpg", getSize().width, getSize().height);
             CustomPanel panel = new CustomPanel(img);
             add(panel);
             placeComponents(panel);
+            translate();
             setLocationRelativeTo(null);
             setVisible(true);
         }
@@ -55,57 +60,76 @@ public class LoginView extends JFrame implements ActionListener {
     }
 
     public void initParams() {
-        SettingsService.init();
-        userText.setText(SettingsService.get("user.login"));
-        passwordText.setText(SettingsService.get("user.pass"));
+        Libra.SETTINGS = JsonService.loadFile(Settings.class, "settings.json");
+        LangService.init(Libra.SETTINGS.getLang(), Libra.libraService);
 
-        String dataBaseUrlString = SettingsService.get("jdbc.url");
-        Libra.dbUrl = dataBaseUrlString.contains(":") ? dataBaseUrlString : Libra.decodeURL(dataBaseUrlString);
-
-        Libra.dbUser = SettingsService.get("jdbc.login");
-        Libra.dbPass = SettingsService.get("jdbc.pass");
-        Libra.autoLogin = Integer.valueOf(SettingsService.get("user.autoLogin", "0"));
-        LangService.init(SettingsService.get("user.lang"), Libra.libraService);
-
-        UIManager.put("OptionPane.yesButtonText", LangService.trans("yes"));
-        UIManager.put("OptionPane.noButtonText", LangService.trans("no"));
         UIManager.put("OptionPane.sameSizeButtons", true);
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
 
+    public void translate() {
+        setTitle(LangService.trans("libra"));
+        UIManager.put("OptionPane.yesButtonText", LangService.trans("yes"));
+        UIManager.put("OptionPane.noButtonText", LangService.trans("no"));
+
+        userText.setPlaceholder(LangService.trans("login"));
+
+        passwordText.setPlaceholder(LangService.trans("pass"));
+
+        loginButton.setText(LangService.trans("enter"));
+    }
+
     private void placeComponents(JPanel panel) {
         panel.setLayout(null);
+        int w = 180;
+        int h = 25;
 
-        JLabel userLabel = new JLabel(LangService.trans("login"));
-        userLabel.setBounds(200, 10, 80, 25);
-        //panel.add(userLabel);
+        LangType lang = Libra.SETTINGS.getLang();
+        final JLabel langBox = new JLabel((lang == null ? LangType.next(null) : lang).toString());
+        langBox.setFont(Fonts.bold15);
+        langBox.setBounds(lWidth - 40 - 20, 20, 40, h);
+        langBox.setForeground(Color.white);
+        addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                LangType lang = LangType.next(LangType.find(langBox.getText()));
+                langBox.setText(lang.toString());
+                Libra.SETTINGS.setLang(lang);
+                LangService.init(lang, Libra.libraService);
+                translate();
+            }
+        });
+        panel.add(langBox);
 
-        userText.setBackground(Color.decode("#FFFF66"));
-        userText.setBounds(250, 10, 140, 25);
+        JLabel appName = new JLabel(Libra.TITLE);
+        appName.setForeground(Color.white);
+        appName.setFont(Fonts.bold45);
+        appName.setBounds(lWidth - w - 30, 100, 200, h * 2);
+        panel.add(appName);
+
+        userText = new LoginField(Libra.SETTINGS.getUsername());
+        userText.setFont(Fonts.bold15);
+        userText.setBounds(lWidth - w - 20, (lHeight / 2), w, h);
         panel.add(userText);
 
-        JLabel passwordLabel = new JLabel(LangService.trans("pass"));
-        passwordLabel.setBounds(200, 40, 80, 25);
-        //panel.add(passwordLabel);
-
-        passwordText.setBackground(Color.decode("#FFFF66"));
-        passwordText.setBounds(250, 40, 140, 25);
+        passwordText = new LoginField(Libra.SETTINGS.getPassword(), true);
+        passwordText.setFont(Fonts.bold15);
+        passwordText.setBounds(lWidth - w - 20, (lHeight / 2) + h + 5, w, h);
         passwordText.addActionListener(this);
         panel.add(passwordText);
 
-        loginButton.setBounds(250, 70, 140, 25);
+        loginButton = new JButton();
+        loginButton.setFont(Fonts.bold15);
+        loginButton.setBounds(lWidth - w - 20, (lHeight / 2) + 2 * h + 10, w, h - 5);
         loginButton.addActionListener(this);
         panel.add(loginButton);
     }
 
-    public void login(String login, char[] pass) {
+    public void login(String login, String pass) {
         try {
             if (Libra.libraService.login(login, pass)) {
-                CustomUser cUser = LibraService.user;
-                Object[] params = {cUser.getAdminLevel().toString(), cUser.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
-                Libra.libraService.execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
+                JsonService.saveFile(Libra.SETTINGS, "settings.json");
                 dispose();
-                new MainFrame(Libra.TITLE + " - " + cUser.getUsername() + ": " + Libra.filials.keySet());
+                new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + Libra.filials.keySet());
             }
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)
@@ -119,9 +143,9 @@ public class LoginView extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         if (e.getSource().equals(loginButton)) {
-            login(userText.getText(), passwordText.getPassword());
+            login(userText.getString(), passwordText.getString());
         } else if (e.getSource().equals(passwordText)) {
-            login(userText.getText(), passwordText.getPassword());
+            login(userText.getString(), passwordText.getString());
         }
     }
 }

@@ -1,16 +1,13 @@
 package com.bin;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.model.Report;
+import com.service.JsonService;
 import com.service.LangService;
 import com.util.Libra;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.Type;
 import java.util.List;
 
 public class LibraMenu extends JMenuBar implements ActionListener {
@@ -39,10 +36,7 @@ public class LibraMenu extends JMenuBar implements ActionListener {
 
     public void makeReportMenu() {
         JMenu menuReport = new JMenu(LangService.trans("report"));
-
-        Gson gson = new GsonBuilder().create();
-        Type type = new TypeToken<List<Report>>() {}.getType();
-        List<Report> reports = gson.fromJson(Libra.designs.get("REPORT.LIST"), type);
+        List<Report> reports = JsonService.fromJsonList(Libra.designs.get("REPORT.LIST"), Report.class);
 
         for (final Report report : reports) {
             JMenuItem reportItem = new JMenuItem(LangService.trans(report.getName()));

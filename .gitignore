@@ -11,3 +11,4 @@ Libra/templates/*.xls
 Libra/templates/*.xlsx
 *.ini
 *.xls
+setting.json

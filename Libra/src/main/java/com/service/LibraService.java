@@ -23,10 +23,10 @@ public class LibraService {
         this.dao = new JdbcDAO();
     }
 
-    public boolean login(String userName, char[] password) throws Exception {
+    public boolean login(String userName, String password) throws Exception {
         if (userName == null || userName.isEmpty()) {
             throw new Exception(LangService.trans("error.emptylogin"));
-        } else if (password == null || password.length == 0) {
+        } else if (password == null || password.length() == 0) {
             throw new Exception(LangService.trans("error.emptypass"));
         }
 
@@ -64,14 +64,14 @@ public class LibraService {
         if (dataElevator.isEmpty()) {
             throw new Exception(LangService.trans("error.notfoundelevator"));
         } else {
-            Libra.filials = new HashMap<CustomItem, List<CustomItem>>(dataElevator.size());
+            Libra.filials = new HashMap<>(dataElevator.size());
             for (Object[] row : dataElevator) {
                 CustomItem key = (CustomItem) row[0];
                 CustomItem value = (CustomItem) row[1];
                 if (Libra.filials.containsKey(key)) {
                     Libra.filials.get(key).add(value);
                 } else {
-                    List<CustomItem> lst = new ArrayList<CustomItem>();
+                    List<CustomItem> lst = new ArrayList<>();
                     lst.add(value);
                     Libra.filials.put(key, lst);
                 }
@@ -95,12 +95,16 @@ public class LibraService {
             throw new Exception(LangService.trans("Profile not found!"));
         }
 
+        //init context
+        Object[] params = {user.getAdminLevel().toString(), user.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
+        execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
+
         return true;
     }
 
     public DataSet executeQuery(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
-        List<Object> objects = new ArrayList<Object>();
+        List<Object> objects = new ArrayList<>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             Object obj = dataSet.getValueByName(m.group().substring(1), 0);

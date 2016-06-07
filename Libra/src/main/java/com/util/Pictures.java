@@ -18,13 +18,26 @@ public class Pictures {
     public static ImageIcon middleIcon = createImageIcon("images/middle.gif");
     public static ImageIcon findIcon = createImageIcon("images/find.png");
     public static ImageIcon downloadedIcon = createImageIcon("images/download.png", 20, 20);
+    public static Image scaleIcon = getImage("images/scale.png");
 
+
+    public static Image getImage(String path) {
+        try {
+            java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
+            if (imgURL != null) {
+                return ImageIO.read(imgURL);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static Image getImage(String path, int x, int y) {
         try {
             java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
             if (imgURL != null) {
-                return ImageIO.read(imgURL).getScaledInstance(x, y, java.awt.Image.SCALE_SMOOTH);
+                return ImageIO.read(imgURL).getScaledInstance(x, y, Image.SCALE_FAST);
             }
         } catch (Exception e) {
             e.printStackTrace();

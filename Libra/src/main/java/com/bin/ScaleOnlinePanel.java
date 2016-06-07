@@ -3,17 +3,19 @@ package com.bin;
 import com.driver.ScaleType;
 import com.driver.ScalesDriver;
 import com.driver.ScalesManager;
+import com.model.settings.ScaleSettings;
+import com.service.JsonService;
 import com.service.LangService;
-import com.service.SettingsService;
 import com.util.Libra;
 import com.util.Pictures;
-import com.view.component.weightboard.WeightBoard;
+import com.view.component.widget.ScaleWidget;
 import jssc.SerialPortException;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ScaleOnlinePanel extends JPanel implements ActionListener {
@@ -29,17 +31,10 @@ public class ScaleOnlinePanel extends JPanel implements ActionListener {
     }
 
     public void initScalesSetting() {
-        List<String[]> params = SettingsService.getGroupValues("scales");
-        for (String[] name : params) {
-            String port = name[0];
-            String[] data = name[1].split(",");
-            String driver = data[0];
-            Integer driverId = data.length > 1 ? Integer.valueOf(data[1].trim()) : null;
-            for (ScaleType scaleType : ScaleType.values()) {
-                if (driver.equalsIgnoreCase(scaleType.toString())) {
-                    Libra.scaleDrivers.add(new Object[]{new ScalesDriver(scaleType, port), driverId});
-                    break;
-                }
+        if (Libra.SETTINGS.getScales() != null){
+            for (ScaleSettings ss : Libra.SETTINGS.getScales()) {
+                ScaleType scale = ScaleType.valueOf(ss.getDriverName());
+                Libra.scaleDrivers.add(new Object[]{new ScalesDriver(scale, ss.getPort()), ss.getScaleId(), ss.getCams()});
             }
         }
     }
@@ -55,7 +50,7 @@ public class ScaleOnlinePanel extends JPanel implements ActionListener {
             for (Object[] data : Libra.scaleDrivers) {
                 ScalesDriver sd = (ScalesDriver) data[0];
                 sd.openPort();
-                add(new WeightBoard(sd, true, data[1]));
+                add(new ScaleWidget(sd, true, data[1], data[2]));
             }
         }
         revalidate();
@@ -63,12 +58,14 @@ public class ScaleOnlinePanel extends JPanel implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         try {
+            List<ScaleSettings> lst = new ArrayList<>();
             ScalesManager manager = new ScalesManager();
             manager.defineScales();
             for (ScalesDriver driver : manager.getScales()) {
-                SettingsService.set("scales." + driver.getComPort(), driver.toString());
+                lst.add(new ScaleSettings(0, driver.getComPort(), driver.toString(), null));
             }
-            SettingsService.save();
+            Libra.SETTINGS.setScales(lst);
+            JsonService.saveFile(Libra.SETTINGS, "settings.json");
             initScales();
         } catch (Exception e1) {
             e1.printStackTrace();

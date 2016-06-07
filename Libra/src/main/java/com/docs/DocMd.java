@@ -172,7 +172,6 @@ public class DocMd extends ScaleDoc {
                 , new GridField[]{new GridField("nrdoc1", 70), new GridField("nr_manual", 70), new GridField("data_alccontr", 70), new GridField("clcpartenert", 150)}
                 , Libra.libraService, SearchType.FINDCONTRACT);
         contract_nrmanual.setShouldClear(false);
-        contract_nrmanual.setAlphaNum(true);
         contract_nrmanual.addChangeEditListener(this);
         fieldsPanel.addToPanel(8, 8, 100, p5, contract_nrmanual);
         policy.add(contract_nrmanual);
@@ -338,13 +337,13 @@ public class DocMd extends ScaleDoc {
     public void initTab(boolean isOpened) {
         try {
             DataSet set = Libra.libraService.executeQuery(SearchType.DATABYELEVATOR.getSql(), newDataSet);
-            if (newInfoSet.getValueByName("pl13c", 0) == null)
+            if (newInfoSet.getValueByName("pl13c", 0) == null || useRefresh)
                 infoPanel.setValue("pl13c", set.getValueByName("DIRECTOR", 0));
-            if (newInfoSet.getValueByName("pl14c", 0) == null)
+            if (newInfoSet.getValueByName("pl14c", 0) == null || useRefresh)
                 infoPanel.setValue("pl14c", set.getValueByName("CONT_SEF", 0));
-            if (newInfoSet.getValueByName("pl9c", 0) == null)
+            if (newInfoSet.getValueByName("pl9c", 0) == null || useRefresh)
                 infoPanel.setValue("pl9c", set.getValueByName("oras", 0));
-            if (newInfoSet.getValueByName("pl10c", 0) == null) {
+            if (newInfoSet.getValueByName("pl10c", 0) == null || useRefresh) {
                 Object obj = newDataSet.getValueByName("clcplace_unloadt", 0);
                 if (obj instanceof CustomItem) {
                     String str = ((CustomItem) obj).getLabel();
@@ -358,6 +357,8 @@ public class DocMd extends ScaleDoc {
 
         } catch (Exception e) {
             Libra.eMsg(e.getMessage());
+        } finally {
+            useRefresh = false;
         }
     }
 

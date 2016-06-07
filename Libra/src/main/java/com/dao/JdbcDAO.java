@@ -4,6 +4,8 @@ import com.model.CustomItem;
 import com.model.DataSet;
 import com.util.Libra;
 
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
@@ -28,6 +30,8 @@ public class JdbcDAO {
             stmt.setLong(i, (Long) value);
         } else if (value instanceof CustomItem) {
             stmt.setBigDecimal(i, ((CustomItem) value).getId());
+        } else if (value instanceof InputStream) {
+            stmt.setBlob(i, (InputStream) value);
         } else {
             stmt.setString(i, value.toString());
         }
@@ -43,13 +47,14 @@ public class JdbcDAO {
 
     public DataSet select(String query, Object[] params)
             throws Exception {
-
         long t = System.currentTimeMillis();
-        ResultSetMetaData metadata;
-        List<Object[]> list = new ArrayList<Object[]>();
-        List<String> names = new ArrayList<String>();
 
-        PreparedStatement stmt = getConnection().prepareStatement(query);
+        ResultSetMetaData metadata;
+        List<Object[]> list = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+
+        Connection conn = getConnection();
+        PreparedStatement stmt = conn.prepareStatement(query);
         initParams(stmt, params);
 
         ResultSet rs = stmt.executeQuery();
@@ -60,7 +65,7 @@ public class JdbcDAO {
             names.add(metadata.getColumnName(i + 1));
         }
 
-        Map<String, int[]> map = new LinkedHashMap<String, int[]>();
+        Map<String, int[]> map = new LinkedHashMap<>();
         for (int i = 0; i < numberOfColumns; i++) {
             if (names.get(i).startsWith("CLC") && names.get(i).endsWith("T")) {
                 int codIndex = names.indexOf(names.get(i).substring(3, names.get(i).length() - 1));
@@ -98,13 +103,11 @@ public class JdbcDAO {
 
     public Connection getConnection() throws Exception {
         if (connection == null || connection.isClosed() || !connection.isValid(0)) {
-            if (Libra.dbUser == null || Libra.dbPass == null || Libra.dbUrl == null) {
+            String url = Libra.SETTINGS.getConnection();
+            if (url.isEmpty()) {
                 throw new Exception("Проверьте параметры подключения к базе!");
             }
-            Properties connectionProps = new Properties();
-            connectionProps.put("user", Libra.dbUser);
-            connectionProps.put("password", Libra.dbPass);
-            connection = DriverManager.getConnection(Libra.dbUrl, connectionProps);
+            connection = DriverManager.getConnection(url);
             System.out.println("Connected to database");
         }
         return connection;

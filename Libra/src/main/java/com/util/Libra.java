@@ -1,6 +1,7 @@
 package com.util;
 
 import com.model.CustomItem;
+import com.model.settings.Settings;
 import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
@@ -16,7 +17,9 @@ import java.util.List;
 
 public class Libra {
 
-    public static String TITLE = "Libra";
+    public static String TITLE = "Libra 1.0";
+
+    public static Settings SETTINGS;
 
     public static LibraService libraService = new LibraService();
 
@@ -38,14 +41,6 @@ public class Libra {
 
     public static Integer LIMIT_DIFF_MPFS = -20;
 
-    public static String dbUrl;
-
-    public static String dbUser;
-
-    public static String dbPass;
-
-    public static int autoLogin;
-
     public static Dimension buttonSize = new Dimension(100, 25);
 
     public static void eMsg(String str) {
@@ -63,11 +58,11 @@ public class Libra {
         return 0 == JOptionPane.showConfirmDialog(parent, LangService.trans(question), LangService.trans(name), JOptionPane.YES_NO_OPTION);
     }
 
-    public static Object encodePass(char[] pass) {
+    public static Object encodePass(String pass) {
         BigDecimal TEN = new BigDecimal(10);
         BigDecimal v_result = new BigDecimal(0);
         for (int i = 0; i < 30; i++) {
-            BigDecimal ascii = pass.length > i ? new BigDecimal((int) pass[i]) : new BigDecimal((i + 1) * 7).add(defVal(v_result));
+            BigDecimal ascii = pass.length() > i ? new BigDecimal((int) pass.charAt(i)) : new BigDecimal((i + 1) * 7).add(defVal(v_result));
             v_result = v_result.multiply(TEN).add(ascii);
         }
         return v_result.toString();
@@ -99,22 +94,6 @@ public class Libra {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
-    }
-
-    public static String encodeURL(String url) {
-        StringBuilder code = new StringBuilder();
-        for (byte b : url.getBytes()) {
-            code.append(1000 - b);
-        }
-        return code.toString();
-    }
-
-    public static String decodeURL(String code) {
-        StringBuilder url = new StringBuilder();
-        for (String s : code.split("(?<=\\G...)")) {
-            url.append((char) (1000 - Integer.valueOf(s)));
-        }
-        return url.toString();
     }
 
     public static void initFilial(ComboDbEdit<CustomItem> siloses, ComboDbEdit<CustomItem> filials, boolean useHide) {

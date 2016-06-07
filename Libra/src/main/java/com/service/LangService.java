@@ -1,56 +1,36 @@
 package com.service;
 
-import com.enums.SearchType;
 import com.model.DataSet;
+import com.enums.LangType;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class LangService {
 
-    private static int index;
-    private static Map<String, List<String>> data;
-    private static List<String> langList;
+    private static Map<String, String> data;
 
-    public static void init(String lang, LibraService service) {
-        data = new HashMap<String, List<String>>();
-        langList = new ArrayList<String>();
+    public static void init(LangType lang, LibraService service) {
 
         try {
-            DataSet dataSet = service.executeQuery(SearchType.LANGUAGES.getSql(), null);
-            for (int i = 1; i < dataSet.getNames().size(); i++) {
-                langList.add(dataSet.getNames().get(i).toUpperCase());
-            }
+            String sql = LangType.RO.equals(lang) ? "select nameid, ro from libra_translate_tbl where ro is not null"
+                    : "select nameid, ru from libra_translate_tbl where ru is not null";
+            DataSet dataSet = service.executeQuery(sql, null);
+            int cnt = dataSet.size();
 
-            index = langList.indexOf(lang.toUpperCase());
+            data = new HashMap<>(cnt);
+            for (Object[] objects : dataSet)
+                data.put(objects[0].toString(), objects[1].toString());
 
-            for (int i = 0; i < dataSet.size(); i++) {
-                String name = dataSet.getStringValue("nameid", i).toLowerCase();
-                List<String> lst = new ArrayList<String>(langList.size());
-
-                for (String l : langList) {
-                    lst.add(dataSet.getStringValue(l, i));
-                }
-
-                data.put(name, lst);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     public static String trans(String key) {
-        String res = "";
-        List<String> row = data.get(key.toLowerCase());
-        if (row != null && index != -1) {
-            res = row.get(index);
-        }
-        return res.isEmpty() ? key : res;
-    }
-
-    public static List<String> getLangList() {
-        return langList;
+        String res = data.get(key.toLowerCase());
+        return res == null || res.isEmpty() ? key : res;
     }
 }
+

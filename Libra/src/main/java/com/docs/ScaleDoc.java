@@ -1,5 +1,6 @@
 package com.docs;
 
+import com.bin.DialogMaster;
 import com.bin.LibraPanel;
 import com.driver.ScalesDriver;
 import com.model.*;
@@ -11,8 +12,9 @@ import com.util.Libra;
 import com.util.Pictures;
 import com.view.component.db.editors.*;
 import com.view.component.panel.DbPanel;
-import com.view.component.weightboard.WeightBoard;
+import com.view.component.widget.ScaleWidget;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
@@ -20,10 +22,17 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditListener {
 
@@ -41,8 +50,9 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     protected DbPanel fieldsPanel;
     protected DbPanel infoPanel;
     protected FocusPolicy policy;
-    protected DataSet historySet = new DataSet("tip,id,nr,dt,br,userid,sc,masa,scaleId");
+    protected DataSet historySet = new DataSet("tip,id,nr,dt,br,userid,sc,masa,scaleId,photo1,photo2");
     protected SearchDbEdit sc;
+    protected boolean useRefresh = false;
     private NumberDbEdit net;
     private NumberDbEdit brutto;
     private NumberDbEdit tara;
@@ -51,6 +61,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     private JPanel board = new JPanel();
     private ComboDbEdit<CustomItem> clcelevatort;
     private ComboDbEdit<CustomItem> clcdivt;
+
 
     public ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
         super((JFrame) null, LangService.trans(doc.getName()), true);
@@ -103,7 +114,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
 
         newDataSet.setValueByName("userid", 0, LibraService.user.getId());
 
-        if(scaleId != null && newDataSet.getValueByName("masa_netto", 0) != null)
+        if (scaleId != null && newDataSet.getValueByName("masa_netto", 0) != null)
             newDataSet.setValueByName("scaleid", 0, scaleId);
     }
 
@@ -111,7 +122,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         board.setPreferredSize(new Dimension(220, 70));
         for (Object[] data : Libra.scaleDrivers) {
             ScalesDriver sd = (ScalesDriver) data[0];
-            final WeightBoard wb = new WeightBoard(sd, false, data[1]);
+            final ScaleWidget wb = new ScaleWidget(sd, false, data[1], data[2]);
             wb.setWeight(sd.getWeight());
             if (!net.isEmpty()) {
                 wb.setBlock(true);
@@ -284,14 +295,30 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    private void fixWeight(WeightBoard weightBoard, IEdit firstField, IEdit secondField) {
-        Integer weight = weightBoard.getWeight();
-        scaleId = weightBoard.getDriverId();
-        boolean isEmptyCar;
+    private void fixWeight(ScaleWidget scaleWidget, final IEdit firstField, final IEdit secondField) {
+        final Integer weight = scaleWidget.getWeight();
+        scaleId = scaleWidget.getDriverId();
+        boolean bConfirm;
 
         if (weight != null && weight != 0) {
-            int n = JOptionPane.showConfirmDialog(this, LangService.trans("scale.fixedweight") + " (" + weight + ")", LangService.trans("scale.take"), JOptionPane.YES_NO_OPTION);
-            if (n == 0) {
+            List<URL> cams = (List<URL>) scaleWidget.getCams();
+            List<BufferedImage> images = new ArrayList<>();
+            if(cams != null){
+                for (URL url : cams) {
+                    try {
+                        BufferedImage img = ImageIO.read(url);
+                        images.add(img);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                bConfirm = DialogMaster.createFixDialog(LangService.trans("scale.take"), weight, images);
+            }else{
+                bConfirm = JOptionPane.showConfirmDialog(this, LangService.trans("scale.fixedweight") + " (" + weight + ")", LangService.trans("scale.take"), JOptionPane.YES_NO_OPTION) == 0;
+            }
+
+            if (bConfirm) {
+                boolean isEmptyCar;
                 Date cTime = new Date();
                 if (firstField.isEmpty()) {
                     firstField.setValue(weight);
@@ -306,7 +333,19 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                 firstField.setChangeable(false);
                 secondField.setChangeable(false);
 
-                historySet.add(new Object[]{doc.getId(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight, scaleId});
+                Object mat[] = new Object[2];
+                switch (images.size()) {
+                    case 1:
+                        mat[0] = createBlob(images.get(0));
+                        break;
+                    case 2: {
+                        mat[0] = createBlob(images.get(0));
+                        mat[1] = createBlob(images.get(1));
+                    }
+                    break;
+                    default:
+                }
+                historySet.add(new Object[]{doc.getId(), null, null, new Timestamp(cTime.getTime()), isEmptyCar ? 0 : 1, LibraService.user.getId(), sc.getValue(), weight, scaleId, mat[0], mat[1]});
                 blockWeightBoards();
             }
         } else {
@@ -314,11 +353,21 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
+    public InputStream createBlob(BufferedImage img) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(img, "jpg", baos);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ByteArrayInputStream(baos.toByteArray());
+    }
+
     private void blockWeightBoards() {
         for (int i = 0; i < board.getComponentCount(); i++) {
             Component comp = board.getComponent(i);
-            if (comp instanceof WeightBoard) {
-                ((WeightBoard) comp).setBlock(true);
+            if (comp instanceof ScaleWidget) {
+                ((ScaleWidget) comp).setBlock(true);
             }
         }
     }
@@ -326,10 +375,10 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     public void createHeadPanel() throws Exception {
         JPanel headPanel = fieldsPanel.createPanel(1, null);
 
-        clcelevatort = new ComboDbEdit<CustomItem>("clcelevatort", Libra.filials.keySet(), newDataSet);
+        clcelevatort = new ComboDbEdit<>("clcelevatort", Libra.filials.keySet(), newDataSet);
         fieldsPanel.addToPanel(8, 8, 200, headPanel, clcelevatort);
 
-        clcdivt = new ComboDbEdit<CustomItem>("clcdivt", new ArrayList<CustomItem>(), newDataSet);
+        clcdivt = new ComboDbEdit<>("clcdivt", new ArrayList<CustomItem>(), newDataSet);
         fieldsPanel.addToPanel(370, 8, 200, headPanel, clcdivt);
 
         Object idVal = newDataSet.getValueByName("id", 0);
@@ -343,9 +392,10 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                 clcelevatort.setChangeable(false);
             }
 
-            if (clcdivt.getItemCount() > 1)
+            if (clcdivt.getItemCount() > 1) {
+                clcdivt.addChangeEditListener(this);
                 policy.add(clcdivt);
-
+            }
         } else {
             clcelevatort.setChangeable(false);
             clcdivt.setChangeable(false);
@@ -444,6 +494,9 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
             checkWeightField(tara);
         } else if (source.equals(clcelevatort)) {
             Libra.initFilial(clcelevatort, clcdivt, false);
+            useRefresh = true;
+        } else if (source.equals(clcdivt)) {
+            useRefresh = true;
         }
     }
 }

@@ -1,0 +1,30 @@
+.weightDisplay {
+    -fx-cursor: hand;
+    -fx-font-size: 28;
+    -fx-font-weight: bold;
+    -fx-pref-width: 120px;
+    -fx-alignment: center;
+    -fx-text-fill: black;
+    -fx-end-margin: 10;
+
+    -fx-background-color: palegoldenrod;
+    -fx-background-radius: 3;
+    -fx-effect: dropshadow(three-pass-box, #a6aaa8, 10, 0, 0, 0);
+
+    -fx-padding: 5px;
+    -fx-border-insets: 5px;
+    -fx-background-insets: 5px;
+}
+
+.toolBarPanel{
+    -fx-font-size: 12;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell:empty {
+    -fx-background-color: white;
+}
+
+.table-row-cell:empty .table-cell {
+    -fx-border-width: 0;
+}

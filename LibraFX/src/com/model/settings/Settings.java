@@ -1,12 +1,11 @@
 package com.model.settings;
 
-import com.enums.LangType;
-
 import java.util.List;
+import java.util.Locale;
 
 public class Settings extends AbstractSettings {
 
-    private LangType lang;
+    private Locale lang;
     private String username;
     private String password;
     private boolean auto;
@@ -55,11 +54,11 @@ public class Settings extends AbstractSettings {
         this.auto = auto;
     }
 
-    public LangType getLang() {
+    public Locale getLang() {
         return lang;
     }
 
-    public void setLang(LangType lang) {
+    public void setLang(Locale lang) {
         this.lang = lang;
     }
 }

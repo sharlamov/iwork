@@ -16,6 +16,7 @@ import com.view.component.db.editors.ComboDbEdit;
 import com.view.component.db.editors.DateDbEdit;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.DataGridSetting;
+import javafx.scene.control.DatePicker;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -24,6 +25,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -160,7 +162,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         date2.addChangeEditListener(this);
         date2.setMinSelectableDate(date1.getDate());
 
-        elevators = new ComboDbEdit<CustomItem>("silos", Libra.filials.keySet(), filter);
+        elevators = new ComboDbEdit<>("silos", Libra.filials.keySet(), filter);
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
         if (Libra.filials.size() > 1) {
@@ -172,7 +174,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.addSeparator();
 
-        divs = new ComboDbEdit<CustomItem>("div", new ArrayList<CustomItem>(), filter);
+        divs = new ComboDbEdit<>("div", new ArrayList<CustomItem>(), filter);
         divs.setMaximumSize(new Dimension(100, 27));
         divs.addChangeEditListener(this);
         toolBar.add(divs);

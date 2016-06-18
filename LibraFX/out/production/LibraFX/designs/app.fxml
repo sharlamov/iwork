@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.geometry.Rectangle2D?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="738.0" prefWidth="1078.0" stylesheets="@../styles/app.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.controllers.AppController">
+   <children>
+      <MenuBar prefHeight="24.0" prefWidth="1020.0">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <FlowPane alignment="CENTER" prefHeight="57.0" prefWidth="1026.0">
+         <children>
+            <Label prefHeight="35.0" prefWidth="193.0" styleClass="weightDisplay" text="38157" />
+            <Label styleClass="weightDisplay" text="19731">
+               <effect>
+                  <ColorAdjust />
+               </effect>
+            </Label>
+         </children>
+      </FlowPane>
+      <SplitPane dividerPositions="0.8" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+        <items>
+            <VBox prefHeight="200.0" prefWidth="100.0">
+               <children>
+                  <ToolBar prefHeight="42.0" prefWidth="816.0">
+                    <items>
+                        <ChoiceBox fx:id="chBox" prefHeight="30.0" prefWidth="136.0" styleClass="toolBarPanel" />
+                        <Separator orientation="VERTICAL" prefHeight="20.0" prefWidth="3.0" />
+                        <Button mnemonicParsing="false">
+                           <graphic>
+                              <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../images/add.png" />
+                                 </image>
+                                 <viewport>
+                                    <Rectangle2D />
+                                 </viewport>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <Button mnemonicParsing="false">
+                           <graphic>
+                              <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../images/reload.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                        <ToggleButton mnemonicParsing="false">
+                           <graphic>
+                              <ImageView fx:id="halfBtn" fitHeight="25.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" style="-fx-cursor: hand;">
+                                 <image>
+                                    <Image url="@../images/half.png" />
+                                 </image>
+                              </ImageView>
+                           </graphic>
+                        </ToggleButton>
+                        <Pane prefHeight="32.0" HBox.hgrow="SOMETIMES" />
+                        <ComboBox fx:id="elevators" prefHeight="30.0" prefWidth="180.0" styleClass="toolBarPanel" />
+                        <ComboBox fx:id="divs" prefHeight="30.0" prefWidth="70.0" styleClass="toolBarPanel" />
+                        <DatePicker fx:id="date1" prefHeight="30.0" prefWidth="110.0" styleClass="toolBarPanel" />
+                        <DatePicker fx:id="date2" layoutX="691.0" layoutY="12.0" prefHeight="30.0" prefWidth="110.0" styleClass="toolBarPanel" />
+                    </items>
+                  </ToolBar>
+                  <TableView fx:id="dataGrid" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+            <TabPane prefHeight="629.0" prefWidth="195.0" tabClosingPolicy="UNAVAILABLE" SplitPane.resizableWithParent="false">
+              <tabs>
+                <Tab text="История">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  </content>
+                </Tab>
+                <Tab text="Фото">
+                  <content>
+                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                  </content>
+                </Tab>
+              </tabs>
+            </TabPane>
+        </items>
+      </SplitPane>
+   </children>
+</VBox>

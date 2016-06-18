@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<AnchorPane id="loginPane" fx:id="formId" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+            minWidth="-Infinity" prefHeight="350.0" prefWidth="640.0" stylesheets="@../styles/login.css"
+            xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.controllers.LoginController">
+    <children>
+        <TextField fx:id="loginField" layoutX="426.0" layoutY="200.0" promptText="%login" styleClass="loginEdit"
+                   AnchorPane.bottomAnchor="120.0" AnchorPane.rightAnchor="20.0"/>
+        <PasswordField fx:id="passField" layoutX="426.0" layoutY="233.0" onAction="#makeLogin" promptText="%pass"
+                       styleClass="loginEdit" AnchorPane.bottomAnchor="87.0" AnchorPane.rightAnchor="20.0"/>
+        <Button defaultButton="true" layoutX="428.0" layoutY="273.0" mnemonicParsing="false" onAction="#makeLogin"
+                styleClass="loginEdit" text="%enter" AnchorPane.bottomAnchor="52.0" AnchorPane.rightAnchor="20.0"/>
+        <Text fx:id="titleLabel" layoutX="423.0" layoutY="164.0" styleClass="title" text="Libra 2.0"
+              wrappingWidth="180.0" AnchorPane.bottomAnchor="160.0" AnchorPane.rightAnchor="20.0"/>
+        <Text fx:id="langBox" layoutX="541.0" layoutY="45.0" onMousePressed="#changeLanguage" strokeType="OUTSIDE"
+              strokeWidth="0.0" styleClass="langBox" text="%lng" AnchorPane.rightAnchor="20.0"
+              AnchorPane.topAnchor="25.0"/>
+    </children>
+</AnchorPane>

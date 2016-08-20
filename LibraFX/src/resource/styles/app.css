@@ -28,3 +28,25 @@
 .table-row-cell:empty .table-cell {
     -fx-border-width: 0;
 }
+
+.statusLb {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-padding: 0 10 0 10;
+}
+
+.redRow {
+    -fx-control-inner-background: #FF2020; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}
+
+.pinkRow {
+    -fx-control-inner-background: #FF9999; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}
+
+.limeRow {
+    -fx-control-inner-background: #CCFFCC; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}
+
+.greenRow {
+    -fx-control-inner-background: #55FF55; -fx-accent: derive(-fx-control-inner-background, -40%); -fx-cell-hover-color: derive(-fx-control-inner-background, -20%);
+}

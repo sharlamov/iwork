@@ -83,6 +83,7 @@ public class Libra {
 
     public static void initFilial(ComboBox<CustomItem> siloses, ComboBox<CustomItem> filials, boolean useHide) {
         try {
+
             CustomItem ci = siloses.getSelectionModel().getSelectedItem();
             if (ci.getId() == null) {
                 filials.getItems().clear();

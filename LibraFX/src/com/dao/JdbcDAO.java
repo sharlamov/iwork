@@ -2,8 +2,6 @@ package com.dao;
 
 import com.model.CustomItem;
 import com.model.DataSet;
-import com.model.DataSet2;
-import com.model.RowSet;
 import com.util.Libra;
 
 import java.io.InputStream;
@@ -51,7 +49,6 @@ public class JdbcDAO {
         long t = System.currentTimeMillis();
 
         ResultSetMetaData metadata;
-        List<Object[]> list = new ArrayList<>();
         List<String> names = new ArrayList<>();
 
         Connection conn = getConnection();
@@ -80,83 +77,23 @@ public class JdbcDAO {
             }
         }
 
-        names.clear();
-        names.addAll(map.keySet());
-
+        DataSet list = new DataSet(map.keySet());
         while (rs.next()) {
             Object row[] = new Object[map.size()];
             int i = 0;
             for (Map.Entry<String, int[]> entry : map.entrySet()) {
-                if (entry.getValue().length > 1) {
-                    Object id = rs.getObject(entry.getValue()[0]);
-                    row[i++] = id == null ? null : new CustomItem(id, rs.getObject(entry.getValue()[1]));
-                } else {
-                    row[i++] = rs.getObject(entry.getValue()[0]);
+                Object val = rs.getObject(entry.getValue()[0]);
+                if (entry.getValue().length > 1 && val != null) {
+                    val = new CustomItem(val, rs.getObject(entry.getValue()[1]));
                 }
+                row[i++] = val;
             }
             list.add(row);
         }
         stmt.close();
 
         System.out.println("select: " + (System.currentTimeMillis() - t));
-        return new DataSet(names, list);
-    }
-
-    public DataSet2 select2(String query, Object[] params) throws Exception {
-        long t = System.currentTimeMillis();
-
-        ResultSetMetaData metadata;
-
-        Connection conn = getConnection();
-        PreparedStatement stmt = conn.prepareStatement(query);
-        initParams(stmt, params); //??????
-
-        ResultSet rs = stmt.executeQuery();
-        metadata = rs.getMetaData();
-        rs.setFetchSize(30);
-        int numberOfColumns = metadata.getColumnCount();
-
-        List<String> names = new ArrayList<>(numberOfColumns);
-        for (int i = 0; i < numberOfColumns; i++) {
-            names.add(metadata.getColumnName(i + 1));
-        }
-
-        Map<String, int[]> map = new LinkedHashMap<>(numberOfColumns);
-        for (int i = 0; i < numberOfColumns; i++) {
-            if (names.get(i).startsWith("CLC") && names.get(i).endsWith("T")) {
-                int codIndex = names.indexOf(names.get(i).substring(3, names.get(i).length() - 1));
-                if (codIndex == -1) {
-                    map.put(names.get(i), new int[]{i + 1});
-                } else {
-                    map.put(names.get(i), new int[]{codIndex + 1, i + 1});
-                }
-            } else if (-1 == names.indexOf("CLC" + names.get(i) + "T")) {
-                map.put(names.get(i), new int[]{i + 1});
-            }
-        }
-
-        names.clear();
-        names.addAll(map.keySet());
-
-        List<RowSet> list = new ArrayList<>();
-        int fCount = map.size();
-
-        while (rs.next()) {
-            RowSet row = new RowSet(fCount);
-            for (Map.Entry<String, int[]> entry : map.entrySet()) {
-                if (entry.getValue().length > 1) {
-                    Object id = rs.getObject(entry.getValue()[0]);
-                    row.add(id == null ? null : new CustomItem(id, rs.getObject(entry.getValue()[1])));
-                } else {
-                    row.add(rs.getObject(entry.getValue()[0]));
-                }
-            }
-            list.add(row);
-        }
-        stmt.close();
-
-        System.out.println("select: " + (System.currentTimeMillis() - t));
-        return new DataSet2(names, list);
+        return list;
     }
 
     public Connection getConnection() throws Exception {
@@ -200,7 +137,7 @@ public class JdbcDAO {
         cs.execute();
 
         for (String s : set.getNames()) {
-            set.setValueByName(s, 0, cs.getObject((Integer) set.getValueByName(s, 0)));
+            set.setObject(s, cs.getObject(set.getInt(s)));
         }
         return set;
     }

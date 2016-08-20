@@ -334,6 +334,7 @@ public class TfrmF1Container {
         //static const int nMaxRow = 65536;
         Src = from;
         Dst = in;
+        in.insertSheets(1);//sh
         //-------------------------------------------------------- variable declarations
         double ProgrCPos = 1, ProgrStep;
         //-------------------------------------------- variables for printing the groups
@@ -506,12 +507,10 @@ public class TfrmF1Container {
 
     // ---------------------------------------------------------------------------
     boolean AddNewSheet(TF1Book6 pF1Book1, String pSheetName) {
-        boolean retVal = true;
-
         pF1Book1.insertSheets(1);
         pF1Book1.setActiveSheet(pF1Book1.countSheets());
         pF1Book1.setSheetName(pSheetName, pF1Book1.countSheets());
-        return retVal;
+        return true;
     }
 
     // ---------------------------------------------------------------------------

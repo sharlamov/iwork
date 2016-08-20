@@ -5,7 +5,6 @@ import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.CustomUser;
 import com.model.DataSet;
-import com.model.DataSet2;
 import com.util.Libra;
 import com.util.Msg;
 
@@ -49,13 +48,13 @@ public class LibraService {
             throw new Exception("error.emptyuser");
 
         user = new CustomUser();
-        user.setId(dataSet.getNumberValue("ID", 0));
-        user.setUsername(dataSet.getStringValue("USERNAME", 0));
-        user.setAdminLevel(dataSet.getNumberValue("ADMIN", 0).intValue());
-        user.setScaleType(dataSet.getNumberValue("scaleType", 0).intValue());
-        user.setProfile(dataSet.getStringValue("profile", 0));
-        user.setDefDiv(new CustomItem(dataSet.getNumberValue("defdiv", 0), "DEFDIV"));
-        user.setClcuser_sct((CustomItem) dataSet.getValueByName("clcuser_sct", 0));
+        user.setId(dataSet.getDecimal("ID"));
+        user.setUsername(dataSet.getString("USERNAME"));
+        user.setAdminLevel(dataSet.getDecimal("ADMIN").intValue());
+        user.setScaleType(dataSet.getDecimal("scaleType").intValue());
+        user.setProfile(dataSet.getString("profile"));
+        user.setDefDiv(new CustomItem(dataSet.getDecimal("defdiv"), "DEFDIV"));
+        user.setClcuser_sct(dataSet.getItem("clcuser_sct"));
 
         if (user.getScaleType() > 5 || user.getScaleType() < 4) {
             throw new Exception("error.enterOnlyCantar");
@@ -82,7 +81,7 @@ public class LibraService {
 
         //run sql
         DataSet dataSQL = dao.select(SearchType.GETUSERPROP.getSql(), new Object[]{"RUNSQL", user.getId().toString()});
-        String str = dataSQL.getStringValue("PROP", 0);
+        String str = dataSQL.getString("PROP");
         if (!str.isEmpty()) {
             dao.execute(str, null);
             dao.commit();
@@ -98,8 +97,7 @@ public class LibraService {
         }
 
         //init context
-        Object[] params = {user.getAdminLevel().toString(), user.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
-        execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
+        execute(SearchType.INITCONTEXT.getSql(), new DataSet("plevel", user.getAdminLevel(), "puserid", user.getId(), "plimit", Libra.LIMIT_DIFF_MPFS));
 
         return true;
     }
@@ -109,7 +107,7 @@ public class LibraService {
         List<Object> objects = new ArrayList<>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            Object obj = dataSet.getValueByName(m.group().substring(1), 0);
+            Object obj = dataSet.getObject(m.group().substring(1));
 
             if (obj instanceof Collection) {
                 StringBuilder commaList = new StringBuilder();
@@ -127,29 +125,6 @@ public class LibraService {
         return dao.select(sb.toString(), objects.toArray());
     }
 
-    public DataSet2 executeQuery2(String query, DataSet dataSet) throws Exception {
-        Matcher m = paramsPattern.matcher(query);
-        List<Object> objects = new ArrayList<>();
-        StringBuffer sb = new StringBuffer();
-        while (m.find()) {
-            Object obj = dataSet.getValueByName(m.group().substring(1), 0);
-
-            if (obj instanceof Collection) {
-                StringBuilder commaList = new StringBuilder();
-                for (Object item : ((Collection) obj)) {
-                    commaList.append("?,");
-                    objects.add(item);
-                }
-                m.appendReplacement(sb, commaList.toString().replaceAll(",$", ""));
-            } else {
-                objects.add(obj);
-                m.appendReplacement(sb, "?");
-            }
-        }
-        m.appendTail(sb);
-        return dao.select2(sb.toString(), objects.toArray());
-    }
-
     public DataSet execute1(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
         List<Object[]> params = new ArrayList<Object[]>();
@@ -160,7 +135,7 @@ public class LibraService {
             if (paramName.startsWith("out_")) {
                 param = new Object[]{1, paramName.substring(4), null};
             } else {
-                param = new Object[]{0, paramName, dataSet.getValueByName(paramName, 0)};
+                param = new Object[]{0, paramName, dataSet.getObject(paramName)};
             }
             params.add(param);
             m.appendReplacement(sb, "?");
@@ -175,7 +150,7 @@ public class LibraService {
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String paramName = m.group().substring(1);
-            objects.add(dataSet.getValueByName(paramName, 0));
+            objects.add(dataSet.getObject(paramName));
             m.appendReplacement(sb, "?");
         }
         m.appendTail(sb);

@@ -8,37 +8,29 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
 
     private List<String> names;
 
-    public DataSet(List<String> names, List<Object[]> list) {
-        this.names = names;
-        this.addAll(list);
+    public DataSet(int length) {
+        names = new ArrayList<>(length);
+        add(new Object[length]);
     }
 
-    public DataSet(List<String> names, Object[] list) {
-        this.names = names;
-        this.addAll(Collections.singletonList(list));
+    public DataSet(String... list) {
+        this(list.length);
+        Collections.addAll(names, list);
     }
 
-    public DataSet(String names) {
-        this.names = Arrays.asList(names.split(","));
+    public DataSet(Object... list) {
+        this(list.length / 2);
+        for (int i = 0, pos = 0; i < list.length; i++) {
+            if (i % 2 == 0) {
+                names.add(list[i].toString());
+            } else {
+                get(0)[pos++] = list[i];
+            }
+        }
     }
 
-    public DataSet(List<String> names) {
-        this.names = names;
-        add(new Object[names.size()]);
-    }
-
-    public DataSet() {
-        this.names = new ArrayList<String>();
-        add(new Object[0]);
-    }
-
-    public DataSet(DataSet dataSet) {
-        this(dataSet.names, dataSet);
-    }
-
-    public DataSet(String fieldName, Object value) {
-        names = Collections.singletonList(fieldName);
-        add(new Object[]{value});
+    public DataSet(Collection<String> list) {
+        names = new ArrayList<>(list);
     }
 
     public int findField(String fieldName) {
@@ -49,51 +41,55 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return -1;
     }
 
-    public String getColumnName(int col) {
+    public String getColName(int col) {
         return names.isEmpty() ? null : names.get(col);
     }
 
-    public int getColumnCount() {
+    public int getColCount() {
         return names.size();
     }
 
-    public Object getValue(int row, int col) {
+    public Object getObject(int row, int col) {
         return isEmpty() ? null : get(row)[col];
     }
 
-    public Object getValueByName(String fieldName, int row) {
-        int col = findField(fieldName);
-        return col == -1 ? null : getValue(row, col);
+    public Object getObject(String fieldName) {
+        if (isEmpty()) {
+            return null;
+        } else {
+            int col = findField(fieldName);
+            return col == -1 ? null : getObject(0, col);
+        }
     }
 
-    public Object getValueByName(String fieldName, int row, Object defValue) {
-        Object obj = getValueByName(fieldName, row);
-        return obj == null ? defValue : obj;
-    }
-
-    public BigDecimal getNumberValue(String fieldName, int row) {
-        Object obj = getValueByName(fieldName, row);
+    public BigDecimal getDecimal(String fieldName) {
+        Object obj = getObject(fieldName);
         return obj != null ? new BigDecimal(obj.toString()) : BigDecimal.ZERO;
     }
 
-    public String getStringValue(String fieldName, int row) {
-        Object obj = getValueByName(fieldName, row);
+    public int getInt(String fieldName) {
+        return getDecimal(fieldName).intValue();
+    }
+
+    public String getString(String fieldName) {
+        Object obj = getObject(fieldName);
         return obj != null ? obj.toString() : "";
     }
 
-    public Date getDateValue(String fieldName, int row) {
-        Object obj = getValueByName(fieldName, row);
+    public Date getDate(String fieldName) {
+        Object obj = getObject(fieldName);
         return obj instanceof Date ? (Date) obj : new Date();
     }
 
-    public void setValueByName(String fieldName, int row, Object value) {
+    public CustomItem getItem(String fieldName) {
+        Object obj = getObject(fieldName);
+        return obj instanceof CustomItem ? (CustomItem) obj : null;
+    }
+
+    public void setObject(String fieldName, Object value) {
         int col = findField(fieldName);
-        if (col != -1) {
-            if (isEmpty()) {
-                add(new Object[names.size()]);
-            }
-            get(row)[col] = value;
-        }
+        if (col != -1)
+            get(0)[col] = value;
     }
 
     public void addField(String fieldName, Object value) {
@@ -109,13 +105,13 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         }
     }
 
-    public void addDataSet(DataSet d1) {
+    public void concat(DataSet d1) {
         for (int i = 0; i < d1.names.size(); i++) {
             addField(d1.names.get(i), d1.get(0)[i]);
         }
     }
 
-    public BigDecimal getSumByColumn(String fieldName) {
+    public BigDecimal sum(String fieldName) {
         int colNumber = findField(fieldName);
         BigDecimal res = BigDecimal.ZERO;
 
@@ -130,15 +126,8 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return res;
     }
 
-    @Override
-    public String toString() {
-        return "DataSet{" +
-                "names=" + names +
-                '}';
-    }
-
     public DataSet copy() {
-        DataSet newDataSet = new DataSet(new ArrayList<String>(names));
+        DataSet newDataSet = new DataSet(new ArrayList<>(names));
         newDataSet.clear();
 
         for (Object[] row : this) {
@@ -162,7 +151,10 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return newDataSet;
     }
 
-    public boolean isEqual(DataSet set) {
+    @Override
+    public boolean equals(Object o) {
+        DataSet set = (DataSet) o;
+
         if (set == null || size() != set.size() || names.size() != set.names.size())
             return false;
 
@@ -185,19 +177,15 @@ public class DataSet extends ArrayList<Object[]> implements Copyable<DataSet> {
         return true;
     }
 
-    public void update(DataSet set) {
+    public void updateFirst(DataSet set) {
         for (int i = 0; i < set.size(); i++) {
             for (String s : set.getNames()) {
-                setValueByName(s, i, set.getValueByName(s, i));
+                setObject(s, set.getObject(s));
             }
         }
     }
 
     public List<String> getNames() {
         return names;
-    }
-
-    public void setNames(List<String> names) {
-        this.names = names;
     }
 }

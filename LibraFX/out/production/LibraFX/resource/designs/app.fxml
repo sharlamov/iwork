@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.effect.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
@@ -39,13 +41,27 @@
             </Label>
          </children>
       </FlowPane>
-      <SplitPane dividerPositions="0.8" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+      <SplitPane fx:id="split" dividerPositions="0.8" prefHeight="160.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
         <items>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
                   <ToolBar prefHeight="42.0" prefWidth="816.0">
                     <items>
-                        <ChoiceBox fx:id="chBox" prefHeight="30.0" prefWidth="136.0" styleClass="toolBarPanel" />
+                        <Button fx:id="btnType" mnemonicParsing="false" prefHeight="30.0" prefWidth="106.0" text="Приход">
+                           <graphic>
+                              <ImageView fitHeight="25.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../images/middle.gif" />
+                                 </image>
+                                 <cursor>
+                                    <Cursor fx:constant="HAND" />
+                                 </cursor>
+                              </ImageView>
+                           </graphic>
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Button>
                         <Separator orientation="VERTICAL" prefHeight="20.0" prefWidth="3.0" />
                         <Button mnemonicParsing="false">
                            <graphic>
@@ -85,14 +101,38 @@
                     </items>
                   </ToolBar>
                   <TableView fx:id="dataGrid" VBox.vgrow="ALWAYS" />
+                  <HBox prefHeight="24.0" prefWidth="858.0">
+                     <children>
+                        <Label fx:id="lbCount" styleClass="statusLb">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                        <Label fx:id="lbBrut" styleClass="statusLb">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                        <Label fx:id="lbTara" styleClass="statusLb">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                        <Label fx:id="lbNet" styleClass="statusLb">
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </Label>
+                     </children>
+                  </HBox>
                </children>
             </VBox>
             <TabPane prefHeight="629.0" prefWidth="195.0" tabClosingPolicy="UNAVAILABLE" SplitPane.resizableWithParent="false">
               <tabs>
                 <Tab text="История">
-                  <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                  </content>
+                     <content>
+                        <VBox fx:id="historyPane" prefHeight="200.0" prefWidth="100.0" />
+                     </content>
                 </Tab>
                 <Tab text="Фото">
                   <content>

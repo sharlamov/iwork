@@ -1,19 +1,22 @@
 package com.bin;
 
 import com.dao.JdbcDAO;
-import com.factories.CellFactory;
-import com.factories.RowFactory;
-import com.model.DataSet2;
-import com.model.RowSet;
+import com.factories.CellFactory2;
+import com.factories.LibraColorRowFactory;
+import com.model.DataSet;
+import com.model.settings.DataGridSetting;
+import com.model.settings.GridField;
 import com.model.settings.Settings;
 import com.service.JsonService;
 import com.util.Libra;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.scene.Scene;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Narayan
@@ -23,7 +26,7 @@ public class DynamicTable extends Application {
 
     //TABLE VIEW AND DATA
 
-    private TableView<RowSet> tableview;
+    private TableView<Object[]> tableview;
 
     //MAIN EXECUTOR
     public static void main(String[] args) {
@@ -31,47 +34,55 @@ public class DynamicTable extends Application {
     }
 
     //CONNECTION DATABASE
-    public void buildData() {
+    public void buildData() throws Exception {
 
         long before = Runtime.getRuntime().freeMemory();
 
         Libra.SETTINGS = JsonService.loadFile(Settings.class, "settings.json");
         JdbcDAO dao = new JdbcDAO();
 
+        dao.getConnection();
+        //load design
+        DataSet designs = dao.select("select lsection, ldata from libra_designs_tbl where lprofile = ?", new Object[]{"MDAUTO"});
+        for (Object[] row : designs)
+            Libra.designs.put(row[0].toString(), row[1].toString());
+        DataGridSetting params = JsonService.fromJson(Libra.designs.get("DATAGRID.IN"), DataGridSetting.class);
 
-        try {
-            dao.getConnection();
-            long l = System.currentTimeMillis();
-            //ResultSet
-            DataSet2 set = dao.select2("SELECT * from vmdb_scales where in_out = 0 and rownum < 10000", null);
+        //ResultSet
+        DataSet set = dao.select("SELECT * from vmdb_scales where in_out = 1 and rownum < 10000", null);
+        long l = System.currentTimeMillis();
 
-            /**********************************
-             * TABLE COLUMN ADDED DYNAMICALLY *
-             **********************************/
-            int count = set.getColumnCount();
-            for (int i = 0; i < count; i++) {
-                TableColumn<RowSet, String> col = new TableColumn<>(set.getColumnName(i));
-                col.setCellValueFactory(new CellFactory(i));
 
-                tableview.getColumns().add(col);
+        int count = set.getColCount();
+        int im = set.findField("MASA_NETTO");
+        int ii = set.findField("INV_CANT");
+        List<TableColumn<Object[], ?>> columns = new ArrayList<>(count);
+
+        for (int i = 0; i < params.getNames().length; i++) {
+            GridField gf = params.getNames()[i];
+            int pos = set.findField(gf.getName());
+            if (pos > -1) {
+                TableColumn<Object[], String> col = new TableColumn<>(gf.getName());
+                col.setId(gf.getName());
+                col.setCellValueFactory(new CellFactory2(pos));
+                columns.add(col);
             }
-
-
-            /********************************
-             * Data added to ObservableList *
-             ********************************/
-
-            tableview.setRowFactory(new RowFactory(set.findField("bgcolor")));
-            tableview.setItems(FXCollections.observableList(set));
-            System.out.println(System.currentTimeMillis() - l);
-
-            long after = Runtime.getRuntime().freeMemory();
-            double d = (double) (before - after) / (double) (1024 * 1024);
-            System.out.println("Memory used:" + d + " Mb");
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error on Building Data");
         }
+        tableview.getProperties().put("limit", -20);
+        tableview.getColumns().addAll(columns);
+
+        /********************************
+         * Data added to ObservableList *
+         ********************************/
+
+        tableview.setRowFactory(new LibraColorRowFactory(im, ii));
+        tableview.getItems().addAll(set);
+        System.out.println(System.currentTimeMillis() - l);
+
+        long after = Runtime.getRuntime().freeMemory();
+        double d = (double) (before - after) / (double) (1024 * 1024);
+        System.out.println("Memory used:" + d + " Mb");
+
     }
 
 

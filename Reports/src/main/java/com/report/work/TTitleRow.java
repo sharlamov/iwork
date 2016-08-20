@@ -10,7 +10,7 @@ public class TTitleRow extends TAnyRow {
 
 	public TTitleRow(TTitle AOwner, int ARow, String AExpr, String AValue) {
 		super(AOwner, ARow, AExpr, AValue);
-		PageTitle = (AExpr == Util.asPAGE);
+		PageTitle = (AExpr.equals(Util.asPAGE));
 	}
 
 	// ---------------------------------------------------------------------------

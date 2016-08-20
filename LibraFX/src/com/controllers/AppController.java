@@ -1,15 +1,18 @@
 package com.controllers;
 
-import com.factories.CellFactory;
-import com.model.*;
+import com.factories.CellFactory2;
+import com.factories.LibraColorRowFactory;
+import com.model.CustomItem;
+import com.model.DataSet;
+import com.model.Doc;
 import com.model.settings.DataGridSetting;
 import com.model.settings.GridField;
 import com.service.JsonService;
 import com.util.Libra;
 import com.util.Msg;
-import javafx.collections.FXCollections;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 
 import java.net.URL;
@@ -17,97 +20,125 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-
 public class AppController extends AbstractController {
 
-    public ChoiceBox<Doc> chBox;
+
     public ComboBox<CustomItem> elevators;
     public ComboBox<CustomItem> divs;
     public DatePicker date1;
     public DatePicker date2;
-    public TableView<RowSet> dataGrid;
+    public TableView<Object[]> dataGrid;
     public ImageView halfBtn;
+    public Label lbCount;
+    public Label lbBrut;
+    public Label lbTara;
+    public Label lbNet;
+    public Button btnType;
+    public SplitPane split;
+    public VBox historyPane;
 
-    private Collection<Doc> docList;
+    private List<Doc> docList;
+    private Doc selectedDoc;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         super.initialize(location, resources);
 
         docList = JsonService.fromJsonList(Libra.designs.get("DOC.LIST"), Doc.class);
-        chBox.setItems(FXCollections.observableArrayList(docList));
-        chBox.getSelectionModel().selectFirst();
 
-        //  for (Doc doc : docList) {
-        //DataGridSetting lSetting = JsonService.fromJson(Libra.designs.get(doc.getId() == 1 ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
-        //    chBox.getItems().add(translate(doc.getName()));
-        //tabbedPane.addTab(, Pictures.middleIcon, new LibraPanel(doc, lSetting));
-        //}
-
-
-        elevators.setItems(FXCollections.observableArrayList(Libra.filials.keySet()));
-        elevators.getSelectionModel().selectFirst();
         if (Libra.filials.size() > 1) {
-            elevators.getItems().set(0, new CustomItem(null, translate("all")));
-        } else
+            elevators.getItems().add(new CustomItem(null, translate("all")));
+            elevators.getItems().addAll(Libra.filials.keySet());
+            elevators.getSelectionModel().selectFirst();
+        } else {
+            elevators.getItems().addAll(Libra.filials.keySet());
+            elevators.getSelectionModel().selectFirst();
             elevators.setVisible(false);
+        }
 
+        dataGrid.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> initHistory(newSelection));
+        dataGrid.focusedProperty().addListener((val, before, after) -> closeHistory(after));
+        btnType.setOnAction(e -> initDoc());
         Libra.initFilial(elevators, divs, true);
         initDates();
-        initGrid();
+        initDoc();
+    }
 
+    private void closeHistory(Boolean after) {
+        if (!after) {
+            split.setDividerPositions(1.0f, 0.0);
+        }
     }
 
     private void initGrid() {
-        DataGridSetting params = JsonService.fromJson(Libra.designs.get(chBox.getValue().getId() == 1 ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
-        String columnsString = "";
-        for (int i = 0; i < params.getNames().length; i++) {
-            GridField gridField = params.getNames()[i];
 
-            columnsString += ", " + gridField.getName();
-            TableColumn<RowSet, String> firstNameCol = new TableColumn<>(translate(gridField.getName()));
-            firstNameCol.setPrefWidth(gridField.getSize());
-            firstNameCol.setCellValueFactory(new CellFactory(i));
-            dataGrid.getColumns().add(firstNameCol);
-        }
+        DataGridSetting params = JsonService.fromJson(Libra.designs.get(selectedDoc.getId() == 1 ? "DATAGRID.IN" : "DATAGRID.OUT"), DataGridSetting.class);
 
-        DataSet filter = new DataSet(new ArrayList<>(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty", "in_out", "type")));
-
-        CustomItem item = elevators.getValue();
-        filter.setValueByName("d1", 0, Date.from(date1.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        filter.setValueByName("d2", 0, Date.from(date2.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()));
-        filter.setValueByName("elevator", 0, item.getId() == null ? Libra.filials.keySet() : item);
-        //filter.setValueByName("silos", 0, divs.getValue());
-        filter.setValueByName("div", 0, divs.getValue());
-        filter.setValueByName("empty", 0, 0);
-        filter.setValueByName("in_out", 0, chBox.getValue().getId());
-        filter.setValueByName("type", 0, chBox.getValue().getType());
+        CustomItem item = elevators.getSelectionModel().getSelectedItem();
+        DataSet filter = new DataSet(
+                "d1", Date.from(date1.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                "d2", Date.from(date2.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                "elevator", item.getId() == null ? Libra.filials.keySet() : item,
+                "silos", null,
+                "div", divs.getValue(),
+                "empty", 0,
+                "in_out", selectedDoc.getId(),
+                "type", selectedDoc.getType());
 
         try {
-            String str = params.getQuery().replace("*", columnsString.substring(1));
-            DataSet2 set = Libra.libraService.executeQuery2(str, filter);
 
-            /*ObservableList<ObservableList<Object>> data = FXCollections.observableArrayList();
-            for (Object[] objects : set) {
-                ObservableList<Object> row = FXCollections.observableArrayList();
-                Collections.addAll(row, objects);
-                data.add(row);
+            DataSet set = Libra.libraService.executeQuery(params.getQuery(), filter);
+            long t = System.currentTimeMillis();
+
+            int cCount = params.getNames().length;
+            List<TableColumn<Object[], ?>> columns = new ArrayList<>(cCount);
+
+            dataGrid.getItems().clear();
+            dataGrid.getColumns().clear();
+
+            for (int i = 0; i < cCount; i++) {
+                GridField gf = params.getNames()[i];
+                int pos = set.findField(gf.getName());
+                if (pos > -1) {
+                    TableColumn<Object[], String> col = new TableColumn<>(translate(gf.getName()));
+                    col.setCellValueFactory(new CellFactory2(pos));
+                    col.setPrefWidth(gf.getSize());
+                    columns.add(col);
+                }
             }
-*/
-            //dataGrid.setRowFactory(new RowFactory(set.findField("bgcolor")));
+            dataGrid.getColumns().addAll(columns);
+            if (selectedDoc.getId() == 1) {
+                dataGrid.getProperties().put("limit", -20);
+            } else {
+                dataGrid.getProperties().remove("limit");
+            }
 
-            dataGrid.setItems(FXCollections.observableArrayList(set));
+            dataGrid.setRowFactory(new LibraColorRowFactory(set.findField("MASA_NETTO"), set.findField("INV_CANT")));
+            dataGrid.getItems().addAll(set);
+
+            lbCount.setText(translate("summary.count") + " " + Libra.decimalFormat.format(set.size()));
+            lbBrut.setText(translate("summary.brutto") + " " + Libra.decimalFormat.format(set.sum("masa_brutto")));
+            lbTara.setText(translate("summary.tara") + " " + Libra.decimalFormat.format(set.sum("masa_tara")));
+            lbNet.setText(translate("summary.netto") + " " + Libra.decimalFormat.format(set.sum("masa_netto")));
+
+            System.out.println(System.currentTimeMillis() - t + " - rrr");
+
         } catch (Exception e) {
             e.printStackTrace();
             Msg.eMsg(e.getMessage());
         }
+
     }
+
     private void initDates() {
         Locale.setDefault(Libra.SETTINGS.getLang());
 
         LocalDate l = LocalDate.now();
         date1.setValue(l);
+        date1.setOnAction(event -> initGrid());
+
         date2.setValue(l);
+        date2.setOnAction(event -> initGrid());
 
         final Callback<DatePicker, DateCell> dayCellFactory1 =
                 new Callback<DatePicker, DateCell>() {
@@ -138,5 +169,43 @@ public class AppController extends AbstractController {
                 };
         date1.setDayCellFactory(dayCellFactory1);
         date2.setDayCellFactory(dayCellFactory2);
+    }
+
+    public void initDoc() {
+        long t = System.currentTimeMillis();
+        if (selectedDoc != null) {
+            for (int i = 0; i < docList.size(); i++) {
+                if (docList.get(i).getId() == selectedDoc.getId()) {
+                    int k = i + 1 == docList.size() ? 0 : i + 1;
+                    selectedDoc = docList.get(k);
+                    break;
+                }
+            }
+        } else {
+            selectedDoc = docList.get(0);
+        }
+        btnType.setText(translate(selectedDoc.getName()));
+        System.out.println(System.currentTimeMillis() - t + " - next");
+        initGrid();
+    }
+
+    public void initHistory(Object[] row) {
+        if (row == null)
+            return;
+        //System.out.println(row);
+        try {
+          /*  DataSet dataSet = Libra.libraService.executeQuery(SearchType.HISTORY.getSql(), new DataSet("id", row.get(0)));
+            if (dataSet.size() > 0) {
+                split.setDividerPositions(0.8f, 0.2f);
+                for (int i = 0; i < dataSet.size(); i++) {
+                    Label l = new Label(dataSet.getValueByName("masa", i).toString());
+                    historyPane.getChildren().add(l);
+                }
+            }
+            */
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

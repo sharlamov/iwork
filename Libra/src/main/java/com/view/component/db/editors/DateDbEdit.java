@@ -26,8 +26,8 @@ public class DateDbEdit extends JDateChooser implements IEdit {
     private Color oldBackground;
     private Color editBackground;
     private Border oldBorder;
-    private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
-    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private List<ChangeEditListener> listeners = new ArrayList<>();
+    private List<AbstractValidator> validators = new ArrayList<>();
     private Border newBorder;
 
     public DateDbEdit(String name, SimpleDateFormat format, DataSet dataSet) {
@@ -46,11 +46,11 @@ public class DateDbEdit extends JDateChooser implements IEdit {
         setName(name);
         getDateEditor().getUiComponent().addFocusListener(this);
 
-        Set<AWTKeyStroke> set = new HashSet<AWTKeyStroke>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
+        Set<AWTKeyStroke> set = new HashSet<>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
         set.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
         oldBorder = getBorder();
-        newBorder = new LineBorder(Color.decode("#006600"),2);
+        newBorder = new LineBorder(Color.decode("#006600"), 2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
 
@@ -124,14 +124,14 @@ public class DateDbEdit extends JDateChooser implements IEdit {
     }
 
     public void refresh() {
-        setDate((Date) dataSet.getValueByName(getName(), 0));
+        setDate((Date) dataSet.getObject(getName()));
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         super.propertyChange(evt);
         if ("date".equals(evt.getPropertyName())) {
-            if (dataSet != null && !dataSet.isEmpty())
-                dataSet.setValueByName(getName(), 0, evt.getNewValue());
+            if (dataSet != null)
+                dataSet.setObject(getName(), evt.getNewValue());
             fireChangeEditEvent();
         }
     }

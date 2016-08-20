@@ -1,7 +1,7 @@
 package com.service;
 
 import com.dao.JdbcDAO;
-import com.enums.SearchType;
+import com.enums.LangType;
 import com.model.CustomItem;
 import com.model.CustomUser;
 import com.model.DataSet;
@@ -23,46 +23,56 @@ public class LibraService {
         this.dao = new JdbcDAO();
     }
 
+    public void loadQueries() throws Exception {
+        DataSet dataSet = dao.select("select * from libra_queries_tbl");
+
+        if (dataSet.isEmpty())
+            throw new Exception("Error: Queries are empty");
+
+        Libra.queries = dataSet.toSimpleMap();
+    }
+
+    public void loadLang(LangType lang) {
+        String sql = LangType.RO.equals(lang) ? "select nameid, ro from libra_translate_tbl where ro is not null"
+                : "select nameid, ru from libra_translate_tbl where ru is not null";
+
+        try {
+            DataSet dataSet = dao.select(sql);
+            Libra.langs = dataSet.toSimpleMap();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean login(String userName, String password) throws Exception {
         if (userName == null || userName.isEmpty()) {
-            throw new Exception(LangService.trans("error.emptylogin"));
+            throw new Exception(Libra.lng("error.emptylogin"));
         } else if (password == null || password.length() == 0) {
-            throw new Exception(LangService.trans("error.emptypass"));
+            throw new Exception(Libra.lng("error.emptypass"));
         }
 
-        String sql = "select id\n" +
-                ",username\n" +
-                ",nvl(admin,0) as admin\n" +
-                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='CANTARE') scaleType\n" +
-                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_PROFILE') profile\n" +
-                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='LIBRA_DEFDIV') defdiv\n" +
-                ",(select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='USER_SC') user_sc\n" +
-                ",(select denumirea from vms_univers where cod = (select nvl(max(value),0) from A$ADP$v v where v.obj_id=a.obj_id and KEY='USER_SC')) clcuser_sct\n" +
-                "from a$users$v a \n" +
-                "where enabled=1 \n" +
-                "and LOWER(username) = LOWER(?)\n" +
-                "and nvl(encoded,a$util.encode(password)) = ?";
-        DataSet dataSet = dao.select(sql, new Object[]{userName, Libra.encodePass(password)});
+        DataSet dataSet = dao.select(Libra.sql("LOGIN"), userName, Libra.encodePass(password));
         if (dataSet.isEmpty())
-            throw new Exception(LangService.trans("error.emptyuser"));
+            throw new Exception(Libra.lng("error.emptyuser"));
 
         user = new CustomUser();
-        user.setId(dataSet.getNumberValue("ID", 0));
-        user.setUsername(dataSet.getStringValue("USERNAME", 0));
-        user.setAdminLevel(dataSet.getNumberValue("ADMIN", 0).intValue());
-        user.setScaleType(dataSet.getNumberValue("scaleType", 0).intValue());
-        user.setProfile(dataSet.getStringValue("profile", 0));
-        user.setDefDiv(new CustomItem(dataSet.getNumberValue("defdiv", 0), "DEFDIV"));
-        user.setClcuser_sct((CustomItem) dataSet.getValueByName("clcuser_sct", 0));
+        user.setId(dataSet.getDecimal("ID"));
+        user.setUsername(dataSet.getString("USERNAME"));
+        user.setAdminLevel(dataSet.getInt("ADMIN"));
+        user.setScaleType(dataSet.getInt("scaleType"));
+        user.setProfile(dataSet.getString("profile"));
+        user.setDefDiv(new CustomItem(dataSet.getDecimal("defdiv"), "DEFDIV"));
+        user.setClcuser_sct(dataSet.getItem("clcuser_sct"));
 
-        if (user.getScaleType() > 5 || user.getScaleType() < 4) {
-            throw new Exception(LangService.trans("error.enterOnlyCantar"));
+        if (user.getScaleType() == null || user.getScaleType() == 0) {
+            throw new Exception(Libra.lng("error.enterOnlyCantar"));
         }
 
         //load elevators
-        DataSet dataElevator = dao.select(SearchType.GETFILIALS.getSql(), new Object[]{user.getId()});
+        DataSet dataElevator = dao.select(Libra.sql("GETFILIALS"), user.getId());
+
         if (dataElevator.isEmpty()) {
-            throw new Exception(LangService.trans("error.notfoundelevator"));
+            throw new Exception(Libra.lng("error.notfoundelevator"));
         } else {
             Libra.filials = new HashMap<>(dataElevator.size());
             for (Object[] row : dataElevator) {
@@ -71,33 +81,27 @@ public class LibraService {
                 if (Libra.filials.containsKey(key)) {
                     Libra.filials.get(key).add(value);
                 } else {
-                    List<CustomItem> lst = new ArrayList<>();
-                    lst.add(value);
-                    Libra.filials.put(key, lst);
+                    Libra.filials.put(key, new ArrayList<>(Collections.singletonList(value)));
                 }
             }
         }
 
         //run sql
-        DataSet dataSQL = dao.select(SearchType.GETUSERPROP.getSql(), new Object[]{"RUNSQL", user.getId().toString()});
-        String str = dataSQL.getStringValue("PROP", 0);
+        DataSet dataSQL = dao.select(Libra.sql("GETUSERPROP"), "RUNSQL", user.getId().toString());
+        String str = dataSQL.getString("PROP");
         if (!str.isEmpty()) {
-            dao.execute(str, null);
+            dao.execute(str);
             dao.commit();
         }
 
         //load design
-        DataSet designs = dao.select("select lsection, ldata from libra_designs_tbl where lprofile = ?", new Object[]{user.getProfile().toUpperCase()});
-        if (!designs.isEmpty()) {
-            for (Object[] row : designs)
-                Libra.designs.put(row[0].toString(), row[1].toString());
-        } else {
-            throw new Exception(LangService.trans("Profile not found!"));
+        Libra.designs = dao.select(Libra.sql("DESIGNS"), user.getProfile().toUpperCase()).toSimpleMap();
+        if (Libra.designs.isEmpty()) {
+            throw new Exception(Libra.lng("Profile not found!"));
         }
 
         //init context
-        Object[] params = {user.getAdminLevel().toString(), user.getId().toString(), Libra.LIMIT_DIFF_MPFS.toString()};
-        execute(SearchType.INITCONTEXT.getSql(), new DataSet(Arrays.asList("plevel", "puserid", "plimit"), params));
+        execute(Libra.sql("INITCONTEXT"), DataSet.init("plevel", user.getAdminLevel().toString(), "puserid", user.getId().toString(), "plimit", Libra.LIMIT_DIFF_MPFS.toString()));
 
         return true;
     }
@@ -107,7 +111,7 @@ public class LibraService {
         List<Object> objects = new ArrayList<>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
-            Object obj = dataSet.getValueByName(m.group().substring(1), 0);
+            Object obj = dataSet.getObject(m.group().substring(1));
 
             if (obj instanceof Collection) {
                 StringBuilder commaList = new StringBuilder();
@@ -125,9 +129,9 @@ public class LibraService {
         return dao.select(sb.toString(), objects.toArray());
     }
 
-    public DataSet execute1(String query, DataSet dataSet) throws Exception {
+    public DataSet executeOut(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
-        List<Object[]> params = new ArrayList<Object[]>();
+        List<Object[]> params = new ArrayList<>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String paramName = m.group().substring(1);
@@ -135,22 +139,22 @@ public class LibraService {
             if (paramName.startsWith("out_")) {
                 param = new Object[]{1, paramName.substring(4), null};
             } else {
-                param = new Object[]{0, paramName, dataSet.getValueByName(paramName, 0)};
+                param = new Object[]{0, paramName, dataSet.getObject(paramName)};
             }
             params.add(param);
             m.appendReplacement(sb, "?");
         }
         m.appendTail(sb);
-        return dao.execute1(sb.toString(), params);
+        return dao.executeOut(sb.toString(), params);
     }
 
     public BigDecimal execute(String query, DataSet dataSet) throws Exception {
         Matcher m = paramsPattern.matcher(query);
-        List<Object> objects = new ArrayList<Object>();
+        List<Object> objects = new ArrayList<>();
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
             String paramName = m.group().substring(1);
-            objects.add(dataSet.getValueByName(paramName, 0));
+            objects.add(dataSet.getObject(paramName));
             m.appendReplacement(sb, "?");
         }
         m.appendTail(sb);

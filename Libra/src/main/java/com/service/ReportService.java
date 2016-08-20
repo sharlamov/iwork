@@ -16,9 +16,9 @@ public class ReportService {
     }
 
     public void buildReport(File template, String query, DataSet params) throws Exception {
-        DataSet queries = Libra.libraService.execute1(query, params);
-        String sql0 = queries.getStringValue("sqlHeader", 0);
-        String sql1 = queries.getStringValue("sqlMaster", 0);
+        DataSet queries = Libra.libraService.executeOut(query, params);
+        String sql0 = queries.getString("sqlHeader");
+        String sql1 = queries.getString("sqlMaster");
 
         DataSet ds0 = sql0.isEmpty() ? null : Libra.libraService.executeQuery(sql0, params);
         DataSet ds1 = sql1.isEmpty() ? null : Libra.libraService.executeQuery(sql1, ds0);

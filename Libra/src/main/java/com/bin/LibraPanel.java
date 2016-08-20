@@ -2,11 +2,9 @@ package com.bin;
 
 import com.docs.DocMd;
 import com.docs.DocRo;
-import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.model.Doc;
-import com.service.LangService;
 import com.service.LibraService;
 import com.util.Fonts;
 import com.util.Libra;
@@ -16,7 +14,6 @@ import com.view.component.db.editors.ComboDbEdit;
 import com.view.component.db.editors.DateDbEdit;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.DataGridSetting;
-import javafx.scene.control.DatePicker;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -25,9 +22,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, ItemListener, ChangeEditListener {
@@ -71,7 +66,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         dataGrid.setColumnFont("masa_tara", Fonts.bold12);
         dataGrid.setColumnFont("masa_netto", Fonts.bold12);
 
-        filter = new DataSet(new ArrayList<String>(Arrays.asList("d1", "d2", "elevator", "silos", "div", "empty", "in_out", "type")));
+        filter = new DataSet("d1", "d2", "elevator", "silos", "div", "empty", "in_out", "type");
 
         tableKeyBindings(dataGrid);
 
@@ -166,7 +161,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
         if (Libra.filials.size() > 1) {
-            elevators.insertItemAt(new CustomItem(null, LangService.trans("all")), 0);
+            elevators.insertItemAt(new CustomItem(null, Libra.lng("all")), 0);
             elevators.setSelectedIndex(0);
             elevators.addChangeEditListener(this);
         } else
@@ -174,7 +169,7 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         toolBar.addSeparator();
 
-        divs = new ComboDbEdit<>("div", new ArrayList<CustomItem>(), filter);
+        divs = new ComboDbEdit<>("div", new ArrayList<>(), filter);
         divs.setMaximumSize(new Dimension(100, 27));
         divs.addChangeEditListener(this);
         toolBar.add(divs);
@@ -199,9 +194,9 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void lostCarsInit() {
         try {
-            DataSet lostDS = Libra.libraService.executeQuery(SearchType.LOSTCAR.getSql(), filter);
+            DataSet lostDS = Libra.libraService.executeQuery(Libra.sql("LOSTCAR" + doc.getId()), filter);
             if (lostDS != null && !lostDS.isEmpty()) {
-                lostCarLabel.setText(LangService.trans("lostcar") + " " + lostDS.getStringValue("dd", 0));
+                lostCarLabel.setText(Libra.lng("lostcar") + " " + lostDS.getString("dd"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -211,11 +206,11 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
     public void refreshMaster() {
         try {
-            CustomItem item = (CustomItem) filter.getValueByName("silos", 0);
-            filter.setValueByName("elevator", 0, item.getId() == null ? Libra.filials.keySet() : item);
-            filter.setValueByName("empty", 0, halfBtn.isSelected() ? null : BigDecimal.ZERO);
-            filter.setValueByName("in_out", 0, doc.getId());
-            filter.setValueByName("type", 0, doc.getType());
+            CustomItem item = filter.getItem("silos");
+            filter.setObject("elevator", item.getId() == null ? Libra.filials.keySet() : item);
+            filter.setObject("empty", halfBtn.isSelected() ? null : BigDecimal.ZERO);
+            filter.setObject("in_out", doc.getId());
+            filter.setObject("type", doc.getType());
             dataGrid.select(filter);
         } catch (Exception e) {
             e.printStackTrace();
@@ -250,6 +245,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
             new DocRo(pan, dataSet, doc);
         } else if (LibraService.user.getProfile().equalsIgnoreCase("roauto")) {
             new DocRo(pan, dataSet, doc);
+        } else {
+            new DocMd(pan, dataSet, doc);
         }
     }
 

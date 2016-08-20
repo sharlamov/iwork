@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, ItemListener {
     //? refactor setValue()
@@ -27,8 +26,8 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
     private final Color oldBackground;
     private final Color editBackground;
     private final Border oldBorder;
-    private final List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
-    private final List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private final List<ChangeEditListener> listeners = new ArrayList<>();
+    private final List<AbstractValidator> validators = new ArrayList<>();
 
     public ComboDbEdit(String name, Collection<T> list, DataSet dataSet) {
         this.dataSet = dataSet;
@@ -43,11 +42,9 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
         addKeyListener(this);
         addFocusListener(this);
 
-        Object value = dataSet.getValueByName(getName(), 0);
+        Object value = dataSet.getObject(getName());
 
-        for (T o : list) {
-            addItem(o);
-        }
+        list.forEach(this::addItem);
 
         if (value != null)
             setValue(value);
@@ -76,7 +73,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
 
    /* public void changeData(DataSet set) {
         removeAllItems();
-        dataSet.setValueByName(getName(), 0, null);
+        dataSet.setObject(getName(), 0, null);
         for (Object[] o : set) {
             addItem((T) o[0]);
         }
@@ -84,11 +81,9 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
 
     public void changeData(Collection<T> set) {
         removeAllItems();
-        dataSet.setValueByName(getName(), 0, null);
+        dataSet.setObject(getName(), null);
         if (set != null)
-            for (T o : set) {
-                addItem(o);
-            }
+            set.forEach(this::addItem);
     }
 
     public void addChangeEditListener(ChangeEditListener listener) {
@@ -137,7 +132,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
     }
 
     public void refresh() {
-        Object obj = dataSet.getValueByName(getName(), 0);
+        Object obj = dataSet.getObject(getName());
         if (obj != null)
             setValue(obj);
     }
@@ -159,7 +154,7 @@ public class ComboDbEdit<T> extends JComboBox<T> implements KeyListener, IEdit, 
 
     public void itemStateChanged(ItemEvent e) {
         if (e.getStateChange() == ItemEvent.SELECTED) {
-            dataSet.setValueByName(getName(), 0, getValue());
+            dataSet.setObject(getName(), getValue());
             fireChangeEditEvent();
         }
     }

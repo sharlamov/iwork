@@ -1,10 +1,6 @@
 package com.view.component.grid;
 
-import com.enums.SearchType;
-import com.model.Act;
 import com.model.DataSet;
-import com.model.Doc;
-import com.service.LangService;
 import com.service.LibraService;
 import com.util.Libra;
 
@@ -12,8 +8,9 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 import java.awt.*;
-import java.awt.event.*;
-import java.math.BigDecimal;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.*;
 
 public class DataGrid extends JPanel {
@@ -24,14 +21,14 @@ public class DataGrid extends JPanel {
     private DataSetTableModel dtm;
     private int dataGridWith;
     private DataSet params;
-    private Map<Integer, Font> columnFonts = new HashMap<Integer, Font>();
+    private Map<Integer, Font> columnFonts = new HashMap<>();
     private SummaryRow summaryRow;
     private Map<String, String> summaryMap;
 
-    public DataGrid(LibraService libraService, SearchType searchType, GridField[] names, boolean useBgColor) {
+    public DataGrid(LibraService libraService, String sql, GridField[] names, boolean useBgColor) {
         super(new BorderLayout());
         this.libraService = libraService;
-        this.sql = searchType.getSql();
+        this.sql = sql;
         dtm = new DataSetTableModel(names);
         tbl = new JTable(dtm);
         tbl.setRowSelectionAllowed(true);
@@ -87,51 +84,18 @@ public class DataGrid extends JPanel {
         add(scrollPane, BorderLayout.CENTER);
 
         if (lSetting.isUseSummary()) {
-            summaryMap = new LinkedHashMap<String, String>();
+            summaryMap = new LinkedHashMap<>();
             summaryRow = new SummaryRow();
             add(summaryRow, BorderLayout.SOUTH);
-        }
-    }
-
-    public void addActs(final Doc doc) {
-        if (!doc.getActions().isEmpty()) {
-            JPopupMenu popupMenu = new JPopupMenu();
-
-            for (final Act act : doc.getActions()) {
-                JMenuItem item = new JMenuItem(LangService.trans(act.getName()));
-                item.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        int rowNr = getSelectedRow();
-                        DataSet ds = getDataSetByRow(rowNr);
-                        BigDecimal bd1 = ds.getNumberValue("id", 0);
-                        BigDecimal bd2 = ds.getNumberValue("masa_netto", 0);
-                        Object bd3 = ds.getValueByName("clcdivt", 0);
-                        try {
-                            if (bd1.equals(BigDecimal.ZERO) || bd2.equals(BigDecimal.ZERO)) {
-                                Libra.eMsg(LangService.trans("error.emptynet"));
-                            } else {
-                                Libra.libraService.execute(act.getSql(), new DataSet(Arrays.asList("id", "div", "nrset"), new Object[]{bd1, bd3, 1}));
-                                JOptionPane.showMessageDialog(null, LangService.trans("doc.saved"), "Error", JOptionPane.INFORMATION_MESSAGE);
-                                select(params);
-                                setSelectedRow(rowNr);
-                            }
-                        } catch (Exception e1) {
-                            Libra.eMsg(e1.getMessage());
-                        }
-                    }
-                });
-                popupMenu.add(item);
-            }
-            tbl.setComponentPopupMenu(popupMenu);
         }
     }
 
     public void refreshSummary() {
         if (summaryRow != null) {
             summaryMap.clear();
-            BigDecimal b = dtm.getSumByColumn("masa_brutto");
-            BigDecimal t = dtm.getSumByColumn("masa_tara");
-            BigDecimal n = dtm.getSumByColumn("masa_netto");
+            Double b = dtm.getSumByColumn("masa_brutto");
+            Double t = dtm.getSumByColumn("masa_tara");
+            Double n = dtm.getSumByColumn("masa_netto");
 
             summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));
             summaryMap.put("summary.brutto", Libra.decimalFormat.format(b));

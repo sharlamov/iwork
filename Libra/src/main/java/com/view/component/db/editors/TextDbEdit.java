@@ -28,8 +28,8 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     private Format format = new DecimalFormat("#,###.##");
     private Border oldBorder;
     private Border newBorder;
-    private List<ChangeEditListener> listeners = new ArrayList<ChangeEditListener>();
-    private List<AbstractValidator> validators = new ArrayList<AbstractValidator>();
+    private List<ChangeEditListener> listeners = new ArrayList<>();
+    private List<AbstractValidator> validators = new ArrayList<>();
 
     public TextDbEdit(String name, DataSet dataSet) {
         this.dataSet = dataSet;
@@ -82,19 +82,20 @@ public class TextDbEdit extends JTextField implements KeyListener, IEdit {
     }
 
     public Object getValue() {
-        return dataSet.getValueByName(getName(), 0);
+        return dataSet.getObject(getName());
     }
 
     public void setValue(Object value) {
         if (value == null || value.toString().isEmpty()) {
-            dataSet.setValueByName(getName(), 0, null);
+            dataSet.setObject(getName(), null);
             setText("");
-        } else if (value instanceof String && isAlphaNum){
-            String text = value.toString().replaceAll("[^A-Za-z0-9]|\\s", "").toUpperCase();
-            dataSet.setValueByName(getName(), 0, text);
+        } else if (value instanceof String && isAlphaNum) {
+            String text = value.toString().toUpperCase();
+            text = text.replaceAll(text.startsWith("INV") ? "[^A-Za-z0-9*/-]|\\s" : "[^A-Za-z0-9]|\\s", "");
+            dataSet.setObject(getName(), text);
             setText(text);
         } else {
-            dataSet.setValueByName(getName(), 0, value);
+            dataSet.setObject(getName(), value);
             setText(value.toString());
         }
         fireChangeEditEvent();

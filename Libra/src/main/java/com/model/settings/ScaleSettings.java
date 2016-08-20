@@ -1,15 +1,14 @@
 package com.model.settings;
 
-import java.net.URL;
 import java.util.List;
 
 public class ScaleSettings {
     private int scaleId;
     private String port;
     private String driverName;
-    private List<URL> cams;
+    private List<String> cams;
 
-    public ScaleSettings(int scaleId, String port, String driverName, List<URL> cams) {
+    public ScaleSettings(int scaleId, String port, String driverName, List<String> cams) {
         this.scaleId = scaleId;
         this.port = port;
         this.driverName = driverName;
@@ -32,11 +31,11 @@ public class ScaleSettings {
         this.driverName = driverName;
     }
 
-    public List<URL> getCams() {
+    public List<String> getCams() {
         return cams;
     }
 
-    public void setCams(List<URL> cams) {
+    public void setCams(List<String> cams) {
         this.cams = cams;
     }
 

@@ -2,7 +2,6 @@ package com.bin;
 
 import com.model.Doc;
 import com.service.JsonService;
-import com.service.LangService;
 import com.util.Libra;
 import com.util.Pictures;
 import com.view.component.grid.DataGridSetting;
@@ -30,6 +29,6 @@ public class LibraBoard extends JPanel {
     }
 
     public String getHtmlTitle(String title) {
-        return "<html><body width='150'>" + LangService.trans(title) + "</body></html>";
+        return "<html><body width='150'>" + Libra.lng(title) + "</body></html>";
     }
 }

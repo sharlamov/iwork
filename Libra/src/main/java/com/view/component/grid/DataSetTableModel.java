@@ -1,18 +1,17 @@
 package com.view.component.grid;
 
 import com.model.DataSet;
-import com.service.LangService;
+import com.util.Fonts;
+import com.util.Libra;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class DataSetTableModel extends AbstractTableModel {
 
+    private int bgColorColumn;
     private DataSet dataSet;
     private Map<Integer, Integer> columnMap;
     private GridField[] names;
@@ -20,11 +19,11 @@ public class DataSetTableModel extends AbstractTableModel {
     private int count;
 
     public DataSetTableModel(GridField[] names) {
-        columnMap = new HashMap<Integer, Integer>(names.length);
+        columnMap = new HashMap<>(names.length);
         this.names = names;
         labels = new String[names.length];
         for (int i = 0; i < names.length; i++) {
-            labels[i] = LangService.trans(names[i].getName());
+            labels[i] = Libra.lng(names[i].getName());
         }
     }
 
@@ -32,13 +31,14 @@ public class DataSetTableModel extends AbstractTableModel {
         columnMap.clear();
         labels = new String[names.length];
         for (int i = 0; i < names.length; i++) {
-            labels[i] = LangService.trans(names[i].getName());
-            int index = dataSet.getNames().indexOf(names[i].getName().toUpperCase());
+            labels[i] = Libra.lng(names[i].getName());
+            int index = dataSet.findField(names[i].getName());
             if (index != -1)
                 columnMap.put(i, index);
         }
         this.dataSet = dataSet;
         count = dataSet.size();
+        bgColorColumn = dataSet.findField("bgcolor");
         fireTableDataChanged();
     }
 
@@ -69,7 +69,7 @@ public class DataSetTableModel extends AbstractTableModel {
 
     public Object getValueAt(int row, int column) {
         try {
-            return dataSet.getValue(row, columnMap.get(column));
+            return dataSet.get(row)[columnMap.get(column)];
         } catch (NullPointerException ex) {
             System.out.println("Not found column: " + names[column]);
             return null;
@@ -77,50 +77,41 @@ public class DataSetTableModel extends AbstractTableModel {
     }
 
     public Object getValueByFieldName(String name, int row) {
-        return dataSet.getValueByName(name, row);
+        return dataSet.getObject(row, name);
     }
 
     public DataSet getDataSetByRow(int row) {
-        List<Object[]> lst = new ArrayList<Object[]>();
-        if (row == -1 || dataSet.isEmpty()) {
-            lst.add(new Object[dataSet.getNames().size()]);
-        } else {
-            lst.add(dataSet.get(row));
-        }
-        return new DataSet(dataSet.getNames(), lst);
+        return dataSet.getDataSetByRow(row);
     }
 
-    public BigDecimal getSumByColumn(String fieldName) {
-        return dataSet.getSumByColumn(fieldName);
+    public Double getSumByColumn(String fieldName) {
+        return dataSet.sum(fieldName);
     }
 
     public Color getRowColor(int row) {
-        BigDecimal bd = dataSet.getNumberValue("bgcolor", row);
-        switch (bd.intValue()) {
+        if (bgColorColumn == -1)
+            return Color.white;
+
+        Object bd = dataSet.getObject(row, bgColorColumn);
+        int val = bd != null ? Integer.parseInt(bd.toString()) : 0;
+
+        switch (val) {
             case 6711039:
-                return Color.decode("#FF2020");
+                return Fonts.color1;
             case 13421823:
-                return Color.decode("#FF9999");
+                return Fonts.color2;
             case 13434828:
-                return Color.decode("#CCFFCC");
+                return Fonts.color3;
             case 5635925:
-                return Color.decode("#55FF55");
+                return Fonts.color4;
             case 0:
-                return Color.decode("#FFFF66");
+                return Fonts.color5;
             default:
                 return Color.white;
         }
     }
 
     public int defineLocation(String fieldName, Object value) {
-        int n = dataSet.findField(fieldName);
-        if (n != -1) {
-            for (int i = 0; i < dataSet.size(); i++) {
-                if (value.equals(dataSet.get(i)[n])) {
-                    return i;
-                }
-            }
-        }
-        return -1;
+        return dataSet.location(fieldName, value);
     }
 }

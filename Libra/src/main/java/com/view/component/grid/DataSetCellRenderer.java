@@ -5,7 +5,6 @@ import com.util.Libra;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Map;
@@ -15,6 +14,8 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
     private final boolean useBGColor;
     private final Map<Integer, Font> columnsFont;
     private DecimalFormat numberFormat = new DecimalFormat("#,###.##");
+    private int lastRow = -1;
+    private Color clr;
 
     public DataSetCellRenderer(boolean useBGColor, Map<Integer, Font> columnsFont) {
         this.useBGColor = useBGColor;
@@ -25,11 +26,14 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
                                                    boolean isSelected, boolean hasFocus, int row, int col) {
 
         JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-        int sorterRow = !table.getAutoCreateRowSorter() || table.getRowSorter() == null ? row : table.getRowSorter().convertRowIndexToModel(row);
+        int sorterRow = !table.getAutoCreateRowSorter() || table.getRowSorter() == null ? row
+                : table.getRowSorter().convertRowIndexToModel(row);
 
         if (useBGColor) {
-
-            Color clr = ((DataSetTableModel) table.getModel()).getRowColor(sorterRow);
+            if (lastRow != row) {
+                clr = ((DataSetTableModel) table.getModel()).getRowColor(sorterRow);
+                lastRow = row;
+            }
             label.setBackground(clr);
 
             if (table.isCellSelected(sorterRow, col)) {
@@ -46,11 +50,10 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
 
         try {
             if (value != null) {
-
                 if (value instanceof Date) {
                     label.setText(Libra.dateFormat.format(value));
                     label.setHorizontalAlignment(SwingConstants.CENTER);
-                } else if (value instanceof BigDecimal) {
+                } else if (value instanceof Number) {
                     label.setHorizontalAlignment(SwingConstants.RIGHT);
                     label.setText(numberFormat.format(value));
                 } else {

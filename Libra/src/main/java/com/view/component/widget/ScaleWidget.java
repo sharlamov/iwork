@@ -2,32 +2,37 @@ package com.view.component.widget;
 
 import com.driver.ScaleEventListener;
 import com.driver.ScalesDriver;
-import com.service.LangService;
 import com.util.Fonts;
 import com.util.Libra;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.net.URL;
-import java.util.*;
 import java.util.List;
+import java.util.Random;
 
-public class ScaleWidget extends JPanel implements ScaleEventListener {
+
+public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable {
 
     private final Integer driverId;
+    private final List<String> cams;
+    private final ScalesDriver driver;
     public JButton btnAdd;
+    volatile long lastTime;
     private JLabel score = new JLabel();
     private Color stableColor = Color.orange;
     private Color unstableColor = Color.decode("#FF9999");
     private boolean isOnline;
-    private final Object cams;
     private boolean isBlock;
+    private Thread t;
 
-    public ScaleWidget(final ScalesDriver driver, boolean isOnline, Object driverId, Object cams) {
+    public ScaleWidget(final ScalesDriver driver, boolean isOnline, Object driverId, List<String> cams) {
+        this.driver = driver;
         this.isOnline = isOnline;
         this.cams = cams;
         this.driverId = driverId != null ? Integer.valueOf(driverId.toString()) : null;
+        t = new Thread(this);
+
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
@@ -52,8 +57,12 @@ public class ScaleWidget extends JPanel implements ScaleEventListener {
         } else {
             Dimension big = new Dimension(200, 90);
             setPreferredSize(big);
-            btnAdd = new JButton(LangService.trans("scale.take"));
+            btnAdd = new JButton(Libra.lng("scale.take"));
             add(btnAdd, BorderLayout.SOUTH);
+        }
+        lastTime = System.currentTimeMillis();
+        if (isOnline) {
+            t.start();
         }
     }
 
@@ -68,12 +77,14 @@ public class ScaleWidget extends JPanel implements ScaleEventListener {
 
     public Integer getWeight() {
         if (driverId == null) {
-            Libra.eMsg(LangService.trans("error.emptyscalecode"));
+            Libra.eMsg(Libra.lng("error.emptyscalecode"));
             return null;
         } else {
             String value = score.getText();
-            //return value.isEmpty() ? null : Integer.valueOf(value);
-            return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
+            if (Libra.SETTINGS.isDebug())
+                return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
+            else
+                return value.isEmpty() ? null : Integer.valueOf(value);
         }
     }
 
@@ -82,6 +93,7 @@ public class ScaleWidget extends JPanel implements ScaleEventListener {
     }
 
     public void scaleExecuted(Integer weight, boolean isStable) {
+        lastTime = System.currentTimeMillis();
         setWeight(weight);
         if (!isOnline) {
             score.setBackground(isStable ? stableColor : unstableColor);
@@ -91,7 +103,26 @@ public class ScaleWidget extends JPanel implements ScaleEventListener {
         }
     }
 
-    public Object getCams() {
+    public List<String> getCams() {
         return cams;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (true) {
+
+                if ((System.currentTimeMillis() - lastTime) > 999) {
+                    score.setText("ERROR");
+                    Libra.log("WEIGHT ERROR - NO SIGNAL / " + driver + " / " + driver.getComPort());
+                    break;
+                }
+                Thread.sleep(999);
+            }
+            t.interrupt();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
     }
 }

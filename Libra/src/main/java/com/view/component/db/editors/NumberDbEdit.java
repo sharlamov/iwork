@@ -21,12 +21,12 @@ public class NumberDbEdit extends TextDbEdit {
     @Override
     public void setValue(Object value) {
         if (value == null || value.toString().isEmpty()) {
-            getDataSet().setValueByName(getName(), 0, null);
+            getDataSet().setObject(getName(), null);
             setText("");
         } else {
             String v = value.toString().replaceAll("\\s|\\xA0", "").replaceAll(",", ".");
             BigDecimal bd = new BigDecimal(v);
-            getDataSet().setValueByName(getName(), 0, bd);
+            getDataSet().setObject(getName(), bd);
             setText(getFormat().format(bd));
         }
         fireChangeEditEvent();

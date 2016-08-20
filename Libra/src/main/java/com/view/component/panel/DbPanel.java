@@ -2,7 +2,7 @@ package com.view.component.panel;
 
 import com.bin.InsertDialog;
 import com.enums.InsertType;
-import com.service.LangService;
+import com.util.Libra;
 import com.util.Pictures;
 import com.view.component.db.editors.IEdit;
 
@@ -24,8 +24,8 @@ public class DbPanel extends JPanel {
         super(null);
         setSize(pWidth, pHeight);
 
-        edits = new ArrayList<IEdit>();
-        comps = new ArrayList<Component>();
+        edits = new ArrayList<>();
+        comps = new ArrayList<>();
     }
 
     public void refresh() {
@@ -125,9 +125,9 @@ public class DbPanel extends JPanel {
     public void addToPanel(int x, int y, int size, JPanel panelTo, JComponent comp) {
         String name = comp.getName();
         if (name != null) {
-            String text = LangService.trans(comp.getName());
+            String text = Libra.lng(comp.getName());
             if (text.length() > 0 && !name.equals(text)) {
-                JLabel label = new JLabel(LangService.trans(comp.getName()));
+                JLabel label = new JLabel(Libra.lng(comp.getName()));
                 label.setBounds(x, y, 100, 23);
                 panelTo.add(label);
                 x += 110;

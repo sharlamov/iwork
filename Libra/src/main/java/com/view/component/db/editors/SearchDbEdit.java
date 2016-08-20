@@ -1,6 +1,5 @@
 package com.view.component.db.editors;
 
-import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.service.LibraService;
@@ -21,7 +20,7 @@ public class SearchDbEdit extends TextDbEdit {
 
     private final GridField[] fields;
     private final LibraService service;
-    private final SearchType searchType;
+    private final String sql;
     private String[] targetFields;
     private PopupFactory factory;
     private Popup popup;
@@ -29,12 +28,12 @@ public class SearchDbEdit extends TextDbEdit {
     private boolean shouldHide;
     private boolean shouldClear = true;
 
-    public SearchDbEdit(String name, DataSet dataSet, GridField[] fields, LibraService service, SearchType searchType) {
+    public SearchDbEdit(String name, DataSet dataSet, GridField[] fields, LibraService service, String sql) {
         super(name, dataSet);
 
         this.fields = fields;
         this.service = service;
-        this.searchType = searchType;
+        this.sql = sql;
         factory = PopupFactory.getSharedInstance();
         initGridPanel();
         installAncestorListener();
@@ -42,17 +41,17 @@ public class SearchDbEdit extends TextDbEdit {
         dataSet.addField("findquery", null);
     }
 
-    public SearchDbEdit(String name, DataSet dataSet, LibraService service, SearchType searchType) {
-        this(name, dataSet, new GridField[]{new GridField("clccodt", 300)}, service, searchType);
+    public SearchDbEdit(String name, DataSet dataSet, LibraService service, String sql) {
+        this(name, dataSet, new GridField[]{new GridField("clccodt", 300)}, service, sql);
     }
 
-    public SearchDbEdit(String name, DataSet dataSet, String targetFields, GridField[] fields, LibraService service, SearchType searchType) {
-        this(name, dataSet, fields, service, searchType);
+    public SearchDbEdit(String name, DataSet dataSet, String targetFields, GridField[] fields, LibraService service, String sql) {
+        this(name, dataSet, fields, service, sql);
         this.targetFields = targetFields.split(",");
     }
 
     public void initGridPanel() {
-        dataGrid = new DataGrid(service, searchType, fields, false);
+        dataGrid = new DataGrid(service, sql, fields, false);
         dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 250));
         dataGrid.setFocusable(false);
         dataGrid.addMouseListener(new MouseAdapter() {
@@ -98,7 +97,7 @@ public class SearchDbEdit extends TextDbEdit {
 
     public int search(String text) {
         int cnt = 0;
-        getDataSet().setValueByName("findquery", 0, "%" + text.trim().toLowerCase() + "%");
+        getDataSet().setObject("findquery", "%" + text.trim().toLowerCase() + "%");
         try {
             cnt = dataGrid.select(getDataSet());
         } catch (Exception e) {
@@ -109,17 +108,15 @@ public class SearchDbEdit extends TextDbEdit {
 
     @Override
     public void keyTyped(KeyEvent e) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                String text = getText();
-                if (text.isEmpty() || shouldHide) {
+        EventQueue.invokeLater(() -> {
+            String text = getText();
+            if (text.isEmpty() || shouldHide) {
+                hidePopup();
+            } else {
+                if (search(text) == 0) {
                     hidePopup();
                 } else {
-                    if (search(text) == 0) {
-                        hidePopup();
-                    } else {
-                        showPopup();
-                    }
+                    showPopup();
                 }
             }
         });
@@ -194,26 +191,26 @@ public class SearchDbEdit extends TextDbEdit {
     @Override
     public void setValue(Object value) {
         if (value instanceof CustomItem) {
-            getDataSet().setValueByName(getName(), 0, value);
+            getDataSet().setObject(getName(), value);
             CustomItem ci = (CustomItem) value;
             setText(ci.getId() == null ? null : ci.getLabel());
         } else if (value == null || value.toString().isEmpty()) {
-            getDataSet().setValueByName(getName(), 0, null);
+            getDataSet().setObject(getName(), null);
             setText(null);
         } else if ((value instanceof String || value instanceof Number) && !shouldClear) {
             super.setValue(value);
         } else if (value instanceof DataSet) {
             DataSet selDataSet = (DataSet) value;
-            int count = selDataSet.getColumnCount();
+            int count = selDataSet.getColCount();
             if (count == 1) {
-                Object result = selDataSet.getValue(0, 0);
-                getDataSet().setValueByName(getName(), 0, result);
+                Object result = selDataSet.getObject(0, 0);
+                getDataSet().setObject(getName(), result);
                 setText(result.toString());
             } else {
                 for (int i = 0; i < targetFields.length; i++) {
                     String fName = targetFields[i].trim();
                     if (!fName.isEmpty()) {
-                        getDataSet().setValueByName(fName, 0, selDataSet.getValue(0, i));
+                        getDataSet().setObject(fName, selDataSet.getObject(0, i));
                     }
                 }
                 setText(getValue().toString());

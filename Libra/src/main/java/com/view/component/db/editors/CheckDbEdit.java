@@ -81,7 +81,7 @@ public class CheckDbEdit extends JCheckBox implements KeyListener, IEdit, ItemLi
     }
 
     public void refresh() {
-        setSelected(dataSet.getNumberValue(getName(), 0).intValue() > 0);
+        setSelected(dataSet.getInt(getName()) > 0);
     }
 
     public void focusGained(FocusEvent e) {
@@ -105,7 +105,7 @@ public class CheckDbEdit extends JCheckBox implements KeyListener, IEdit, ItemLi
     }
 
     public void itemStateChanged(ItemEvent e) {
-        dataSet.setValueByName(getName(), 0, getValue());
+        dataSet.setObject(getName(), getValue());
         fireChangeEditEvent();
     }
 }

@@ -10,6 +10,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,7 +68,7 @@ public class PoiExcelDAO {
                 StringBuffer sb = new StringBuffer();//change to builder
                 while (m.find()) {
                     String str = m.group();
-                    Object obj = dataSet.getValueByName(str.substring(1), 0);
+                    Object obj = dataSet.getObject(str.substring(1));
                     String dataString = "";
                     if (obj != null && obj.toString() != null) {
                         dataString = obj instanceof Date ? Libra.dateFormat.format(obj) : obj.toString();
@@ -84,11 +85,11 @@ public class PoiExcelDAO {
     }
 
     public void processMaster(Sheet sheet, CellReference[] crList, DataSet dataSet) {
-        int count = dataSet.getColumnCount() == 0 ? 0 : dataSet.size() - 1;
+        int count = dataSet.getColCount() == 0 ? 0 : dataSet.size() - 1;
 
         Row row = null;
-        java.util.List<Integer> cellCol = new ArrayList<Integer>();
-        java.util.List<Integer> dataSetCol = new ArrayList<Integer>();
+        List<Integer> cellCol = new ArrayList<>();
+        List<Integer> dataSetCol = new ArrayList<>();
 
         for (CellReference cr : crList) {
             row = sheet.getRow(cr.getRow());
@@ -119,7 +120,7 @@ public class PoiExcelDAO {
                 for (int j = 0; j < cellCol.size(); j++) {
                     Cell c = r.getCell(cellCol.get(j));
                     if (dataSetCol.get(j) != -1) {
-                        Object obj = dataSet.get(i)[dataSetCol.get(j)];
+                        Object obj = dataSet.getObject(i, dataSetCol.get(j));
                         if (obj != null && obj.toString() != null) {
                             String dataString = obj instanceof Date ? Libra.dateFormat.format(obj) : obj.toString();
                             c.setCellValue(dataString);
@@ -141,7 +142,7 @@ public class PoiExcelDAO {
                 StringBuffer sb = new StringBuffer();//change to builder
                 while (m.find()) {
                     String str = m.group();
-                    Object obj = dataSet.getSumByColumn(str.substring(1));
+                    Object obj = dataSet.sum(str.substring(1));
                     m.appendReplacement(sb, obj.toString());
                 }
                 m.appendTail(sb);

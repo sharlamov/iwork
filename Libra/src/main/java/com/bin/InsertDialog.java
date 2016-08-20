@@ -3,7 +3,6 @@ package com.bin;
 import com.enums.InsertType;
 import com.model.CustomItem;
 import com.model.DataSet;
-import com.service.LangService;
 import com.util.Libra;
 import com.util.Validators;
 import com.view.component.db.editors.ComboDbEdit;
@@ -15,23 +14,21 @@ import com.view.component.panel.DbPanel;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-public class InsertDialog extends JDialog implements ActionListener {
+public class InsertDialog extends JDialog {
 
     private final InsertType type;
     private final IEdit edit;
     private DataSet dataSet;
     private DbPanel dbPanel;
-    private JButton btnYes = new JButton(LangService.trans("yes"));
-    private JButton btnNo = new JButton(LangService.trans("no"));
+    private JButton btnYes = new JButton(Libra.lng("yes"));
+    private JButton btnNo = new JButton(Libra.lng("no"));
     private TextDbEdit de;
 
     public InsertDialog(String title, InsertType type, IEdit edit, Component parent) {
-        super((JFrame) null, LangService.trans(title), true);
+        super((JFrame) null, Libra.lng(title), true);
         this.type = type;
         this.edit = edit;
 
@@ -41,9 +38,9 @@ public class InsertDialog extends JDialog implements ActionListener {
 
         prepareParams();
         btnYes.setPreferredSize(Libra.buttonSize);
-        btnYes.addActionListener(this);
+        btnYes.addActionListener(e -> btnYesAction());
         btnNo.setPreferredSize(Libra.buttonSize);
-        btnNo.addActionListener(this);
+        btnNo.addActionListener(e -> btnNoAction());
         JPanel btnPanel = new JPanel();
         btnPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         btnPanel.add(btnYes);
@@ -58,11 +55,9 @@ public class InsertDialog extends JDialog implements ActionListener {
     }
 
     private void prepareParams() {
-
-
         switch (type) {
             case UNIVOI: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "I"});
+                dataSet = DataSet.init("clccodt", null, "fiskcod", null, "tip", "O", "gr1", "I");
                 dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 de = new TextDbEdit("clccodt", dataSet);
@@ -71,7 +66,7 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVOE: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "E"});
+                dataSet = DataSet.init("clccodt", null, "fiskcod", null, "tip", "O", "gr1", "E");
                 dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 de = new TextDbEdit("clccodt", dataSet);
@@ -81,7 +76,7 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVOF: {
-                dataSet = new DataSet(Arrays.asList("npp", "fiskcod", "tip", "gr1", "seria", "dataelib", "orgelib"), new Object[]{null, null, "O", "F", null, null, null});
+                dataSet = DataSet.init("npp", null, "fiskcod", null, "tip", "O", "gr1", "F", "seria", null, "dataelib", null, "orgelib", null);
                 dbPanel = new DbPanel(366, 237);
                 JPanel pan = dbPanel.createPanel(5, null);
                 de = new TextDbEdit("npp", dataSet);
@@ -94,7 +89,7 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVOSOLA: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "SOLA"});
+                dataSet = DataSet.init("clccodt", null, "fiskcod", null, "tip", "O", "gr1", "SOLA");
                 dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 de = new TextDbEdit("clccodt", dataSet);
@@ -103,7 +98,7 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVCELL: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1"), new Object[]{null, null, "O", "CELL"});
+                dataSet = DataSet.init("clccodt", null, "fiskcod", null, "tip", "O", "gr1", "CELL");
                 dbPanel = new DbPanel(366, 141);
                 JPanel pan = dbPanel.createPanel(2, null);
                 de = new TextDbEdit("clccodt", dataSet);
@@ -112,14 +107,14 @@ public class InsertDialog extends JDialog implements ActionListener {
             }
             break;
             case UNIVTA: {
-                dataSet = new DataSet(Arrays.asList("clccodt", "fiskcod", "tip", "gr1", "axis", "sort"), new Object[]{null, null, "T", "A", null, null});
+                dataSet = DataSet.init("clccodt", null, "fiskcod", null, "tip", "T", "gr1", "A", "axis", null, "sort", null);
                 dbPanel = new DbPanel(366, 173);
                 JPanel pan = dbPanel.createPanel(3, null);
                 de = new TextDbEdit("clccodt", dataSet);
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
-                dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<String>("sort", Arrays.asList("Auto camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
-                dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new ComboDbEdit<String>("axis", Arrays.asList("3 axe", "4 axe", "5 axe", "6 axe"), dataSet));
+                dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<>("sort", Arrays.asList("Auto camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
+                dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new ComboDbEdit<>("axis", Arrays.asList("3 axe", "4 axe", "5 axe", "6 axe"), dataSet));
             }
             break;
         }
@@ -127,24 +122,23 @@ public class InsertDialog extends JDialog implements ActionListener {
         add(dbPanel, BorderLayout.CENTER);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(btnYes)) {
-            try {
-                if (dbPanel.verify()) {
-                    BigDecimal bd = Libra.libraService.execute(type.getSql(), dataSet);
-                    edit.setValue(new CustomItem(bd, de.getValue()));
-                    Libra.libraService.commit();
-                    dispose();
-                    ((Component) edit).transferFocus();
-                }
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                Libra.eMsg(e1.getMessage());
+    private void btnYesAction() {
+        try {
+            if (dbPanel.verify()) {
+                BigDecimal bd = Libra.libraService.execute(type.getSql(), dataSet);
+                edit.setValue(new CustomItem(bd, de.getValue()));
+                Libra.libraService.commit();
+                dispose();
+                ((Component) edit).transferFocus();
             }
-        } else if (e.getSource().equals(btnNo)) {
-            dispose();
-            ((Component) edit).requestFocus();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            Libra.eMsg(e1.getMessage());
         }
+    }
 
+    private void btnNoAction() {
+        dispose();
+        ((Component) edit).requestFocus();
     }
 }

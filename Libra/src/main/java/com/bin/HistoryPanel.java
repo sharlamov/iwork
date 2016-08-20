@@ -1,6 +1,5 @@
 package com.bin;
 
-import com.enums.SearchType;
 import com.model.CustomItem;
 import com.model.DataSet;
 import com.util.Fonts;
@@ -39,7 +38,7 @@ public class HistoryPanel extends JPanel {
     public void refreshData(BigDecimal id) {
         removeAll();
         try {
-            DataSet dataSet = Libra.libraService.executeQuery(SearchType.HISTORY.getSql(), new DataSet("id", id));
+            DataSet dataSet = Libra.libraService.executeQuery(Libra.sql("HISTORY"), DataSet.init("id", id));
             for (Object[] objects : dataSet) {
                 addInfo((BigDecimal) objects[0], (Date) objects[1], (CustomItem) objects[2], (BigDecimal) objects[3]);
                 makeFoto(objects[4]);
@@ -64,11 +63,7 @@ public class HistoryPanel extends JPanel {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         if (e.getClickCount() == 2) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    openImage(display.getPicture());
-                                }
-                            });
+                            SwingUtilities.invokeLater(() -> openImage(display.getPicture()));
                         }
                     }
                 });

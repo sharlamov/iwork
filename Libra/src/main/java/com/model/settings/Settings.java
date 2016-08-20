@@ -10,6 +10,7 @@ public class Settings extends AbstractSettings {
     private String username;
     private String password;
     private boolean auto;
+    private boolean debug;
     private String connection;
     private List<ScaleSettings> scales;
 
@@ -61,5 +62,13 @@ public class Settings extends AbstractSettings {
 
     public void setLang(LangType lang) {
         this.lang = lang;
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

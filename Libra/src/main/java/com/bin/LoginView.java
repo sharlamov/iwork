@@ -3,7 +3,6 @@ package com.bin;
 import com.enums.LangType;
 import com.model.settings.Settings;
 import com.service.JsonService;
-import com.service.LangService;
 import com.service.LibraService;
 import com.util.Fonts;
 import com.util.Libra;
@@ -14,12 +13,10 @@ import oracle.net.ns.NetException;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class LoginView extends JFrame implements ActionListener {
+public class LoginView extends JFrame {
 
     private LoginField userText;
     private LoginField passwordText;
@@ -61,22 +58,27 @@ public class LoginView extends JFrame implements ActionListener {
 
     public void initParams() {
         Libra.SETTINGS = JsonService.loadFile(Settings.class, "settings.json");
-        LangService.init(Libra.SETTINGS.getLang(), Libra.libraService);
+        try {
+            Libra.libraService.loadQueries();
+            Libra.libraService.loadLang(Libra.SETTINGS.getLang());
+        } catch (Exception e) {
+            Libra.eMsg(e.getMessage());
+        }
 
         UIManager.put("OptionPane.sameSizeButtons", true);
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
 
     public void translate() {
-        setTitle(LangService.trans("libra"));
-        UIManager.put("OptionPane.yesButtonText", LangService.trans("yes"));
-        UIManager.put("OptionPane.noButtonText", LangService.trans("no"));
+        setTitle(Libra.lng("libra"));
+        UIManager.put("OptionPane.yesButtonText", Libra.lng("yes"));
+        UIManager.put("OptionPane.noButtonText", Libra.lng("no"));
 
-        userText.setPlaceholder(LangService.trans("login"));
+        userText.setPlaceholder(Libra.lng("login"));
 
-        passwordText.setPlaceholder(LangService.trans("pass"));
+        passwordText.setPlaceholder(Libra.lng("pass"));
 
-        loginButton.setText(LangService.trans("enter"));
+        loginButton.setText(Libra.lng("enter"));
     }
 
     private void placeComponents(JPanel panel) {
@@ -94,7 +96,7 @@ public class LoginView extends JFrame implements ActionListener {
                 LangType lang = LangType.next(LangType.find(langBox.getText()));
                 langBox.setText(lang.toString());
                 Libra.SETTINGS.setLang(lang);
-                LangService.init(lang, Libra.libraService);
+                Libra.libraService.loadLang(lang);
                 translate();
             }
         });
@@ -114,13 +116,13 @@ public class LoginView extends JFrame implements ActionListener {
         passwordText = new LoginField(Libra.SETTINGS.getPassword(), true);
         passwordText.setFont(Fonts.bold15);
         passwordText.setBounds(lWidth - w - 20, (lHeight / 2) + h + 5, w, h);
-        passwordText.addActionListener(this);
+        passwordText.addActionListener(e -> login(userText.getString(), passwordText.getString()));
         panel.add(passwordText);
 
         loginButton = new JButton();
         loginButton.setFont(Fonts.bold15);
         loginButton.setBounds(lWidth - w - 20, (lHeight / 2) + 2 * h + 10, w, h - 5);
-        loginButton.addActionListener(this);
+        loginButton.addActionListener(e -> login(userText.getString(), passwordText.getString()));
         panel.add(loginButton);
     }
 
@@ -133,19 +135,11 @@ public class LoginView extends JFrame implements ActionListener {
             }
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)
-                Libra.eMsg(LangService.trans("error.neterror"));
+                Libra.eMsg(Libra.lng("error.neterror"));
             else {
                 e1.printStackTrace();
                 Libra.eMsg(e1.getMessage());
             }
-        }
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(loginButton)) {
-            login(userText.getString(), passwordText.getString());
-        } else if (e.getSource().equals(passwordText)) {
-            login(userText.getString(), passwordText.getString());
         }
     }
 }

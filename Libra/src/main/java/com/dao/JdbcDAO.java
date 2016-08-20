@@ -37,20 +37,16 @@ public class JdbcDAO {
     }
 
     private void initParams(PreparedStatement stmt, Object[] params) throws SQLException {
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                addInParam(stmt, i + 1, params[i]);
-            }
+        for (int i = 0; i < params.length; i++) {
+            addInParam(stmt, i + 1, params[i]);
         }
     }
 
-    public DataSet select(String query, Object[] params)
+    public DataSet select(String query, Object... params)
             throws Exception {
         long t = System.currentTimeMillis();
 
         ResultSetMetaData metadata;
-        List<Object[]> list = new ArrayList<>();
-        List<String> names = new ArrayList<>();
 
         Connection conn = getConnection();
         PreparedStatement stmt = conn.prepareStatement(query);
@@ -58,14 +54,16 @@ public class JdbcDAO {
 
         ResultSet rs = stmt.executeQuery();
         metadata = rs.getMetaData();
-        int numberOfColumns = metadata.getColumnCount();
 
-        for (int i = 0; i < numberOfColumns; i++) {
+        int cols = metadata.getColumnCount();
+        List<String> names = new ArrayList<>(cols);
+
+        for (int i = 0; i < cols; i++) {
             names.add(metadata.getColumnName(i + 1));
         }
 
         Map<String, int[]> map = new LinkedHashMap<>();
-        for (int i = 0; i < numberOfColumns; i++) {
+        for (int i = 0; i < cols; i++) {
             if (names.get(i).startsWith("CLC") && names.get(i).endsWith("T")) {
                 int codIndex = names.indexOf(names.get(i).substring(3, names.get(i).length() - 1));
                 if (codIndex == -1) {
@@ -79,25 +77,28 @@ public class JdbcDAO {
         }
 
         names.clear();
-        names.addAll(map.keySet());
+        DataSet data = new DataSet(map.keySet());
 
         while (rs.next()) {
-            Object row[] = new Object[map.size()];
+            Object[] row = new Object[map.size()];
             int i = 0;
             for (Map.Entry<String, int[]> entry : map.entrySet()) {
+                Object val = rs.getObject(entry.getValue()[0]);
                 if (entry.getValue().length > 1) {
-                    Object id = rs.getObject(entry.getValue()[0]);
-                    row[i++] = id == null ? null : new CustomItem(id, rs.getObject(entry.getValue()[1]));
+                    row[i++] = val == null ? null : new CustomItem(val, rs.getObject(entry.getValue()[1]));
                 } else {
-                    row[i++] = rs.getObject(entry.getValue()[0]);
+                    row[i++] = val;
                 }
             }
-            list.add(row);
+            data.add(row);
         }
+
+        rs.close();
         stmt.close();
 
         System.out.println("select: " + (System.currentTimeMillis() - t));
-        return new DataSet(names, list);
+
+        return data;
     }
 
     public Connection getConnection() throws Exception {
@@ -107,6 +108,7 @@ public class JdbcDAO {
                 throw new Exception("Проверьте параметры подключения к базе!");
             }
             connection = DriverManager.getConnection(url);
+            connection.setAutoCommit(false);
             System.out.println("Connected to database");
         }
         return connection;
@@ -123,8 +125,8 @@ public class JdbcDAO {
         getConnection().commit();
     }
 
-    public DataSet execute1(String query, List<Object[]> params) throws Exception {
-        CallableStatement cs = getConnection().prepareCall(query);
+    public DataSet executeOut(String query, List<Object[]> params) throws Exception {
+        CallableStatement cs = getConnection().prepareCall(query);///cto eto?
 
         DataSet set = new DataSet();
         for (int i = 0; i < params.size(); i++) {
@@ -141,12 +143,12 @@ public class JdbcDAO {
         cs.execute();
 
         for (String s : set.getNames()) {
-            set.setValueByName(s, 0, cs.getObject((Integer) set.getValueByName(s, 0)));
+            set.setObject(s, cs.getObject(set.getInt(s)));
         }
         return set;
     }
 
-    public BigDecimal execute(String query, Object[] params) throws Exception {
+    public BigDecimal execute(String query, Object... params) throws Exception {
         int q = query.length() - query.replace("?", "").length();
         int p = params != null ? params.length : 0;
 

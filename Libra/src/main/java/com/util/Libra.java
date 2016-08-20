@@ -2,14 +2,18 @@ package com.util;
 
 import com.model.CustomItem;
 import com.model.settings.Settings;
-import com.service.LangService;
 import com.service.LibraService;
 import com.service.ReportService;
 import com.view.component.db.editors.ComboDbEdit;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -17,7 +21,7 @@ import java.util.List;
 
 public class Libra {
 
-    public static String TITLE = "Libra 1.0";
+    public static String TITLE = "Libra 1.2";
 
     public static Settings SETTINGS;
 
@@ -33,9 +37,13 @@ public class Libra {
 
     public static DecimalFormat decimalFormat2 = new DecimalFormat("#,##0.00");
 
-    public static List<Object[]> scaleDrivers = new ArrayList<Object[]>();
+    public static List<Object[]> scaleDrivers = new ArrayList<>();
 
-    public static Map<String, String> designs = new HashMap<String, String>();
+    public static Map<String, String> designs;
+
+    public static Map<String, String> queries;
+
+    public static Map<String, String> langs;
 
     public static Map<CustomItem, List<CustomItem>> filials;
 
@@ -43,19 +51,27 @@ public class Libra {
 
     public static Dimension buttonSize = new Dimension(100, 25);
 
+    public static String lng(String key) {
+        String res = langs.get(key.toLowerCase());
+        return res == null || res.isEmpty() ? key : res;
+    }
+
+    public static String sql(String key) {
+        return queries.get(key.toUpperCase());
+    }
+
     public static void eMsg(String str) {
-        Toolkit.getDefaultToolkit().beep();
         JOptionPane.showMessageDialog(null, str, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static String fMsg(String name, String query, String text, Component parent) {
         return (String) JOptionPane.showInputDialog(
-                parent, LangService.trans(query), LangService.trans(name),
+                parent, lng(query), lng(name),
                 JOptionPane.PLAIN_MESSAGE, Pictures.filterIcon, null, text);
     }
 
     public static boolean qMsg(String name, String question, Component parent) {
-        return 0 == JOptionPane.showConfirmDialog(parent, LangService.trans(question), LangService.trans(name), JOptionPane.YES_NO_OPTION);
+        return 0 == JOptionPane.showConfirmDialog(parent, lng(question), lng(name), JOptionPane.YES_NO_OPTION);
     }
 
     public static Object encodePass(String pass) {
@@ -76,13 +92,6 @@ public class Libra {
             vDefVal = vDefVal.add(new BigDecimal((int) (text.charAt(i))));
         }
         return vDefVal;
-    }
-
-    public static int defineSeason() {
-        Calendar current = Calendar.getInstance();
-        int cYear = current.get(Calendar.YEAR);
-        Calendar start = new GregorianCalendar(cYear, 7, 1);
-        return current.before(start) ? cYear - 1 : cYear;
     }
 
     public static Date truncDate(Date date) {
@@ -114,4 +123,18 @@ public class Libra {
             e.printStackTrace();
         }
     }
+
+    public static void log(String text) {
+        try {
+            text = new Date() + "  -  " + text + "\r\n";
+            Path path = Paths.get("Libra.log");
+            if (!Files.exists(path))
+                Files.createFile(path);
+
+            Files.write(path, text.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            eMsg(e.getMessage());
+        }
+    }
+
 }

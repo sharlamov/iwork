@@ -5,7 +5,13 @@ import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -41,6 +47,19 @@ public class ScalesDriver {
         lTime = System.currentTimeMillis();
     }
 
+    public static void log(String text) {
+        try {
+            text = new Date() + "  -  " + text + "\r\n";
+            Path path = Paths.get("com.log");
+            if (!Files.exists(path))
+                Files.createFile(path);
+
+            Files.write(path, text.getBytes(), StandardOpenOption.APPEND);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
     public void addEventListener(ScaleEventListener listener) {
         listeners.add(listener);
     }
@@ -59,9 +78,10 @@ public class ScalesDriver {
         }
     }
 
-    public void closePort() throws SerialPortException {
-        if (serialPort.isOpened())
+    public void closePort() throws Exception {
+        if (serialPort.isOpened()) {
             serialPort.closePort();
+        }
     }
 
     public boolean checkDriver() {
@@ -97,38 +117,17 @@ public class ScalesDriver {
         weight = newValue;
     }
 
-    public Integer getStableWeight() throws InterruptedException {
-        int lastWeight = weight == null ? 0 : weight;
-        boolean isSolid = false;
-        for (int i = 0, c = 0; i < 5 && !isSolid && c < 10; i++) {
-            isSolid = true;
-            for (int j = 0; j < 100 && c < 10; j++) {
-                TimeUnit.MILLISECONDS.sleep(10);
-                if (weight == null) {
-                    c++;
-                } else {
-                    if (Math.abs(weight - lastWeight) > deviation) {
-                        isSolid = false;
-                        lastWeight = weight;
-                        break;
-                    }
-                }
-            }
-        }
-        return weight;
-    }
-
     public String getComPort() {
         return comPort;
     }
 
-    private String prs(String str, boolean rotate){
+    private String prs(String str, boolean rotate) {
         StringBuilder val = new StringBuilder(str);
-        for(int i = 0; i < val.length();){
+        for (int i = 0; i < val.length(); ) {
             int c = val.charAt(i);
-            if(c < 48 || c > 57){
+            if (c < 48 || c > 57) {
                 val.deleteCharAt(i);
-            }else
+            } else
                 i++;
         }
         return (rotate ? val.reverse() : val).toString();
@@ -146,17 +145,20 @@ public class ScalesDriver {
             int count = event.getEventValue();
             if (event.isRXCHAR() && count > 0) {
                 try {
-                    receivedData.append(serialPort.readString(count));
+                    String message = serialPort.readString(count);
+
+                    receivedData.append(message);
                     Matcher m = pattern.matcher(receivedData);
                     if (m.find()) {
                         setWeight(m.group(0));
                         receivedData.setLength(0);
                         fireScaleEvent();
                     }
-                } catch (SerialPortException ex) {
-                    weight = null;
+                } catch (Exception ex) {
+                    weight = -1;
                     receivedData.setLength(0);
-                    System.out.println(ex.getMessage());
+                    fireScaleEvent();
+                    log(ex.getMessage());
                 }
             }
         }

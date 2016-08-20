@@ -1,18 +1,19 @@
 package com.driver;
 
-import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
-import jssc.SerialPortException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TestDriver implements SerialPortEventListener {
 
+    private static final Logger logger = Logger.getLogger(TestDriver.class.getName());
     private final String format;
     private final String text;
     private Pattern pattern;
@@ -24,7 +25,7 @@ public class TestDriver implements SerialPortEventListener {
     private boolean isInverse;
     private StringBuilder receivedData = new StringBuilder();
 
-    public TestDriver(String format,String text) {
+    public TestDriver(String format, String text) {
         this.format = format;
         this.text = text;
         this.deviation = 20;
@@ -34,6 +35,8 @@ public class TestDriver implements SerialPortEventListener {
         listeners = new ArrayList<ScaleEventListener>();
         isStable = false;
         lTime = System.currentTimeMillis();
+
+
     }
 
     public void addEventListener(ScaleEventListener listener) {
@@ -51,7 +54,10 @@ public class TestDriver implements SerialPortEventListener {
     }
 
     public void setWeight(String val) {
-        Integer newValue = Integer.valueOf(prs(val, isInverse));
+        String ss = prs(val, isInverse);
+
+        Integer newValue = Integer.valueOf(ss);
+        System.out.println(newValue);
         long cTime = System.currentTimeMillis();
 
         if (weight != null && newValue != null && Math.abs(weight - newValue) <= deviation) {
@@ -64,13 +70,13 @@ public class TestDriver implements SerialPortEventListener {
         weight = newValue;
     }
 
-    private String prs(String str, boolean rotate){
+    private String prs(String str, boolean rotate) {
         StringBuilder val = new StringBuilder(str);
-        for(int i = 0; i < val.length();){
+        for (int i = 0; i < val.length(); ) {
             int c = val.charAt(i);
-            if(c < 48 || c > 57){
+            if (c < 48 || c > 57) {
                 val.deleteCharAt(i);
-            }else
+            } else
                 i++;
         }
         return (rotate ? val.reverse() : val).toString();
@@ -86,10 +92,12 @@ public class TestDriver implements SerialPortEventListener {
                     receivedData.setLength(0);
                     fireScaleEvent();
                 }
+                throw new Exception("asdasd asdasd ");
             } catch (Exception ex) {
                 weight = null;
                 receivedData.setLength(0);
-                System.out.println(ex.getMessage());
+                logger.info(ex.toString());
+                System.exit(0);
             }
         }
     }

@@ -46,14 +46,6 @@ public class ScalesPanel extends JPanel implements ActionListener, ScaleEventLis
             } catch (Exception e1) {
                 e1.printStackTrace();
             }
-        } else if (e.getSource().equals(btn4)) {
-            try {
-                String text = String.valueOf(scalesDriver.getStableWeight());
-                label1.setText((System.currentTimeMillis() - t) + "");
-                JOptionPane.showMessageDialog(this, text);
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
         }
     }
 

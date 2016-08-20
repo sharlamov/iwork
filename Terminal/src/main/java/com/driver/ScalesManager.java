@@ -34,7 +34,7 @@ public class ScalesManager {
                         break;
                     }
                     driver.closePort();
-                } catch (SerialPortException e) {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                 }
             }

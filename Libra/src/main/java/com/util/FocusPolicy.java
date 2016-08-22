@@ -7,7 +7,7 @@ public class FocusPolicy extends FocusTraversalPolicy {
     java.util.List<Component> order;
 
     public FocusPolicy() {
-        this.order = new ArrayList<Component>();
+        this.order = new ArrayList<>();
     }
 
     public void add(Component aComponent) {

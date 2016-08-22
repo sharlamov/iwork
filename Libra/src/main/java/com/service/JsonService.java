@@ -2,7 +2,6 @@ package com.service;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 import java.io.*;
@@ -58,7 +57,7 @@ public class JsonService {
         }
 
         public Type[] getActualTypeArguments() {
-            return new Type[] {wrapped};
+            return new Type[]{wrapped};
         }
 
         public Type getRawType() {

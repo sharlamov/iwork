@@ -23,8 +23,6 @@ public class InsertDialog extends JDialog {
     private final IEdit edit;
     private DataSet dataSet;
     private DbPanel dbPanel;
-    private JButton btnYes = new JButton(Libra.lng("yes"));
-    private JButton btnNo = new JButton(Libra.lng("no"));
     private TextDbEdit de;
 
     public InsertDialog(String title, InsertType type, IEdit edit, Component parent) {
@@ -37,8 +35,10 @@ public class InsertDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         prepareParams();
+        JButton btnYes = new JButton(Libra.lng("yes"));
         btnYes.setPreferredSize(Libra.buttonSize);
         btnYes.addActionListener(e -> btnYesAction());
+        JButton btnNo = new JButton(Libra.lng("no"));
         btnNo.setPreferredSize(Libra.buttonSize);
         btnNo.addActionListener(e -> btnNoAction());
         JPanel btnPanel = new JPanel();

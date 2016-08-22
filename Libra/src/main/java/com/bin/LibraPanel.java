@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class LibraPanel extends JPanel implements ActionListener, ListSelectionListener, ItemListener, ChangeEditListener {
+public class LibraPanel extends JPanel implements ListSelectionListener, ItemListener, ChangeEditListener {
 
     private DateDbEdit date1;
     private DateDbEdit date2;
@@ -119,8 +119,8 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     }
 
     public JToolBar initToolBar() {
-        addBtn.addActionListener(this);
-        refreshBtn.addActionListener(this);
+        addBtn.addActionListener(e1 -> openDocument(dataGrid.getDataSetByRow(-1)));
+        refreshBtn.addActionListener(e1 -> refreshMaster());
 
         JToolBar toolBar = new JToolBar(SwingConstants.HORIZONTAL);
         toolBar.setFloatable(false);
@@ -171,9 +171,10 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
 
         divs = new ComboDbEdit<>("div", new ArrayList<>(), filter);
         divs.setMaximumSize(new Dimension(100, 27));
-        divs.addChangeEditListener(this);
         toolBar.add(divs);
         Libra.initFilial(elevators, divs, true);
+        divs.addChangeEditListener(e -> refreshMaster());
+
 
         toolBar.addSeparator();
         toolBar.add(date1);
@@ -227,15 +228,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
         }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (e.getSource().equals(addBtn)) {
-            openDocument(dataGrid.getDataSetByRow(-1));
-        } else if (e.getSource().equals(refreshBtn)) {
-            refreshMaster();
-
-        }
-    }
-
     public void openDocument(DataSet dataSet) {
         if (LibraService.user.getProfile().equalsIgnoreCase("mdauto")) {
             new DocMd(pan, dataSet, doc);
@@ -271,8 +263,6 @@ public class LibraPanel extends JPanel implements ActionListener, ListSelectionL
     public void changeEdit(Object source) {
         if (source.equals(elevators)) {
             Libra.initFilial(elevators, divs, true);
-            refreshMaster();
-        } else if (source.equals(divs)) {
             refreshMaster();
         } else if (source.equals(date1) || source.equals(date2)) {
             refreshMaster();

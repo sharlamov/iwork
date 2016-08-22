@@ -381,7 +381,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public void createHeadPanel() throws Exception {
+    public void createHeadPanel() {
         JPanel headPanel = fieldsPanel.createPanel(1, null);
 
         clcelevatort = new ComboDbEdit<>("clcelevatort", Libra.filials.keySet(), newDataSet);

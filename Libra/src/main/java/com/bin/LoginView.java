@@ -75,9 +75,7 @@ public class LoginView extends JFrame {
         UIManager.put("OptionPane.noButtonText", Libra.lng("no"));
 
         userText.setPlaceholder(Libra.lng("login"));
-
         passwordText.setPlaceholder(Libra.lng("pass"));
-
         loginButton.setText(Libra.lng("enter"));
     }
 
@@ -128,11 +126,10 @@ public class LoginView extends JFrame {
 
     public void login(String login, String pass) {
         try {
-            if (Libra.libraService.login(login, pass)) {
-                JsonService.saveFile(Libra.SETTINGS, "settings.json");
-                dispose();
-                new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + Libra.filials.keySet());
-            }
+            Libra.libraService.login(login, pass);
+            JsonService.saveFile(Libra.SETTINGS, "settings.json");
+            dispose();
+            new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + Libra.filials.keySet());
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)
                 Libra.eMsg(Libra.lng("error.neterror"));

@@ -93,9 +93,12 @@ public class DataGrid extends JPanel {
     public void refreshSummary() {
         if (summaryRow != null) {
             summaryMap.clear();
+
+            long l = System.currentTimeMillis();
             Double b = dtm.getSumByColumn("masa_brutto");
             Double t = dtm.getSumByColumn("masa_tara");
             Double n = dtm.getSumByColumn("masa_netto");
+            System.out.println((System.currentTimeMillis() - l) + " sum ");
 
             summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));
             summaryMap.put("summary.brutto", Libra.decimalFormat.format(b));

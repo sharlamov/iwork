@@ -22,7 +22,7 @@ public class CustomItem implements Copyable<CustomItem> {
         if (id instanceof BigDecimal) {
             this.id = (BigDecimal) id;
             this.label = label == null ? " " : label.toString();
-        }else if(id instanceof String){
+        } else if (id instanceof String) {
             this.id = new BigDecimal(id.toString());
             this.label = label == null ? "" : label.toString();
         }
@@ -59,11 +59,14 @@ public class CustomItem implements Copyable<CustomItem> {
 
     @Override
     public boolean equals(Object obj) {
+        if (!(obj instanceof CustomItem))
+            return false;
+
         CustomItem other = (CustomItem) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
-        } else if (other == null || !id.equals(other.id))
+        } else if (!id.equals(other.id))
             return false;
         return true;
     }

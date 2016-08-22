@@ -131,12 +131,16 @@ public class DataSet extends ArrayList<Object[]> {
         d1.names.forEach((k, v) -> addField(k, getObject(0, v)));
     }
 
-    public Double sum(String fieldName) {
-        int colNumber = findField(fieldName);
-        long l = System.currentTimeMillis();
-        double d = colNumber != -1 ? stream().map(row -> row[colNumber])
-                .filter(val -> val != null).mapToDouble(p -> Double.parseDouble(p.toString())).sum() : 0d;
-        System.out.println((System.currentTimeMillis() - l) + " sum ");
+    public double sum(String fieldName) {
+        double d = 0;
+        if (!isEmpty()) {
+            int colNumber = findField(fieldName);
+            for (Object[] val : this) {
+                if (val[colNumber] != null) {
+                    d += Double.parseDouble(val[colNumber].toString());
+                }
+            }
+        }
         return d;
     }
 
@@ -168,9 +172,11 @@ public class DataSet extends ArrayList<Object[]> {
 
     @Override
     public boolean equals(Object o) {
+        if (!(o instanceof DataSet))
+            return false;
         DataSet set = (DataSet) o;
 
-        if (set == null || size() != set.size() || names.size() != set.names.size())
+        if (size() != set.size() || names.size() != set.names.size())
             return false;
 
         for (int i = 0; i < this.size(); i++) {
@@ -192,7 +198,7 @@ public class DataSet extends ArrayList<Object[]> {
         return true;
     }
 
-    public void update(DataSet set) {
+    public void update(DataSet set) {//?
         int minSize = Math.min(size(), set.size());
         for (Map.Entry<String, Integer> e : set.getCachedNames().entrySet()) {
             for (int i = 0; i < minSize; i++) {
@@ -203,7 +209,7 @@ public class DataSet extends ArrayList<Object[]> {
 
     public DataSet getDataSetByRow(int row) {
         DataSet d = new DataSet(names);
-        if (row != -1 && !isEmpty())
+        if (row > -1 && row < size())
             d.add(get(row));
 
         return d;

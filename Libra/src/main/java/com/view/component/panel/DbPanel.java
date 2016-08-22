@@ -10,8 +10,6 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +27,7 @@ public class DbPanel extends JPanel {
     }
 
     public void refresh() {
-        for (IEdit edit : edits) {
-            edit.refresh();
-        }
+        edits.forEach(IEdit::refresh);
     }
 
     public void refresh(String name) {
@@ -63,19 +59,13 @@ public class DbPanel extends JPanel {
     }
 
     public void setValue(String name, Object value) {
-        for (IEdit edit : edits) {
-            if (edit.getName().equalsIgnoreCase(name)) {
-                edit.setValue(value);
+        edits.stream().filter(edit -> edit.getName().equalsIgnoreCase(name)).forEach(edit -> edit.setValue(value));
+        comps.stream().filter(comp -> comp instanceof JLabel && value != null).forEach(comp -> {
+            JLabel label = (JLabel) comp;
+            if (label.getName() != null && label.getName().equalsIgnoreCase(name)) {
+                label.setText(value.toString());
             }
-        }
-        for (Component comp : comps) {
-            if (comp instanceof JLabel && value != null) {
-                JLabel label = (JLabel) comp;
-                if (label.getName() != null && label.getName().equalsIgnoreCase(name)) {
-                    label.setText(value.toString());
-                }
-            }
-        }
+        });
     }
 
     @Override
@@ -144,11 +134,7 @@ public class DbPanel extends JPanel {
     public void addInsertBtn(final IEdit edit, final InsertType type) {
         JButton btn = new JButton(Pictures.saveIcon);
         final JPanel parent = this;
-        btn.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                new InsertDialog("add", type, edit, parent);
-            }
-        });
+        btn.addActionListener(e -> new InsertDialog("add", type, edit, parent));
 
         addEditBtn(edit, btn);
     }

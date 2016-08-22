@@ -44,7 +44,7 @@ public class LibraService {
         }
     }
 
-    public boolean login(String userName, String password) throws Exception {
+    public void login(String userName, String password) throws Exception {
         if (userName == null || userName.isEmpty()) {
             throw new Exception(Libra.lng("error.emptylogin"));
         } else if (password == null || password.length() == 0) {
@@ -74,6 +74,7 @@ public class LibraService {
         if (dataElevator.isEmpty()) {
             throw new Exception(Libra.lng("error.notfoundelevator"));
         } else {
+
             Libra.filials = new HashMap<>(dataElevator.size());
             for (Object[] row : dataElevator) {
                 CustomItem key = (CustomItem) row[0];
@@ -102,8 +103,6 @@ public class LibraService {
 
         //init context
         execute(Libra.sql("INITCONTEXT"), DataSet.init("plevel", user.getAdminLevel().toString(), "puserid", user.getId().toString(), "plimit", Libra.LIMIT_DIFF_MPFS.toString()));
-
-        return true;
     }
 
     public DataSet executeQuery(String query, DataSet dataSet) throws Exception {

@@ -104,8 +104,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
                 try {
                     table.filter();
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    Libra.eMsg(e.getMessage());
+                    Libra.eMsg(e);
                 }
             }
         });
@@ -200,8 +199,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
                 lostCarLabel.setText(Libra.lng("lostcar") + " " + lostDS.getString("dd"));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
     }
 
@@ -214,8 +212,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
             filter.setObject("type", doc.getType());
             dataGrid.select(filter);
         } catch (Exception e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
     }
 

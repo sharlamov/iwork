@@ -48,7 +48,7 @@ public class DocRo extends ScaleDoc {
                 infoPanel.setValue("test3", Libra.libraService.executeQuery(Libra.sql("FINFO1"), DataSet.init(" clcnamet", newInfoSet.getObject(" clccusert"))).getString(" info"));
             }
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
     }
 
@@ -90,8 +90,7 @@ public class DocRo extends ScaleDoc {
                 }
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
+            Libra.eMsg(e1);
         }
         return isSaved;
     }
@@ -107,19 +106,18 @@ public class DocRo extends ScaleDoc {
     private void loadDocument() {
         BigDecimal nrDoc = newDataSet.getDecimal("order_shipment");
         if (nrDoc.equals(BigDecimal.ZERO)) {
-            Libra.eMsg(Libra.lng("error.empty.nrdoc"));
+            Libra.iMsg(Libra.lng("error.empty.nrdoc"));
         } else {
             try {
                 DataSet set = Libra.libraService.executeQuery(Libra.sql("LOADOUTDOC"), DataSet.init("nrdoc", nrDoc));
                 if (set.isEmpty()) {
-                    Libra.eMsg(Libra.lng("error.notfound.nrdoc"));
+                    Libra.iMsg(Libra.lng("error.notfound.nrdoc"));
                 } else {
                     newDataSet.update(set);
                     fieldsPanel.refresh();
                 }
             } catch (Exception e1) {
-                e1.printStackTrace();
-                Libra.eMsg(Libra.lng(e1.getMessage()));
+                Libra.iMsg(Libra.lng(e1.getMessage()));
             }
         }
         pv.requestFocus();
@@ -427,7 +425,7 @@ public class DocRo extends ScaleDoc {
         try {
             newInfoSet = Libra.libraService.executeQuery(doc.getPrintInfoSql(), newDataSet);
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
 
         DbPanel ip = new DbPanel(720, 550);

@@ -45,7 +45,7 @@ public class HistoryPanel extends JPanel {
                 makeFoto(objects[5]);
             }
         } catch (Exception ex) {
-            eMsg(ex.getMessage());
+            eMsg(ex);
         }
         revalidate();
         repaint();

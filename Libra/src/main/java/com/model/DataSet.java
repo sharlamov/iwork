@@ -132,16 +132,16 @@ public class DataSet extends ArrayList<Object[]> {
     }
 
     public double sum(String fieldName) {
-        double d = 0;
         if (!isEmpty()) {
             int colNumber = findField(fieldName);
-            for (Object[] val : this) {
-                if (val[colNumber] != null) {
-                    d += Double.parseDouble(val[colNumber].toString());
-                }
-            }
+            if (colNumber > -1)
+                return stream().mapToDouble(row -> toDouble(row[colNumber])).sum();
         }
-        return d;
+        return 0;
+    }
+
+    private double toDouble(Object obj) {
+        return obj == null ? 0 : Double.parseDouble(obj.toString());
     }
 
     public DataSet copy() { //? lambda

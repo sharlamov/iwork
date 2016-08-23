@@ -132,8 +132,7 @@ public class InsertDialog extends JDialog {
                 ((Component) edit).transferFocus();
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
+            Libra.eMsg(e1);
         }
     }
 

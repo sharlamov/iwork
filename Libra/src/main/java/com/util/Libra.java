@@ -1,6 +1,7 @@
 package com.util;
 
 import com.model.CustomItem;
+import com.model.Scale;
 import com.model.settings.Settings;
 import com.service.LibraService;
 import com.service.ReportService;
@@ -16,8 +17,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class Libra {
 
@@ -37,7 +40,7 @@ public class Libra {
 
     public static DecimalFormat decimalFormat2 = new DecimalFormat("#,##0.00");
 
-    public static List<Object[]> scaleDrivers = new ArrayList<>();
+    public static List<Scale> scales;
 
     public static Map<String, String> designs;
 
@@ -60,8 +63,12 @@ public class Libra {
         return queries.get(key.toUpperCase());
     }
 
-    public static void eMsg(String str) {
-        JOptionPane.showMessageDialog(null, str, "Error", JOptionPane.ERROR_MESSAGE);
+    public static void eMsg(Exception err) {
+        JOptionPane.showMessageDialog(null, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    public static void iMsg(String message) {
+        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static String fMsg(String name, String query, String text, Component parent) {
@@ -133,7 +140,7 @@ public class Libra {
 
             Files.write(path, text.getBytes(), StandardOpenOption.APPEND);
         } catch (IOException e) {
-            eMsg(e.getMessage());
+            eMsg(e);
         }
     }
 

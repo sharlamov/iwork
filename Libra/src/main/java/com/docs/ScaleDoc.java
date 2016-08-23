@@ -2,7 +2,6 @@ package com.docs;
 
 import com.bin.DialogMaster;
 import com.bin.LibraPanel;
-import com.driver.ScalesDriver;
 import com.model.*;
 import com.service.LibraService;
 import com.util.FocusPolicy;
@@ -117,10 +116,9 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
 
     private void initWeightBoard() {
         board.setPreferredSize(new Dimension(220, 70));
-        for (Object[] data : Libra.scaleDrivers) {
-            ScalesDriver sd = (ScalesDriver) data[0];
-            final ScaleWidget wb = new ScaleWidget(sd, false, data[1], (List<String>) data[2]);
-            wb.setWeight(sd.getWeight());
+        for (Scale scale : Libra.scales) {
+            final ScaleWidget wb = new ScaleWidget(scale.getDriver(), false, scale.getScaleId(), scale.getCams());
+            wb.setWeight(scale.getDriver().getWeight());
             if (!isNetNull()) {
                 wb.setBlock(true);
             }
@@ -146,7 +144,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
             else
                 outForm();
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
 
         if (isNetNull())
@@ -263,8 +261,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                         try {
                             Libra.reportService.buildReport(doc.getReports().get(i), newDataSet);
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            Libra.eMsg(e.getMessage());
+                            Libra.eMsg(e);
                         }
                     }
                 }
@@ -294,8 +291,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                             Libra.libraService.commit();
                             JOptionPane.showMessageDialog(null, Libra.lng("doc.saved"), "Ok", JOptionPane.INFORMATION_MESSAGE);
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            Libra.eMsg(e.getMessage());
+                            Libra.eMsg(e);
                         }
                     }
                 }
@@ -310,20 +306,21 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         boolean bConfirm;
 
         if (weight != null && weight != 0) {
-            List<String> cams = scaleWidget.getCams();
-            List<BufferedImage> images = new ArrayList<>();
-            for (String path : cams) {
+            List<URL> cams = scaleWidget.getCams();
+            List<BufferedImage> images = new ArrayList<>(cams.size());
+            for (URL url : cams) {
                 try {
-                    URL url = new URL(path);
-                    BufferedImage img = ImageIO.read(url);
-                    images.add(img);
+                    images.add(ImageIO.read(url));
                 } catch (IOException e) {
                     Libra.log("--url -- " + e.getMessage());
                     Libra.log("--url -- " + e.getCause());
-                    e.printStackTrace();
                 }
             }
-            bConfirm = DialogMaster.createFixDialog(Libra.lng("scale.take"), weight, images);
+
+            bConfirm = images.isEmpty() ?
+                    JOptionPane.showConfirmDialog(this, Libra.lng("scale.fixedweight") + " (" + weight + ")", Libra.lng("scale.take"), JOptionPane.YES_NO_OPTION) == 0 :
+                    DialogMaster.createFixDialog(Libra.lng("scale.take"), weight, images);
+
 
             if (bConfirm) {
                 boolean isEmptyCar;
@@ -358,7 +355,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                 blockWeightBoards();
             }
         } else {
-            Libra.eMsg(Libra.lng("error.zeroweight"));
+            Libra.iMsg(Libra.lng("error.zeroweight"));
         }
     }
 

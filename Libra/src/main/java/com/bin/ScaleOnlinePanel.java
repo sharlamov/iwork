@@ -3,6 +3,7 @@ package com.bin;
 import com.driver.ScaleType;
 import com.driver.ScalesDriver;
 import com.driver.ScalesManager;
+import com.model.Scale;
 import com.model.settings.ScaleSettings;
 import com.service.JsonService;
 import com.util.Libra;
@@ -20,7 +21,6 @@ public class ScaleOnlinePanel extends JPanel {
 
     public ScaleOnlinePanel() {
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        initScalesSetting();
         try {
             initScales();
         } catch (SerialPortException e) {
@@ -28,27 +28,21 @@ public class ScaleOnlinePanel extends JPanel {
         }
     }
 
-    public void initScalesSetting() {
-        if (Libra.SETTINGS.getScales() != null) {
-            for (ScaleSettings ss : Libra.SETTINGS.getScales()) {
-                ScaleType scale = ScaleType.valueOf(ss.getDriverName());
-                Libra.scaleDrivers.add(new Object[]{new ScalesDriver(scale, ss.getPort()), ss.getScaleId(), ss.getCams()});
-            }
-        }
-    }
-
-
     public void initScales() throws SerialPortException {
         removeAll();
-        if (Libra.scaleDrivers.isEmpty()) {
+        if (Libra.SETTINGS.getScales() == null || Libra.SETTINGS.getScales().isEmpty()) {
             JButton find = new JButton(Libra.lng("findScales"), Pictures.findIcon);
             find.addActionListener(e -> findScales());
             add(find);
         } else {
-            for (Object[] data : Libra.scaleDrivers) {
-                ScalesDriver sd = (ScalesDriver) data[0];
+            Libra.scales = new ArrayList<>(Libra.SETTINGS.getScales().size());
+
+            for (ScaleSettings settings : Libra.SETTINGS.getScales()) {
+                ScaleType scale = ScaleType.valueOf(settings.getDriverName());
+                ScalesDriver sd = new ScalesDriver(scale, settings.getPort());
                 sd.openPort();
-                add(new ScaleWidget(sd, true, data[1], (List<String>) data[2]));
+                Libra.scales.add(new Scale(settings.getScaleId(), sd, settings.getCams()));
+                add(new ScaleWidget(sd, true, settings.getScaleId(), settings.getCams()));
             }
         }
         revalidate();
@@ -56,16 +50,12 @@ public class ScaleOnlinePanel extends JPanel {
 
     public void findScales() {
         try {
-            List<ScaleSettings> lst = new ArrayList<>();
-            ScalesManager manager = new ScalesManager();
-            manager.defineScales();
-            lst.addAll(manager.getScales().stream().map(driver -> new ScaleSettings(0, driver.getComPort(), driver.toString(), null)).collect(Collectors.toList()));
-            Libra.SETTINGS.setScales(lst);
+            List<ScalesDriver> drivers = ScalesManager.defineScales();
+            Libra.SETTINGS.setScales(drivers.stream().map(driver -> new ScaleSettings(0, driver.getComPort(), driver.toString(), null)).collect(Collectors.toList()));
             JsonService.saveFile(Libra.SETTINGS, "settings.json");
             initScales();
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
+            Libra.eMsg(e1);
         }
     }
 }

@@ -23,7 +23,7 @@ public class DialogMaster {
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.setLayout(new BorderLayout());
 
-        if (images.size() > 0) {
+        if (!images.isEmpty()) {
             JPanel fotoPanel = new JPanel();
             for (BufferedImage image : images) {
                 JLabel label = new JLabel(new ImageIcon(image.getScaledInstance(280, 200, Image.SCALE_FAST)));

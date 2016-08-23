@@ -66,8 +66,7 @@ public class DocMd extends ScaleDoc {
                 }
             }
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Libra.eMsg(e1.getMessage());
+            Libra.eMsg(e1);
         }
         return isSaved;
     }
@@ -349,7 +348,7 @@ public class DocMd extends ScaleDoc {
             }
 
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         } finally {
             useRefresh = false;
         }
@@ -360,7 +359,7 @@ public class DocMd extends ScaleDoc {
         try {
             newInfoSet = Libra.libraService.executeQuery(doc.getPrintInfoSql(), newDataSet);
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
 
         DbPanel ip = new DbPanel(720, 550);

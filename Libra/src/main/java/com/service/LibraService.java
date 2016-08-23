@@ -177,8 +177,7 @@ public class LibraService {
         try {
             dao.closeConnection();
         } catch (SQLException e) {
-            e.printStackTrace();
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
     }
 }

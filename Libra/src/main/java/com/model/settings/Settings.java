@@ -15,7 +15,7 @@ public class Settings extends AbstractSettings {
     private List<ScaleSettings> scales;
 
     public String getConnection() {
-        if(connection.contains(":"))
+        if (connection.contains(":"))
             connection = encodeURL(connection);
         return decodeURL(connection);
     }

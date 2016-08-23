@@ -8,6 +8,8 @@ import com.util.Libra;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -15,7 +17,7 @@ import java.util.Random;
 public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable {
 
     private final Integer driverId;
-    private final List<String> cams;
+    private final List<URL> cams;
     private final ScalesDriver driver;
     public JButton btnAdd;
     volatile long lastTime;
@@ -26,7 +28,7 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
     private boolean isBlock;
     private Thread t;
 
-    public ScaleWidget(final ScalesDriver driver, boolean isOnline, Object driverId, List<String> cams) {
+    public ScaleWidget(final ScalesDriver driver, boolean isOnline, Object driverId, List<URL> cams) {
         this.driver = driver;
         this.isOnline = isOnline;
         this.cams = cams;
@@ -77,7 +79,7 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
 
     public Integer getWeight() {
         if (driverId == null) {
-            Libra.eMsg(Libra.lng("error.emptyscalecode"));
+            Libra.iMsg(Libra.lng("error.emptyscalecode"));
             return null;
         } else {
             String value = score.getText();
@@ -103,8 +105,8 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
         }
     }
 
-    public List<String> getCams() {
-        return cams;
+    public List<URL> getCams() {
+        return cams == null ? Collections.emptyList() : cams;
     }
 
     @Override

@@ -62,7 +62,7 @@ public class LoginView extends JFrame {
             Libra.libraService.loadQueries();
             Libra.libraService.loadLang(Libra.SETTINGS.getLang());
         } catch (Exception e) {
-            Libra.eMsg(e.getMessage());
+            Libra.eMsg(e);
         }
 
         UIManager.put("OptionPane.sameSizeButtons", true);
@@ -132,10 +132,9 @@ public class LoginView extends JFrame {
             new MainFrame(Libra.TITLE + " - " + LibraService.user.getUsername() + ": " + Libra.filials.keySet());
         } catch (Exception e1) {
             if (e1.getCause() instanceof NetException)
-                Libra.eMsg(Libra.lng("error.neterror"));
+                Libra.iMsg(Libra.lng("error.neterror"));
             else {
-                e1.printStackTrace();
-                Libra.eMsg(e1.getMessage());
+                Libra.eMsg(e1);
             }
         }
     }

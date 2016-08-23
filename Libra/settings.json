@@ -1,18 +1,15 @@
 {
   "lang": "RU",
-  "username": "ARusu_fsr",
-  "password": "aliona498",
-  "auto": false,
+  "username": "amuzica_fsr",
+  "password": "andrey488",
+  "auto": true,
+  "debug": true,
   "connection": "894900902901942889886903901892899942884896895890942916918935922917921927924953916918935922917921927924936951943947954950950954950948949954947952942948952943945942916918935922917921927924",
   "scales": [
     {
       "scaleId": 1,
       "port": "com1",
-      "driverName": "R320",
-      "cams": [
-        "http://192.168.0.37/image",
-        "http://192.168.0.38/image"
-      ]
+      "driverName": "R320"
     }
   ]
 }

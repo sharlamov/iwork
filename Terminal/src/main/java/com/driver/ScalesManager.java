@@ -1,6 +1,5 @@
 package com.driver;
 
-import jssc.SerialPortException;
 import jssc.SerialPortList;
 
 import java.util.ArrayList;
@@ -8,19 +7,13 @@ import java.util.List;
 
 public class ScalesManager {
 
-    private List<ScalesDriver> scales;
-
-    public ScalesManager() {
-        scales = new ArrayList<ScalesDriver>();
-    }
-
-    public String[] getPortList() {
+    public static String[] getPortList() {
         return SerialPortList.getPortNames();
     }
 
-    public void defineScales() {
-        scales.clear();
+    public static List<ScalesDriver> defineScales() {
         String[] ports = SerialPortList.getPortNames();
+        List<ScalesDriver> scales = new ArrayList<ScalesDriver>();
 
         for (String port : ports) {
             ScalesDriver driver;
@@ -39,9 +32,11 @@ public class ScalesManager {
                 }
             }
         }
+
+        return scales;
     }
 
-    public void initByName(List<String[]> params) {
+    /*public void initByName(List<String[]> params) {
         for (String[] name : params) {
             for (ScaleType scaleType : ScaleType.values()) {
                 if (name[1].equalsIgnoreCase(scaleType.toString())) {
@@ -50,13 +45,5 @@ public class ScalesManager {
                 }
             }
         }
-    }
-
-    public List<ScalesDriver> getScales() {
-        return scales;
-    }
-
-    public void setScales(List<ScalesDriver> scales) {
-        this.scales = scales;
-    }
+    }*/
 }

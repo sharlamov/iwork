@@ -1,7 +1,7 @@
 package com.bin;
 
-import com.model.CustomItem;
-import com.model.DataSet;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
 import com.util.Fonts;
 import com.util.Libra;
 import com.util.Pictures;

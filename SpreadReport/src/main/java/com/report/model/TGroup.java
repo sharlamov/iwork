@@ -1,4 +1,4 @@
-package md.sh.model.struct;
+package com.report.model;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,6 +16,12 @@ public class TGroup {
         header = new TRange(sheet);
         footer = new TRange(sheet);
         addRow(isHeader, row);
+    }
+
+    public TGroup(Sheet sheet, String fieldName) {
+        setFieldName(fieldName);
+        header = new TRange(sheet);
+        footer = new TRange(sheet);
     }
 
     public void addRow(boolean isHeader, Row... row) {
@@ -59,5 +65,14 @@ public class TGroup {
     @Override
     public int hashCode() {
         return fieldName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "TGroup{" +
+                "fieldName='" + fieldName + '\'' +
+                ", header=" + header.size() +
+                ", footer=" + footer.size() +
+                '}';
     }
 }

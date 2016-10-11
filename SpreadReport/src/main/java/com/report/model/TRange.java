@@ -1,8 +1,8 @@
-package md.sh.model.struct;
+package com.report.model;
 
-import md.sh.bin.ReportGear;
-import md.sh.model.CustomItem;
-import md.sh.model.IDataSet;
+import com.dao.model.CustomItem;
+import com.dao.model.IDataSet;
+import com.report.bin.ReportGear;
 import org.apache.poi.ss.formula.FormulaParser;
 import org.apache.poi.ss.formula.FormulaRenderer;
 import org.apache.poi.ss.formula.FormulaType;
@@ -10,30 +10,33 @@ import org.apache.poi.ss.formula.ptg.AreaPtgBase;
 import org.apache.poi.ss.formula.ptg.Ptg;
 import org.apache.poi.ss.formula.ptg.RefPtgBase;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TRange extends ArrayList<Row> {
 
     private final Sheet sheet;
     private Map<CellStyle, CellStyle> styles;
+    private List<CellRangeAddress> merged;
 
     public TRange(Sheet sheet) {
         super();
         this.sheet = sheet;
 
         styles = new HashMap<>();
+        merged = new ArrayList<>();
     }
 
     public void paint(IDataSet set, boolean useFullSet) {
         int count = useFullSet ? set.size() : 1;
+        int startNr = sheet.getPhysicalNumberOfRows();
         for (int i = 0; i < count; i++) {
             for (Row row : this) {
                 createNewRow(row, set, i);
             }
+            setMerge(startNr);
+            startNr += size();
         }
     }
 
@@ -42,7 +45,8 @@ public class TRange extends ArrayList<Row> {
             return set.sum(name.substring(1));
         } else {
             Integer col = set.findField(name);
-            return col > -1 ? set.getObject(nr, col) : null;
+            Object obj = set.getObject(nr, col);
+            return obj == null ? "" : obj;
         }
     }
 
@@ -52,12 +56,37 @@ public class TRange extends ArrayList<Row> {
 
     protected void createNewRow(Row rowOld, IDataSet set, int nr) {
         Row rowNew = addNewRow();
+        rowNew.setHeight(rowOld.getHeight());
         for (int j = ReportGear.INDENT; j < rowOld.getLastCellNum(); j++) {
             Cell cellOld = rowOld.getCell(j);
             if (cellOld != null) {
                 Cell cellNew = rowNew.createCell(cellOld.getColumnIndex() - ReportGear.INDENT);
                 initCell(cellOld, cellNew, set, nr);
             }
+        }
+    }
+
+    public void addMergedRange(Sheet oldSheet) {
+        OptionalInt min = stream().mapToInt(Row::getRowNum).min();
+        if (min.isPresent()) {
+            int firstRowNr = min.getAsInt();
+            int lastRowNr = firstRowNr + size();
+            oldSheet.getMergedRegions().stream().filter(ra -> ra.getFirstRow() >= firstRowNr && ra.getLastRow() <= lastRowNr).forEach(ra -> {
+                ra.setFirstRow(ra.getFirstRow() - firstRowNr);
+                ra.setLastRow(ra.getLastRow() - firstRowNr);
+                merged.add(ra);
+            });
+        }
+    }
+
+    public void setMerge(int startRow) {
+        for (CellRangeAddress ra : merged) {
+            sheet.addMergedRegion(new CellRangeAddress(
+                    ra.getFirstRow() + startRow, //first row (0-based)
+                    ra.getLastRow() + startRow, //last row  (0-based)
+                    ra.getFirstColumn() - ReportGear.INDENT, //first column (0-based)
+                    ra.getLastColumn() - ReportGear.INDENT  //last column  (0-based)
+            ));
         }
     }
 
@@ -78,7 +107,6 @@ public class TRange extends ArrayList<Row> {
 
         switch (cOld.getCellType()) {
             case Cell.CELL_TYPE_BLANK:
-                cNew.setCellValue(cOld.getStringCellValue());
                 break;
             case Cell.CELL_TYPE_BOOLEAN:
                 cNew.setCellValue(cOld.getBooleanCellValue());
@@ -100,7 +128,7 @@ public class TRange extends ArrayList<Row> {
                 if (value instanceof Date)
                     cNew.setCellValue((Date) value);
                 else if (value instanceof Number)
-                    cNew.setCellValue(Double.valueOf(value.toString()));
+                    cNew.setCellValue(((Number) value).doubleValue());
                 else if (value instanceof String)
                     cNew.setCellValue(value.toString());
                 else if (value instanceof CustomItem)

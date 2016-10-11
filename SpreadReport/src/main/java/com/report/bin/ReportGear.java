@@ -1,7 +1,7 @@
-package md.sh.bin;
+package com.report.bin;
 
-import md.sh.model.IDataSet;
-import md.sh.model.struct.TBand;
+import com.dao.model.IDataSet;
+import com.report.model.TBand;
 import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.formula.FormulaParsingWorkbook;
@@ -18,7 +18,6 @@ import java.io.InputStream;
 
 public class ReportGear {
 
-    //range coping
     //join fields
     public static int INDENT = 3;
     public static FormulaParsingWorkbook parsingBook = null;
@@ -28,10 +27,15 @@ public class ReportGear {
     private TBand summary;
     private IDataSet header;
     private IDataSet master;
+    private int columnCount;
 
     public void make(File source, IDataSet header, IDataSet master) throws Exception {
         this.header = header;
         this.master = master;
+
+        if (header == null || master == null)
+            throw new Exception("Dataset is empty");
+
         long t = System.currentTimeMillis();
 
         InputStream inp = new FileInputStream(source);
@@ -60,8 +64,7 @@ public class ReportGear {
     }
 
     private void process(Sheet oldSheet, Sheet newSheet) {
-
-        setup(oldSheet, newSheet);
+        printSetup(oldSheet, newSheet);
 
         title = new TBand(newSheet);
         detail = new TBand(newSheet);
@@ -69,14 +72,14 @@ public class ReportGear {
 
         oldSheet.rowIterator().forEachRemaining(this::processRow);
 
-        /*copyMergedRanges(oldSheet, title);
-        copyMergedRanges(oldSheet, detail);
-        copyMergedRanges(oldSheet, summary);*/
+        widthSetup(oldSheet, newSheet);
+        title.addMerged(oldSheet);
+        detail.addMerged(oldSheet);
+        summary.addMerged(oldSheet);
 
         title.paint(header, false);
         detail.paint(master, true);
         summary.paint(master, false);
-
     }
 
     public void processRow(Row row) {
@@ -85,37 +88,39 @@ public class ReportGear {
             Cell cell = row.getCell(0);
             if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
                 int lc = row.getLastCellNum();
-                if (lc > 2) {
-                    String rowType = cell.getStringCellValue().toUpperCase();
-                    switch (rowType) {
-                        case "TITLE": {
-                            title.add(row);
-                        }
-                        break;
-                        case "GROUPH": {
-                            String fName = getGroupParam(row);
-                            if (!fName.isEmpty()) {
-                                detail.addGroup(true, row, fName);
-                            }
-                        }
-                        break;
-                        case "DETAIL1": {
-                            detail.add(row);
-                        }
-                        break;
-                        case "GROUPF": {
-                            String fName = getGroupParam(row);
-                            if (!fName.isEmpty()) {
-                                detail.addGroup(false, row, fName);
-                            }
-                        }
-                        break;
-                        case "SUMMARY": {
-                            summary.add(row);
-                        }
-                        break;
+                columnCount = columnCount < row.getLastCellNum() ? row.getLastCellNum() : columnCount;
+
+                //if (lc > 0) {
+                String rowType = cell.getStringCellValue().toUpperCase();
+                switch (rowType) {
+                    case "TITLE": {
+                        title.add(row);
                     }
+                    break;
+                    case "GROUPH": {
+                        String fName = getGroupParam(row);
+                        if (!fName.isEmpty()) {
+                            detail.addGroup(true, row, fName);
+                        }
+                    }
+                    break;
+                    case "DETAIL1": {
+                        detail.add(row);
+                    }
+                    break;
+                    case "GROUPF": {
+                        String fName = getGroupParam(row);
+                        if (!fName.isEmpty()) {
+                            detail.addGroup(false, row, fName);
+                        }
+                    }
+                    break;
+                    case "SUMMARY": {
+                        summary.add(row);
+                    }
+                    break;
                 }
+                //}
             }
         }
     }
@@ -125,12 +130,7 @@ public class ReportGear {
         return cell != null && cell.getCellType() == 1 ? cell.getStringCellValue().replace("_", "").toUpperCase() : "";
     }
 
-    //PrintSetup ps = sheet.getPrintSetup();
-    public void setup(Sheet oldSheet, Sheet newSheet) {
-        for (int i = 0; i < 100; i++) {
-            newSheet.setColumnWidth(i, oldSheet.getColumnWidth(i + INDENT));
-        }
-
+    public void printSetup(Sheet oldSheet, Sheet newSheet) {
         //print setup
         PrintSetup oldPS = oldSheet.getPrintSetup();
         PrintSetup newPS = newSheet.getPrintSetup();
@@ -179,13 +179,9 @@ public class ReportGear {
         newSheet.setMargin(Sheet.TopMargin, oldSheet.getMargin(Sheet.TopMargin));
     }
 
-    public void copyMergedRanges(Sheet oldSheet, TBand range) {
-        /*for (CellRangeAddress ra : oldSheet.getMergedRegions()) {
-            if(range.isInRange(ra)){
-                range.addRange(ra);
-            }
-
-        }*/
+    public void widthSetup(Sheet oldSheet, Sheet newSheet) {
+        for (int i = 0; i < columnCount; i++)
+            newSheet.setColumnWidth(i, oldSheet.getColumnWidth(i + INDENT));
     }
 
     public void init(Workbook book) {

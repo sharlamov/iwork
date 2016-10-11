@@ -1,4 +1,4 @@
-package md.sh.model;
+package com.report.model;
 
 import java.io.File;
 

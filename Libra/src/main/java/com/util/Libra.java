@@ -1,6 +1,6 @@
 package com.util;
 
-import com.model.CustomItem;
+import com.dao.model.CustomItem;
 import com.model.Scale;
 import com.model.settings.Settings;
 import com.service.LibraService;
@@ -24,11 +24,11 @@ import java.util.Map;
 
 public class Libra {
 
-    public static String TITLE = "Libra 1.2";
+    public static String TITLE = "Libra 1.4";
 
     public static Settings SETTINGS;
 
-    public static LibraService libraService = new LibraService();
+    public static LibraService libraService;
 
     public static ReportService reportService = new ReportService();
 
@@ -64,7 +64,7 @@ public class Libra {
     }
 
     public static void eMsg(Exception err) {
-        JOptionPane.showMessageDialog(null, err.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(null, err.getMessage() + "\r\n" + err.toString(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void iMsg(String message) {

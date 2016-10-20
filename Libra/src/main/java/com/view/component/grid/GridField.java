@@ -25,4 +25,12 @@ public class GridField {
     public void setSize(int size) {
         this.size = size;
     }
+
+    @Override
+    public String toString() {
+        return "GridField{" +
+                "name='" + name + '\'' +
+                ", size=" + size +
+                '}';
+    }
 }

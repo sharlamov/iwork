@@ -1,11 +1,12 @@
 package com.view.component.grid;
 
-import com.model.DataSet;
+import com.dao.model.DataSet;
 import com.util.Fonts;
 import com.util.Libra;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,7 +85,7 @@ public class DataSetTableModel extends AbstractTableModel {
         return dataSet.getDataSetByRow(row);
     }
 
-    public Double getSumByColumn(String fieldName) {
+    public BigDecimal getSumByColumn(String fieldName) {
         return dataSet.sum(fieldName);
     }
 

@@ -1,7 +1,7 @@
 package com.view.component.db.editors;
 
-import com.model.CustomItem;
-import com.model.DataSet;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
 import com.view.component.db.editors.validators.AbstractValidator;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.BalloonTipStyle;

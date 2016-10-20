@@ -11,7 +11,7 @@ import java.util.List;
 
 public class DialogMaster {
 
-    static boolean res = false;
+    private static boolean res = false;
 
     public static boolean createFixDialog(String title, int weight, List<BufferedImage> images) {
         int dWidth = 600;

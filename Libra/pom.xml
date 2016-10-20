@@ -4,7 +4,7 @@
 
     <groupId>com</groupId>
     <artifactId>scales</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>scales</name>
@@ -27,17 +27,17 @@
             <artifactId>jcalendar</artifactId>
             <version>1.4</version>
         </dependency>
-        <!-- COM -->
+        <!-- COM port -->
         <dependency>
-            <groupId>com</groupId>
-            <artifactId>driver</artifactId>
+            <groupId>com.serial</groupId>
+            <artifactId>serial-comm</artifactId>
             <version>3.3</version>
         </dependency>
-        <!-- POI -->
+        <!-- Report -->
         <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>3.12</version>
+            <groupId>com.report</groupId>
+            <artifactId>spread-report</artifactId>
+            <version>1.0</version>
         </dependency>
         <!-- Baloon hint -->
         <dependency>

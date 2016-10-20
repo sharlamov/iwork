@@ -19,6 +19,7 @@ public class Pictures {
     public static ImageIcon findIcon = createImageIcon("images/find.png");
     public static ImageIcon downloadedIcon = createImageIcon("images/download.png", 20, 20);
     public static Image scaleIcon = getImage("images/scale.png");
+    public static ImageIcon loadingIcon = createImageIcon("images/loading-bar.gif");
 
 
     public static Image getImage(String path) {

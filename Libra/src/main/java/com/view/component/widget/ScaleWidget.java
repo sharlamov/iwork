@@ -1,7 +1,7 @@
 package com.view.component.widget;
 
-import com.driver.ScaleEventListener;
-import com.driver.ScalesDriver;
+import com.serialcomm.driver.ScaleEventListener;
+import com.serialcomm.driver.ScalesDriver;
 import com.util.Fonts;
 import com.util.Libra;
 

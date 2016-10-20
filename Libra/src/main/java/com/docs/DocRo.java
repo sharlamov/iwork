@@ -1,8 +1,8 @@
 package com.docs;
 
 import com.bin.LibraPanel;
+import com.dao.model.DataSet;
 import com.enums.InsertType;
-import com.model.DataSet;
 import com.model.Doc;
 import com.service.LibraService;
 import com.util.Libra;
@@ -516,7 +516,7 @@ public class DocRo extends ScaleDoc {
         updateBtn.addActionListener(this);
     }
 
-    public BigDecimal calcNetto(BigDecimal brutto, BigDecimal tara) {
+    private BigDecimal calcNetto(BigDecimal brutto, BigDecimal tara) {
         int b = brutto.intValue();
         int t = tara.intValue();
         if (b > 0 && t > 0) {

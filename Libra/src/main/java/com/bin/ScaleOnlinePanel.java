@@ -1,8 +1,9 @@
 package com.bin;
 
-import com.driver.ScaleType;
-import com.driver.ScalesDriver;
-import com.driver.ScalesManager;
+
+import com.serialcomm.driver.ScaleType;
+import com.serialcomm.driver.ScalesDriver;
+import com.serialcomm.driver.ScalesManager;
 import com.model.Scale;
 import com.model.settings.ScaleSettings;
 import com.service.JsonService;
@@ -25,6 +26,7 @@ public class ScaleOnlinePanel extends JPanel {
             initScales();
         } catch (SerialPortException e) {
             e.printStackTrace();
+            //System.out.println(e.getMessage());
         }
     }
 
@@ -40,9 +42,9 @@ public class ScaleOnlinePanel extends JPanel {
             for (ScaleSettings settings : Libra.SETTINGS.getScales()) {
                 ScaleType scale = ScaleType.valueOf(settings.getDriverName());
                 ScalesDriver sd = new ScalesDriver(scale, settings.getPort());
-                sd.openPort();
                 Libra.scales.add(new Scale(settings.getScaleId(), sd, settings.getCams()));
                 add(new ScaleWidget(sd, true, settings.getScaleId(), settings.getCams()));
+                sd.openPort();
             }
         }
         revalidate();

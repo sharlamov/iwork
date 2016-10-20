@@ -15,10 +15,9 @@ public class MainFrame extends JFrame {
                 exit();
             }
         });
-
         add(new LibraMenu(), BorderLayout.NORTH);
-
         add(new LibraBoard());
+
         setSize(1000, 700);
         setLocationRelativeTo(null);
         if (!Libra.SETTINGS.isAuto())

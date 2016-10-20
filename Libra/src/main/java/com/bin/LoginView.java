@@ -15,6 +15,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class LoginView extends JFrame {
 
@@ -23,15 +25,17 @@ public class LoginView extends JFrame {
     private JButton loginButton;
     private int lWidth = 640;
     private int lHeight = 380;
+    private String[] args;
 
-    public LoginView() throws HeadlessException {
+    private LoginView(String... args) throws HeadlessException {
         super();
+        this.args = args;
         setIconImage(Pictures.scaleIcon);
         setSize(lWidth, lHeight);
         setResizable(false);
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+            public void windowClosing(WindowEvent windowEvent) {
                 Libra.libraService.close();
                 System.exit(0);
             }
@@ -53,13 +57,48 @@ public class LoginView extends JFrame {
     }
 
     public static void main(String[] args) {
-        new LoginView();
+        new LoginView(args);
     }
 
-    public void initParams() {
-        Libra.SETTINGS = JsonService.loadFile(Settings.class, "settings.json");
+    private void updateApp() {
         try {
+            if ((args.length == 0) || !args[0].equals("snap")) {
+                Updater upd = new Updater(Libra.SETTINGS);
+                if (upd.check()) {
+                    JWindow window = new JWindow();
+                    JPanel panel = new JPanel(new BorderLayout());
+                    JLabel label = new JLabel("Updating...", JLabel.CENTER);
+                    label.setPreferredSize(new Dimension(30, 50));
+                    label.setFont(Fonts.bold18);
+                    panel.add(label, BorderLayout.NORTH);
+                    panel.add(new JLabel(Pictures.loadingIcon), BorderLayout.CENTER);
+                    window.getContentPane().add(panel);
+                    window.setSize(300, 200);
+                    window.setLocationRelativeTo(null);
+                    window.setVisible(true);
+
+                    upd.update();
+
+                    window.setVisible(false);
+                    window.dispose();
+                }
+            } else if ((args.length > 0) && args[0].equals("snap")) {
+                Libra.SETTINGS.setUpdateNr(Long.valueOf(args[1]));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Libra.log(e.getMessage());
+        }
+    }
+
+    private void initParams() {
+        Libra.SETTINGS = JsonService.loadFile(Settings.class, "settings.json");
+        updateApp();
+        try {
+            Libra.libraService = new LibraService();
             Libra.libraService.loadQueries();
+            if (Libra.SETTINGS.getLang() == null)
+                Libra.SETTINGS.setLang(LangType.RU);
             Libra.libraService.loadLang(Libra.SETTINGS.getLang());
         } catch (Exception e) {
             Libra.eMsg(e);
@@ -69,7 +108,7 @@ public class LoginView extends JFrame {
         UIManager.put("ComboBox.disabledForeground", Color.BLACK);
     }
 
-    public void translate() {
+    private void translate() {
         setTitle(Libra.lng("libra"));
         UIManager.put("OptionPane.yesButtonText", Libra.lng("yes"));
         UIManager.put("OptionPane.noButtonText", Libra.lng("no"));
@@ -124,7 +163,7 @@ public class LoginView extends JFrame {
         panel.add(loginButton);
     }
 
-    public void login(String login, String pass) {
+    private void login(String login, String pass) {
         try {
             Libra.libraService.login(login, pass);
             JsonService.saveFile(Libra.SETTINGS, "settings.json");

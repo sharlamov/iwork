@@ -1,7 +1,7 @@
 package com.view.component.db.editors;
 
-import com.model.CustomItem;
-import com.model.DataSet;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
 import com.service.LibraService;
 import com.view.component.grid.DataGrid;
 import com.view.component.grid.GridField;

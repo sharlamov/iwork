@@ -12,6 +12,8 @@ public class Settings extends AbstractSettings {
     private boolean auto;
     private boolean debug;
     private String connection;
+    private String updateUrl;
+    private long updateNr;
     private List<ScaleSettings> scales;
 
     public String getConnection() {
@@ -70,5 +72,27 @@ public class Settings extends AbstractSettings {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public String getUpdateUrl() {
+        if(updateUrl == null)
+            return null;
+
+        if (updateUrl.contains("/") || updateUrl.contains("\\") || updateUrl.contains(":") || updateUrl.contains("."))
+            updateUrl = encodeURL(updateUrl);
+
+        return decodeURL(updateUrl);
+    }
+
+    public void setUpdateUrl(String updateUrl) {
+        this.updateUrl = updateUrl;
+    }
+
+    public long getUpdateNr() {
+        return updateNr;
+    }
+
+    public void setUpdateNr(long updateNr) {
+        this.updateNr = updateNr;
     }
 }

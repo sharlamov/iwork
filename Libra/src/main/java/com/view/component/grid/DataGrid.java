@@ -1,6 +1,6 @@
 package com.view.component.grid;
 
-import com.model.DataSet;
+import com.dao.model.DataSet;
 import com.service.LibraService;
 import com.util.Libra;
 
@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class DataGrid extends JPanel {
@@ -95,9 +96,9 @@ public class DataGrid extends JPanel {
             summaryMap.clear();
 
             long l = System.currentTimeMillis();
-            Double b = dtm.getSumByColumn("masa_brutto");
-            Double t = dtm.getSumByColumn("masa_tara");
-            Double n = dtm.getSumByColumn("masa_netto");
+            BigDecimal b = dtm.getSumByColumn("masa_brutto");
+            BigDecimal t = dtm.getSumByColumn("masa_tara");
+            BigDecimal n = dtm.getSumByColumn("masa_netto");
             System.out.println((System.currentTimeMillis() - l) + " sum ");
 
             summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));

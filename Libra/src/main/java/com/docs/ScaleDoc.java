@@ -2,7 +2,12 @@ package com.docs;
 
 import com.bin.DialogMaster;
 import com.bin.LibraPanel;
-import com.model.*;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
+import com.model.Act;
+import com.model.Doc;
+import com.model.Scale;
+import com.report.model.Report;
 import com.service.LibraService;
 import com.util.FocusPolicy;
 import com.util.Fonts;
@@ -59,6 +64,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     private JPanel board = new JPanel();
     private ComboDbEdit<CustomItem> clcelevatort;
     private ComboDbEdit<CustomItem> clcdivt;
+    private JTabbedPane tabbedPane;
 
     public ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
         super((JFrame) null, Libra.lng(doc.getName()), true);
@@ -78,7 +84,6 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         setResizable(false);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-
         initFieldsPanel();
         initWeightBoard();
         initStatusPanel();
@@ -115,6 +120,9 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     }
 
     private void initWeightBoard() {
+        if (Libra.scales == null)
+            return;
+
         board.setPreferredSize(new Dimension(220, 70));
         for (Scale scale : Libra.scales) {
             final ScaleWidget wb = new ScaleWidget(scale.getDriver(), false, scale.getScaleId(), scale.getCams());
@@ -153,7 +161,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
             fieldsPanel.blockPanel();
         }
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
         tabbedPane.addTab(Libra.lng("enterData"), fieldsPanel);
         if (doc.isUsePrintInfo()) {
             infoPanel = createInfoPanel();
@@ -238,6 +246,8 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
             libraPanel.refreshMaster();
             libraPanel.setRowPosition(newDataSet.getDecimal("id"));
             dispose();
+        } else {
+            tabbedPane.setSelectedIndex(0);
         }
     }
 
@@ -266,6 +276,8 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                     }
                 }
             }
+        } else {
+            tabbedPane.setSelectedIndex(0);
         }
     }
 
@@ -296,6 +308,8 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                     }
                 }
             }
+        } else {
+            tabbedPane.setSelectedIndex(0);
         }
     }
 

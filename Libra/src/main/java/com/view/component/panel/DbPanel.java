@@ -133,8 +133,8 @@ public class DbPanel extends JPanel {
 
     public void addInsertBtn(final IEdit edit, final InsertType type) {
         JButton btn = new JButton(Pictures.saveIcon);
-        final JPanel parent = this;
-        btn.addActionListener(e -> new InsertDialog("add", type, edit, parent));
+        //final JPanel parent = this;
+        btn.addActionListener(e -> new InsertDialog("add", type, edit, this));
 
         addEditBtn(edit, btn);
     }

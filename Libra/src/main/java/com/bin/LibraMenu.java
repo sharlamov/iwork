@@ -1,6 +1,6 @@
 package com.bin;
 
-import com.model.Report;
+import com.report.model.Report;
 import com.service.JsonService;
 import com.util.Libra;
 

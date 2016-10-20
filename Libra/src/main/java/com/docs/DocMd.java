@@ -1,9 +1,9 @@
 package com.docs;
 
 import com.bin.LibraPanel;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
 import com.enums.InsertType;
-import com.model.CustomItem;
-import com.model.DataSet;
 import com.model.Doc;
 import com.util.Libra;
 import com.util.Validators;
@@ -87,6 +87,16 @@ public class DocMd extends ScaleDoc {
         nr_analiz.addValidator(Validators.POSITIVE);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
+
+        SearchDbEdit cell = new SearchDbEdit("clccell_loadt", newDataSet, Libra.libraService, Libra.sql("UNIVCELL"));
+        fieldsPanel.addToPanel(370, 8, 200, p0, cell);
+        fieldsPanel.addInsertBtn(cell, InsertType.UNIVCELL);
+        policy.add(cell);
+
+        NumberDbEdit categ_hum = new NumberDbEdit("CATEG_HUM", newDataSet);
+        fieldsPanel.addToPanel(370, 8 + stepDown, 100, p0, categ_hum);
+        policy.add(categ_hum);
+
 ////////////////////
         JPanel p2 = fieldsPanel.createPanel(2, null);
 
@@ -166,11 +176,11 @@ public class DocMd extends ScaleDoc {
 
 
         contract_nrmanual = new SearchDbEdit("contract_nr", newDataSet, "contract_id, contract_nr, contract_data,clcpartenert"
-                , new GridField[]{new GridField("nr_manual", 70), new GridField("data_alccontr", 70), new GridField("clcpartenert", 150)}
+                , new GridField[]{new GridField("nr_manual", 150), new GridField("data_alccontr", 70), new GridField("clcpartenert", 140)}
                 , Libra.libraService, Libra.sql("FINDCONTRACT"));
         contract_nrmanual.setShouldClear(false);
         contract_nrmanual.addChangeEditListener(this);
-        fieldsPanel.addToPanel(8, 8, 100, p5, contract_nrmanual);
+        fieldsPanel.addToPanel(8, 8, 200, p5, contract_nrmanual);
         policy.add(contract_nrmanual);
 
         DateDbEdit contract_data = new DateDbEdit("contract_data", newDataSet);
@@ -223,6 +233,11 @@ public class DocMd extends ScaleDoc {
         nr_analiz.addValidator(Validators.NEGATIVE);
         fieldsPanel.addToPanel(8, 8 + stepDown, 100, p0, nr_analiz);
         policy.add(nr_analiz);
+
+        SearchDbEdit cell = new SearchDbEdit("clccell_unloadt", newDataSet, Libra.libraService, Libra.sql("UNIVCELL"));
+        fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p0, cell);
+        fieldsPanel.addInsertBtn(cell, InsertType.UNIVCELL);
+        policy.add(cell);
 
         NumberDbEdit prikaz_id = new NumberDbEdit("order_shipment", newDataSet);
         fieldsPanel.addToPanel(370, 8, 150, p0, prikaz_id);

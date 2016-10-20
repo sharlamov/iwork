@@ -1,10 +1,10 @@
 package com.service;
 
-import com.dao.JdbcDAO;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
+import com.dao.service.JdbcDAO;
 import com.enums.LangType;
-import com.model.CustomItem;
 import com.model.CustomUser;
-import com.model.DataSet;
 import com.util.Libra;
 
 import java.math.BigDecimal;
@@ -20,7 +20,7 @@ public class LibraService {
     private JdbcDAO dao;
 
     public LibraService() {
-        this.dao = new JdbcDAO();
+        this.dao = new JdbcDAO(Libra.SETTINGS.getConnection());
     }
 
     public void loadQueries() throws Exception {
@@ -87,6 +87,17 @@ public class LibraService {
             }
         }
 
+        //load design
+        Libra.designs = dao.select(Libra.sql("DESIGNS"), user.getProfile().toUpperCase()).toSimpleMap();
+        if (Libra.designs.isEmpty()) {
+            throw new Exception(Libra.lng("Profile not found!"));
+        }
+
+        //init context
+        initUserParams();
+    }
+
+    public void initUserParams() throws Exception {
         //run sql
         DataSet dataSQL = dao.select(Libra.sql("GETUSERPROP"), "RUNSQL", user.getId().toString());
         String str = dataSQL.getString("PROP");
@@ -95,13 +106,6 @@ public class LibraService {
             dao.commit();
         }
 
-        //load design
-        Libra.designs = dao.select(Libra.sql("DESIGNS"), user.getProfile().toUpperCase()).toSimpleMap();
-        if (Libra.designs.isEmpty()) {
-            throw new Exception(Libra.lng("Profile not found!"));
-        }
-
-        //init context
         execute(Libra.sql("INITCONTEXT"), DataSet.init("plevel", user.getAdminLevel().toString(), "puserid", user.getId().toString(), "plimit", Libra.LIMIT_DIFF_MPFS.toString()));
     }
 

@@ -1,8 +1,8 @@
 package com.bin;
 
-import com.model.CustomItem;
-import com.model.DataSet;
-import com.model.Report;
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
+import com.report.model.Report;
 import com.service.LibraService;
 import com.util.Libra;
 import com.view.component.db.editors.*;

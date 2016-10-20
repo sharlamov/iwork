@@ -1,5 +1,7 @@
 package com.model;
 
+import com.dao.model.CustomItem;
+
 import java.math.BigDecimal;
 
 public class CustomUser {

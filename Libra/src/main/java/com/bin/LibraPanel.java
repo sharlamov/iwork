@@ -1,9 +1,9 @@
 package com.bin;
 
+import com.dao.model.CustomItem;
+import com.dao.model.DataSet;
 import com.docs.DocMd;
 import com.docs.DocRo;
-import com.model.CustomItem;
-import com.model.DataSet;
 import com.model.Doc;
 import com.service.LibraService;
 import com.util.Fonts;
@@ -65,11 +65,9 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         dataGrid.setColumnFont("masa_brutto", Fonts.bold12);
         dataGrid.setColumnFont("masa_tara", Fonts.bold12);
         dataGrid.setColumnFont("masa_netto", Fonts.bold12);
-
         filter = new DataSet("d1", "d2", "elevator", "silos", "div", "empty", "in_out", "type");
 
         tableKeyBindings(dataGrid);
-
         dataGrid.addToolBar(initToolBar());
         dataGrid.setHeaderFont(Fonts.bold12);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
@@ -79,6 +77,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         splitPane.setOneTouchExpandable(true);
         add(splitPane, BorderLayout.CENTER);
         refreshMaster();
+
     }
 
     private void tableKeyBindings(final DataGrid table) {
@@ -136,26 +135,21 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         lostCarLabel.setOpaque(true);
         lostCarLabel.setForeground(Color.red);
         toolBar.add(lostCarLabel);
-
         toolBar.add(Box.createHorizontalGlue());
         toolBar.addSeparator();
-
         Date cDate = Libra.truncDate(null);
         date1 = new DateDbEdit("d1", filter);
         date2 = new DateDbEdit("d2", filter);
-
         date1.setDate(cDate);
         date1.setMaximumSize(dateSize);
         date1.setPreferredSize(dateSize);
         date1.addChangeEditListener(this);
         date1.setMaxSelectableDate(date2.getDate());
-
         date2.setDate(cDate);
         date2.setMaximumSize(dateSize);
         date2.setPreferredSize(dateSize);
         date2.addChangeEditListener(this);
         date2.setMinSelectableDate(date1.getDate());
-
         elevators = new ComboDbEdit<>("silos", Libra.filials.keySet(), filter);
         elevators.setMaximumSize(new Dimension(200, 27));
         toolBar.add(elevators);
@@ -174,12 +168,10 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         Libra.initFilial(elevators, divs, true);
         divs.addChangeEditListener(e -> refreshMaster());
 
-
         toolBar.addSeparator();
         toolBar.add(date1);
         toolBar.add(new JLabel(" - "));
         toolBar.add(date2);
-
         return toolBar;
     }
 

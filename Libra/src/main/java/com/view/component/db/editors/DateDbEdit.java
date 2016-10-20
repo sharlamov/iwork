@@ -1,8 +1,9 @@
 package com.view.component.db.editors;
 
-import com.model.DataSet;
+import com.dao.model.DataSet;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
+import com.util.Libra;
 import com.view.component.db.editors.validators.AbstractValidator;
 import net.java.balloontip.BalloonTip;
 import net.java.balloontip.styles.BalloonTipStyle;
@@ -43,9 +44,9 @@ public class DateDbEdit extends JDateChooser implements IEdit {
     }
 
     private void initDateEdit(String name) {
+        setLocale(Libra.SETTINGS.getLang().getLoc());
         setName(name);
         getDateEditor().getUiComponent().addFocusListener(this);
-
         Set<AWTKeyStroke> set = new HashSet<>(getFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
         set.add(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
         setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, set);
@@ -53,7 +54,6 @@ public class DateDbEdit extends JDateChooser implements IEdit {
         newBorder = new LineBorder(Color.decode("#006600"), 2);
         oldBackground = getBackground();
         editBackground = Color.decode("#FCFCEB");
-
         refresh();
     }
 

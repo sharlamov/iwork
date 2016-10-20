@@ -1,5 +1,7 @@
 package com.model;
 
+import com.report.model.Report;
+
 import java.util.List;
 
 public class Doc {

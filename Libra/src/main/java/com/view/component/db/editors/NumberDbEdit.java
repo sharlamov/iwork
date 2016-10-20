@@ -1,6 +1,7 @@
 package com.view.component.db.editors;
 
-import com.model.DataSet;
+
+import com.dao.model.DataSet;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;

@@ -1,6 +1,6 @@
 package com.model;
 
-import com.driver.ScalesDriver;
+import com.serialcomm.driver.ScalesDriver;
 
 import java.net.URL;
 import java.util.List;

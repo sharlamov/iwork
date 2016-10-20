@@ -79,8 +79,6 @@ class Updater {
             return;
 
         final ProcessBuilder pb = new ProcessBuilder(javaBin, "-jar", currentJar.getPath(), "snap", updNr);
-
-        // execute some custom code after restarting
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 apply(pb);
@@ -175,13 +173,6 @@ class Updater {
         deleteFile(new File(zipFilePath));
     }
 
-    /**
-     * Extracts a zip entry (file entry)
-     *
-     * @param zipIn
-     * @param filePath
-     * @throws IOException
-     */
     private void extractFile(ZipInputStream zipIn, String filePath) throws IOException {
         BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(filePath));
         byte[] bytesIn = new byte[BUFFER_SIZE];

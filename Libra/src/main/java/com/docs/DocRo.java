@@ -457,7 +457,7 @@ public class DocRo extends ScaleDoc {
             try {
                 infoPanel.setValue("test0", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init("clcnamet", newInfoSet.getObject("clcdelegatt"))).getString("info"));
             } catch (Exception e) {
-                e.printStackTrace();
+                Libra.eMsg(e, true);
             }
         });
 
@@ -467,7 +467,7 @@ public class DocRo extends ScaleDoc {
             try {
                 infoPanel.setValue("test1", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init("clcnamet", newInfoSet.getObject(" clcgestionart"))).getString(" info"));
             } catch (Exception e) {
-                e.printStackTrace();
+                Libra.eMsg(e, true);
             }
         });
         SearchDbEdit driver = new SearchDbEdit("clcdrivert", newInfoSet, Libra.libraService, Libra.sql("DELEGAT"));

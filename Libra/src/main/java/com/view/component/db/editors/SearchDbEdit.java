@@ -28,7 +28,7 @@ public class SearchDbEdit extends TextDbEdit {
     private boolean shouldHide;
     private boolean shouldClear = true;
 
-    public SearchDbEdit(String name, DataSet dataSet, GridField[] fields, LibraService service, String sql) {
+    private SearchDbEdit(String name, DataSet dataSet, GridField[] fields, LibraService service, String sql) {
         super(name, dataSet);
 
         this.fields = fields;
@@ -50,7 +50,7 @@ public class SearchDbEdit extends TextDbEdit {
         this.targetFields = targetFields.split(",");
     }
 
-    public void initGridPanel() {
+    private void initGridPanel() {
         dataGrid = new DataGrid(service, sql, fields, false);
         dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 250));
         dataGrid.setFocusable(false);
@@ -64,7 +64,7 @@ public class SearchDbEdit extends TextDbEdit {
         });
     }
 
-    protected void installAncestorListener() {
+    private void installAncestorListener() {
         addAncestorListener(new AncestorListener() {
             public void ancestorAdded(AncestorEvent event) {
                 hidePopup();
@@ -80,7 +80,7 @@ public class SearchDbEdit extends TextDbEdit {
         });
     }
 
-    public void showPopup() {
+    private void showPopup() {
         if (popup == null) {
             Point p = getLocationOnScreen();
             popup = factory.getPopup(this, dataGrid, p.x, p.y + getHeight());
@@ -88,14 +88,14 @@ public class SearchDbEdit extends TextDbEdit {
         }
     }
 
-    protected void hidePopup() {
+    private void hidePopup() {
         if (popup != null) {
             popup.hide();
             popup = null;
         }
     }
 
-    public int search(String text) {
+    private int search(String text) {
         int cnt = 0;
         getDataSet().setObject("findquery", "%" + text.trim().toLowerCase() + "%");
         try {

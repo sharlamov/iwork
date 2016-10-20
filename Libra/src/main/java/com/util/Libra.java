@@ -63,8 +63,18 @@ public class Libra {
         return queries.get(key.toUpperCase());
     }
 
+    public static void eMsg(Exception err, boolean isSilence) {
+        if (Libra.SETTINGS != null && Libra.SETTINGS.isDebug()) {
+            err.printStackTrace();
+            log(err.toString());
+        }
+
+        if (!isSilence)
+            JOptionPane.showMessageDialog(null, err.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void eMsg(Exception err) {
-        JOptionPane.showMessageDialog(null, err.getMessage() + "\r\n" + err.toString(), "Error", JOptionPane.ERROR_MESSAGE);
+        eMsg(err, false);
     }
 
     public static void iMsg(String message) {
@@ -127,7 +137,7 @@ public class Libra {
             else
                 filials.setChangeable(filials.getItemCount() > 1);
         } catch (Exception e) {
-            e.printStackTrace();
+            eMsg(e, true);
         }
     }
 

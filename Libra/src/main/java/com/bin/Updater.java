@@ -24,39 +24,30 @@ class Updater {
         this.settings = settings;
     }
 
-    boolean check() {
-        try {
-            long t = System.currentTimeMillis();
-            src = settings.getUpdateUrl();
-            updNr = getLatestVersion();
-            System.out.println("check: " + (System.currentTimeMillis() - t));
-            return settings.getUpdateNr() < Long.valueOf(updNr);
-        } catch (Exception e) {
-            Libra.eMsg(e);
-            return false;
-        }
+    boolean check() throws Exception {
+        long t = System.currentTimeMillis();
+        src = settings.getUpdateUrl();
+        updNr = getLatestVersion();
+        System.out.println("check: " + (System.currentTimeMillis() - t));
+        return settings.getUpdateNr() < Long.valueOf(updNr);
     }
 
-    void update() {
-        try {
-            long t = System.currentTimeMillis();
+    void update() throws Exception {
+        long t = System.currentTimeMillis();
 
-            dst = System.getProperty("user.dir");
-            update = new File(dst + "/update");
+        dst = System.getProperty("user.dir");
+        update = new File(dst + "/update");
 
-            //clean
-            deleteFile(update);
-            //download
-            File zip = downloadPkg();
-            //unZip
-            unpack(zip.getPath(), update.getPath());
+        //clean
+        deleteFile(update);
+        //download
+        File zip = downloadPkg();
+        //unZip
+        unpack(zip.getPath(), update.getPath());
 
-            System.out.println("update: " + (System.currentTimeMillis() - t));
-            //restart
-            restartApp();
-        } catch (Exception e) {
-            Libra.eMsg(e);
-        }
+        System.out.println("update: " + (System.currentTimeMillis() - t));
+        //restart
+        restartApp();
     }
 
     private void apply(ProcessBuilder pb) {
@@ -66,7 +57,7 @@ class Updater {
             deleteFile(update);
             pb.start();
         } catch (IOException e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
         System.out.println("apply: " + (System.currentTimeMillis() - t));
     }

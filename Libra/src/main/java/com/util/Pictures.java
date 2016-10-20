@@ -22,14 +22,14 @@ public class Pictures {
     public static ImageIcon loadingIcon = createImageIcon("images/loading-bar.gif");
 
 
-    public static Image getImage(String path) {
+    private static Image getImage(String path) {
         try {
             java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
             if (imgURL != null) {
                 return ImageIO.read(imgURL);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
         return null;
     }
@@ -41,12 +41,12 @@ public class Pictures {
                 return ImageIO.read(imgURL).getScaledInstance(x, y, Image.SCALE_FAST);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
         return null;
     }
 
-    public static ImageIcon createImageIcon(String path) {
+    private static ImageIcon createImageIcon(String path) {
         java.net.URL imgURL = Libra.class.getClassLoader().getResource(path);
         if (imgURL != null) {
             return new ImageIcon(imgURL);
@@ -56,7 +56,7 @@ public class Pictures {
         }
     }
 
-    public static ImageIcon createImageIcon(String path, int x, int y) {
+    private static ImageIcon createImageIcon(String path, int x, int y) {
         Image img = getImage(path, x, y);
         return img != null ? new ImageIcon(img) : null;
     }

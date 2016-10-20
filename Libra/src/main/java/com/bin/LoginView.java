@@ -86,8 +86,7 @@ public class LoginView extends JFrame {
                 Libra.SETTINGS.setUpdateNr(Long.valueOf(args[1]));
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            Libra.log(e.getMessage());
+            Libra.eMsg(e, true);
         }
     }
 

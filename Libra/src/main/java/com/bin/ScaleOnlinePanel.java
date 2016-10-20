@@ -25,7 +25,7 @@ public class ScaleOnlinePanel extends JPanel {
         try {
             initScales();
         } catch (SerialPortException e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
             //System.out.println(e.getMessage());
         }
     }

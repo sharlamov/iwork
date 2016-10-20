@@ -40,7 +40,7 @@ public class LibraService {
             DataSet dataSet = dao.select(sql);
             Libra.langs = dataSet.toSimpleMap();
         } catch (Exception e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
     }
 

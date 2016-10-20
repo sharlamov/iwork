@@ -195,7 +195,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                 DataSet set = Libra.libraService.executeQuery(Libra.sql("DEFAULTSEASON"), DataSet.init("clcdivt", clcdivt.getValue(), "cDate", Libra.truncDate(null)));
                 val = set.getDecimal("sezon_yyyy");
             } catch (Exception e) {
-                e.printStackTrace();
+                Libra.eMsg(e, true);
             }
             newDataSet.setObject("season", val);
         }
@@ -326,8 +326,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
                 try {
                     images.add(ImageIO.read(url));
                 } catch (IOException e) {
-                    Libra.log("--url -- " + e.getMessage());
-                    Libra.log("--url -- " + e.getCause());
+                    Libra.eMsg(e, true);
                 }
             }
 
@@ -378,7 +377,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         try {
             ImageIO.write(img, "jpg", baos);
         } catch (IOException e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
         return new ByteArrayInputStream(baos.toByteArray());
     }

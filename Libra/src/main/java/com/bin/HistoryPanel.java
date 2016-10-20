@@ -54,7 +54,6 @@ public class HistoryPanel extends JPanel {
     public void makeFoto(Object foto) {
         try {
             if (foto != null) {
-                //long l = System.currentTimeMillis();
                 Blob blob = (Blob) foto;
                 final Display display = new Display();
                 display.setMaximumSize(xSize);
@@ -71,10 +70,9 @@ public class HistoryPanel extends JPanel {
                 BufferedImage img = ImageIO.read(blob.getBinaryStream());
                 display.frameObtained(img);
                 add(display);
-                //System.out.println(System.currentTimeMillis() - l + " asdsad ");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
 
     }

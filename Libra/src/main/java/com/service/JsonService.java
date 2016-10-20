@@ -3,6 +3,7 @@ package com.service;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
+import com.util.Libra;
 
 import java.io.*;
 import java.lang.reflect.ParameterizedType;
@@ -33,7 +34,7 @@ public class JsonService {
             bw.flush();
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
         }
     }
 
@@ -42,7 +43,7 @@ public class JsonService {
             JsonReader reader = new JsonReader(new FileReader(fileName));
             return GSON.fromJson(reader, eClass);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Libra.eMsg(e, true);
             return null;
         }
 

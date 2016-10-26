@@ -217,17 +217,22 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         }
     }
 
-    public void openDocument(DataSet dataSet) {
-        if (LibraService.user.getProfile().equalsIgnoreCase("mdauto")) {
-            new DocMd(pan, dataSet, doc);
-        } else if (LibraService.user.getProfile().equalsIgnoreCase("mdtest")) {
-            new DocMd(pan, dataSet, doc);
-        } else if (LibraService.user.getProfile().equalsIgnoreCase("rotest")) {
-            new DocRo(pan, dataSet, doc);
-        } else if (LibraService.user.getProfile().equalsIgnoreCase("roauto")) {
-            new DocRo(pan, dataSet, doc);
-        } else {
-            new DocMd(pan, dataSet, doc);
+    private void openDocument(DataSet dataSet) {
+        switch (LibraService.user.getProfile().toLowerCase()) {
+            case "mdauto":
+                new DocMd(pan, dataSet, doc);
+                break;
+            case "mdtest":
+                new DocMd(pan, dataSet, doc);
+                break;
+            case "rotest":
+                new DocRo(pan, dataSet, doc);
+                break;
+            case "roauto":
+                new DocRo(pan, dataSet, doc);
+                break;
+            default:
+                new DocMd(pan, dataSet, doc);
         }
     }
 

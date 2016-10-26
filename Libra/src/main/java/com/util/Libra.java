@@ -6,15 +6,14 @@ import com.model.settings.Settings;
 import com.service.LibraService;
 import com.service.ReportService;
 import com.view.component.db.editors.ComboDbEdit;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -46,7 +45,7 @@ public class Libra {
 
     public static Map<String, String> queries;
 
-    public static Map<String, String> langs;
+    public static Map<String, String> languages;
 
     public static Map<CustomItem, List<CustomItem>> filials;
 
@@ -55,7 +54,7 @@ public class Libra {
     public static Dimension buttonSize = new Dimension(100, 25);
 
     public static String lng(String key) {
-        String res = langs.get(key.toLowerCase());
+        String res = languages.get(key.toLowerCase());
         return res == null || res.isEmpty() ? key : res;
     }
 
@@ -143,15 +142,9 @@ public class Libra {
 
     public static void log(String text) {
         try {
-            text = new Date() + "  -  " + text + "\r\n";
-            Path path = Paths.get("Libra.log");
-            if (!Files.exists(path))
-                Files.createFile(path);
-
-            Files.write(path, text.getBytes(), StandardOpenOption.APPEND);
+            FileUtils.write(new File("Libra.log"), new Date() + " - " + text + "\r\n", Charset.defaultCharset(), true);
         } catch (IOException e) {
-            eMsg(e);
+            eMsg(e, true);
         }
     }
-
 }

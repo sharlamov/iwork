@@ -7,12 +7,12 @@ import com.util.Libra;
 import javax.swing.*;
 import java.util.List;
 
-public class LibraMenu extends JMenuBar {
+class LibraMenu extends JMenuBar {
 
-    JMenu menuFile;
-    JMenuItem menuExit;
+    private JMenu menuFile;
+    private JMenuItem menuExit;
 
-    public LibraMenu() {
+    LibraMenu() {
         menuFile = new JMenu(Libra.lng("file"));
 
         menuExit = new JMenuItem(Libra.lng("exit"));
@@ -25,7 +25,7 @@ public class LibraMenu extends JMenuBar {
         makeReportMenu();
     }
 
-    public void makeReportMenu() {
+    private void makeReportMenu() {
         JMenu menuReport = new JMenu(Libra.lng("report"));
         List<Report> reports = JsonService.fromJsonList(Libra.designs.get("REPORT.LIST"), Report.class);
 

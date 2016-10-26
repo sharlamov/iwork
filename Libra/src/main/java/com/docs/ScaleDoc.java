@@ -24,6 +24,8 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,26 +38,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditListener {
+abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditListener {
 
-    protected final Doc doc;
-    protected Integer scaleId;
-    protected LibraPanel libraPanel;
-    protected DataSet newDataSet;
-    protected DataSet oldDataSet;
-    protected DataSet newInfoSet;
-    protected DataSet oldInfoSet;
-    protected JButton bAction = new JButton(Libra.lng("action"), Pictures.actionIcon);
-    protected JButton bPrint = new JButton(Libra.lng("print"), Pictures.printerIcon);
-    protected JButton bSave = new JButton(Libra.lng("save"));
-    protected JButton bCancel = new JButton(Libra.lng("cancel"));
-    protected DbPanel fieldsPanel;
-    protected DbPanel infoPanel;
-    protected FocusPolicy policy;
-    protected DataSet historySet = new DataSet("tip", "id", "nr", "dt", "br", "userid", "sc", "masa", "scaleId", "photo1", "photo2");
-    protected SearchDbEdit sc;
-    protected boolean useRefresh = false;
-    protected NumberDbEdit sezon_yyyy;
+    final Doc doc;
+    private Integer scaleId;
+    private LibraPanel libraPanel;
+    DataSet newDataSet;
+    DataSet oldDataSet;
+    DataSet newInfoSet;
+    DataSet oldInfoSet;
+    private JButton bAction = new JButton(Libra.lng("action"), Pictures.actionIcon);
+    private JButton bPrint = new JButton(Libra.lng("print"), Pictures.printerIcon);
+    private JButton bSave = new JButton(Libra.lng("save"));
+    private JButton bCancel = new JButton(Libra.lng("cancel"));
+    DbPanel fieldsPanel;
+    DbPanel infoPanel;
+    FocusPolicy policy;
+    DataSet historySet = new DataSet("tip", "id", "nr", "dt", "br", "userid", "sc", "masa", "scaleId", "photo1", "photo2");
+    SearchDbEdit sc;
+    boolean useRefresh = false;
+    NumberDbEdit sezon_yyyy;
     private NumberDbEdit net;
     private NumberDbEdit brutto;
     private NumberDbEdit tara;
@@ -66,7 +68,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     private ComboDbEdit<CustomItem> clcdivt;
     private JTabbedPane tabbedPane;
 
-    public ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
+    ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
         super((JFrame) null, Libra.lng(doc.getName()), true);
         this.libraPanel = libraPanel;
         this.newDataSet = dataSet.copy();
@@ -74,9 +76,9 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         this.doc = doc;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        addWindowListener(new java.awt.event.WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+            public void windowClosing(WindowEvent windowEvent) {
                 exitDialog();
             }
         });
@@ -101,7 +103,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
 
     public abstract DbPanel createInfoPanel();
 
-    public void updateDataSet() {
+    void updateDataSet() {
         initDefSeason();
         Date d1 = newDataSet.getDate("time_in");
         Date d2 = newDataSet.getDate("time_out");
@@ -230,18 +232,18 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         add(statusPanel, BorderLayout.SOUTH);
     }
 
-    public void exitDialog() {
+    private void exitDialog() {
         if (!isModified()
                 || 0 == JOptionPane.showConfirmDialog(null, Libra.lng("cancelConfirmDialog1"), Libra.lng("cancelConfirmDialog0"), JOptionPane.YES_NO_OPTION))
             dispose();
         libraPanel.refreshMaster();
     }
 
-    public boolean isModified() {
+    boolean isModified() {
         return !newDataSet.equals(oldDataSet) || !newInfoSet.equals(oldInfoSet);
     }
 
-    public void saveDocument() {
+    private void saveDocument() {
         if (save()) {
             libraPanel.refreshMaster();
             libraPanel.setRowPosition(newDataSet.getDecimal("id"));
@@ -251,7 +253,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public void makePrint() {
+    private void makePrint() {
         if (save()) {
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -281,7 +283,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public void makeAction() {
+    private void makeAction() {
         if (save()) {
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
@@ -316,7 +318,10 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
     private void fixWeight(ScaleWidget scaleWidget, final IEdit firstField, final IEdit secondField) {
         final Integer weight = scaleWidget.getWeight();
         scaleId = scaleWidget.getDriverId();
-        Libra.log("--fixWeight: " + weight + " --scaleid: " + scaleId);
+
+        if (Libra.SETTINGS.isDebug())
+            Libra.log("--fixWeight: " + weight + " --scaleid: " + scaleId);
+
         boolean bConfirm;
 
         if (weight != null && weight != 0) {
@@ -372,7 +377,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public InputStream createBlob(BufferedImage img) {
+    private InputStream createBlob(BufferedImage img) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             ImageIO.write(img, "jpg", baos);
@@ -391,7 +396,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public void createHeadPanel() {
+    void createHeadPanel() {
         JPanel headPanel = fieldsPanel.createPanel(1, null);
 
         clcelevatort = new ComboDbEdit<>("clcelevatort", Libra.filials.keySet(), newDataSet);
@@ -423,7 +428,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         initDefSeason();
     }
 
-    public void createCalculationPanel() {
+    void createCalculationPanel() {
         int editHeight = 23;
         int stepDown = 27;
 
@@ -478,7 +483,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         sumaPanel.add(time_out);
     }
 
-    public void checkWeightField(NumberDbEdit edit) {
+    private void checkWeightField(NumberDbEdit edit) {
         if (edit.isEmpty() && LibraService.user.getScaleType() == 4) {
             edit.setChangeable(true);
             policy.add(edit);
@@ -525,7 +530,7 @@ public abstract class ScaleDoc extends JDialog implements ActionListener, Change
         }
     }
 
-    public boolean isNetNull() {
+    private boolean isNetNull() {
         return newDataSet.getDecimal("masa_netto").equals(BigDecimal.ZERO);
     }
 }

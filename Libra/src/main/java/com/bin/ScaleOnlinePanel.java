@@ -1,11 +1,11 @@
 package com.bin;
 
 
+import com.model.Scale;
+import com.model.settings.ScaleSettings;
 import com.serialcomm.driver.ScaleType;
 import com.serialcomm.driver.ScalesDriver;
 import com.serialcomm.driver.ScalesManager;
-import com.model.Scale;
-import com.model.settings.ScaleSettings;
 import com.service.JsonService;
 import com.util.Libra;
 import com.util.Pictures;
@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ScaleOnlinePanel extends JPanel {
+class ScaleOnlinePanel extends JPanel {
 
-    public ScaleOnlinePanel() {
+    ScaleOnlinePanel() {
         setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         try {
             initScales();
@@ -30,7 +30,7 @@ public class ScaleOnlinePanel extends JPanel {
         }
     }
 
-    public void initScales() throws SerialPortException {
+    private void initScales() throws SerialPortException {
         removeAll();
         if (Libra.SETTINGS.getScales() == null || Libra.SETTINGS.getScales().isEmpty()) {
             JButton find = new JButton(Libra.lng("findScales"), Pictures.findIcon);
@@ -50,7 +50,7 @@ public class ScaleOnlinePanel extends JPanel {
         revalidate();
     }
 
-    public void findScales() {
+    private void findScales() {
         try {
             List<ScalesDriver> drivers = ScalesManager.defineScales();
             Libra.SETTINGS.setScales(drivers.stream().map(driver -> new ScaleSettings(0, driver.getComPort(), driver.toString(), null)).collect(Collectors.toList()));

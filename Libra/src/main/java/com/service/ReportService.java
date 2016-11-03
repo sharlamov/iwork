@@ -20,12 +20,16 @@ public class ReportService {
         String sql0 = queries.getString("sqlHeader");
         String sql1 = queries.getString("sqlMaster");
 
-        DataSet ds0 = sql0.isEmpty() ? new DataSet() : Libra.libraService.executeQuery(sql0, params);
-        DataSet ds1 = sql1.isEmpty() ? new DataSet() : Libra.libraService.executeQuery(sql1, ds0);
+        DataSet ds0 = nvl(sql0, params);
+        DataSet ds1 = nvl(sql1, ds0);
         report.make(template, ds0, ds1);
     }
 
     public void buildReport(Report report, DataSet params) throws Exception {
         buildReport(report.getTemplate(), report.getSql(), params);
+    }
+
+    private DataSet nvl(String sql, DataSet params) throws Exception {
+        return sql.isEmpty() ? new DataSet() : Libra.libraService.executeQuery(sql, params);
     }
 }

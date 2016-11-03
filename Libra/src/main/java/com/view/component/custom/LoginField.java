@@ -3,7 +3,6 @@ package com.view.component.custom;
 import javax.swing.*;
 import java.awt.*;
 
-@SuppressWarnings("serial")
 public class LoginField extends JPasswordField {
 
     private char fecho = (char) 0;

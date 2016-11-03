@@ -52,7 +52,7 @@ class Updater {
         long t = System.currentTimeMillis();
         try {
             FileUtils.copyDirectory(update, dst);
-            FileUtils.deleteDirectory(update);
+            delFile(update);
             pb.start();
         } catch (IOException e) {
             Libra.eMsg(e, true);
@@ -84,7 +84,7 @@ class Updater {
         update.mkdirs();
 
         File pkg = new File(update, updNr + ".zip");
-        FileUtils.copyToFile(from.openStream(), pkg);
+        FileUtils.copyURLToFile(from, pkg);
         return pkg;
     }
 
@@ -106,12 +106,26 @@ class Updater {
             if (entry.isDirectory()) {
                 ff.mkdir();
             } else
-                FileUtils.copyToFile(zipIn, ff);//?copyFile(zipIn, ff);
+                FileUtils.copyToFile(zipIn, ff);
 
             zipIn.closeEntry();
             entry = zipIn.getNextEntry();
         }
         zipIn.close();
         zipFilePath.delete();
+    }
+
+    private boolean delFile(File f) {
+        if (!f.exists())
+            return false;
+
+        if (f.isDirectory()) {
+            File[] list = f.listFiles();
+            for (File file : list) {
+                delFile(file);
+            }
+        }
+
+        return f.delete();
     }
 }

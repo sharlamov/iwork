@@ -20,13 +20,13 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
     private final List<URL> cams;
     private final ScalesDriver driver;
     public JButton btnAdd;
-    volatile long lastTime;
-    private JLabel score = new JLabel();
-    private Color stableColor = Color.orange;
-    private Color unstableColor = Color.decode("#FF9999");
-    private boolean isOnline;
+    private volatile long lastTime;
+    private final JLabel score = new JLabel();
+    private final Color stableColor = Color.orange;
+    private final Color unstableColor = Color.decode("#FF9999");
+    private final boolean isOnline;
     private boolean isBlock;
-    private Thread t;
+    private final Thread t;
 
     public ScaleWidget(final ScalesDriver driver, boolean isOnline, Object driverId, List<URL> cams) {
         this.driver = driver;
@@ -78,16 +78,17 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
     }
 
     public Integer getWeight() {
+        Integer res = null;
         if (driverId == null) {
             Libra.iMsg(Libra.lng("error.emptyscalecode"));
-            return null;
         } else {
             String value = score.getText();
             if (Libra.SETTINGS.isDebug())
-                return value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
+                res = value.isEmpty() ? new Random().nextInt(50000) : Integer.valueOf(value);
             else
-                return value.isEmpty() ? null : Integer.valueOf(value);
+                res = value.isEmpty() ? null : Integer.valueOf(value);
         }
+        return res;
     }
 
     public void setWeight(Integer weight) {
@@ -116,7 +117,8 @@ public class ScaleWidget extends JPanel implements ScaleEventListener, Runnable 
 
                 if ((System.currentTimeMillis() - lastTime) > 999) {
                     score.setText("ERROR");
-                    Libra.log("WEIGHT ERROR - NO SIGNAL / " + driver + " / " + driver.getComPort());
+                    if (Libra.SETTINGS.isDebug())
+                        Libra.log("WEIGHT ERROR - NO SIGNAL / " + driver + " / " + driver.getComPort());
                     break;
                 }
                 Thread.sleep(999);

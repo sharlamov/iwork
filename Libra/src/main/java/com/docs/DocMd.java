@@ -39,22 +39,22 @@ public class DocMd extends ScaleDoc {
                     BigDecimal key = (BigDecimal) oldDataSet.getObject("id");
                     boolean isNewDoc = key == null;
                     if (isNewDoc) {
-                        key = Libra.libraService.execute(Libra.sql("NEXTVAL"), null);
+                        key = Libra.libraService.exec(Libra.sql("NEXT")).getDecimal("id");
                         newDataSet.setObject("id", key);
                     }
 
-                    Libra.libraService.execute(isNewDoc ? Libra.sql("INSSCALEIN") : Libra.sql("UPDSCALEIN"), newDataSet);
+                    Libra.libraService.exec(isNewDoc ? Libra.sql("INSSCALEIN") : Libra.sql("UPDSCALEIN"), newDataSet);
 
                     if (doc.isUsePrintInfo()) {
                         newInfoSet.setObject("pid", key);
                         initTab(false);
-                        Libra.libraService.execute(Libra.sql("MERGEPRINTDETAIL"), newInfoSet);
+                        Libra.libraService.exec(Libra.sql("MERGEPRINTDETAIL"), newInfoSet);
                     }
 
 
                     if (!historySet.isEmpty()) {
                         historySet.setObject("id", key);
-                        Libra.libraService.execute(Libra.sql("INSHISTORY"), historySet);
+                        Libra.libraService.exec(Libra.sql("INSHISTORY"), historySet);
                     }
 
                     Libra.libraService.commit();
@@ -117,7 +117,7 @@ public class DocMd extends ScaleDoc {
         policy.add(clcdrivert);
         fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
 //////////////////
-        JPanel p3 = fieldsPanel.createPanel(3, null);
+        JPanel p3 = fieldsPanel.createPanel(4, null);
 
         SearchDbEdit clcdep_postavt = new SearchDbEdit("clcclientt", newDataSet, Libra.libraService, Libra.sql("UNIVOIE"));
         clcdep_postavt.addValidator(Validators.NULL);
@@ -131,9 +131,13 @@ public class DocMd extends ScaleDoc {
         fieldsPanel.addToPanel(8, 8 + stepDown, 200, p3, clcppogruz_s_12t);
         policy.add(clcppogruz_s_12t);
 
+        SearchDbEdit clcdep_loadt = new SearchDbEdit("clcdep_loadt", newDataSet, Libra.libraService, Libra.sql("UNIVOIE"));
+        fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p3, clcdep_loadt);
+        policy.add(clcdep_loadt);
+
         sc = new SearchDbEdit("clcsct", newDataSet, Libra.libraService, Libra.sql("CROPS"));
         sc.addValidator(Validators.NULL);
-        fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p3, sc);
+        fieldsPanel.addToPanel(8, 8 + stepDown + stepDown + stepDown, 200, p3, sc);
         policy.add(sc);
 
         SearchDbEdit transport = new SearchDbEdit("clctransportert", newDataSet, Libra.libraService, Libra.sql("UNIVOIE"));
@@ -148,7 +152,7 @@ public class DocMd extends ScaleDoc {
         policy.add(clcdep_gruzootpravitt);
 
         sezon_yyyy = new NumberDbEdit("season", newDataSet);
-        fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 100, p3, sezon_yyyy);
+        fieldsPanel.addToPanel(370, 8 + stepDown + stepDown + stepDown, 100, p3, sezon_yyyy);
         policy.add(sezon_yyyy);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(2, null);
@@ -188,7 +192,7 @@ public class DocMd extends ScaleDoc {
         policy.add(contract_data.getDateEditor().getUiComponent());
         policy.add(clcdep_hozt);
 //////////////////
-        JPanel p6 = fieldsPanel.createPanel(2, null);
+        JPanel p6 = fieldsPanel.createPanel(1, null);
 
         JLabel nrActNedLabel = new JLabel(Libra.lng("act_loss"));
         nrActNedLabel.setBounds(8, 8, 200, editHeight);
@@ -206,14 +210,6 @@ public class DocMd extends ScaleDoc {
         NumberDbEdit nr_act_nedovygruzki = new NumberDbEdit("act_rest", newDataSet);
         nr_act_nedovygruzki.setBounds(370 + 210, 8, 100, editHeight);
         p6.add(nr_act_nedovygruzki);
-
-        JLabel masaReturnLabel = new JLabel(Libra.lng("cant_return"));
-        masaReturnLabel.setBounds(370, 8 + stepDown, 200, editHeight);
-        p6.add(masaReturnLabel);
-
-        NumberDbEdit masa_return = new NumberDbEdit("cant_return", newDataSet);
-        masa_return.setBounds(370 + 210, 8 + stepDown, 100, editHeight);
-        p6.add(masa_return);
 
         createCalculationPanel();
     }
@@ -343,7 +339,7 @@ public class DocMd extends ScaleDoc {
     @Override
     public void initTab(boolean isOpened) {
         try {
-            DataSet set = Libra.libraService.executeQuery(Libra.sql("DATABYELEVATOR"), newDataSet);
+            DataSet set = Libra.libraService.exec(Libra.sql("DATABYELEVATOR"), newDataSet);
             if (newInfoSet.getObject("pl13c") == null || useRefresh)
                 infoPanel.setValue("pl13c", set.getObject("DIRECTOR"));
             if (newInfoSet.getObject("pl14c") == null || useRefresh)
@@ -372,7 +368,7 @@ public class DocMd extends ScaleDoc {
     @Override
     public DbPanel createInfoPanel() {
         try {
-            newInfoSet = Libra.libraService.executeQuery(doc.getPrintInfoSql(), newDataSet);
+            newInfoSet = Libra.libraService.exec(doc.getPrintInfoSql(), newDataSet);
         } catch (Exception e) {
             Libra.eMsg(e);
         }
@@ -528,7 +524,7 @@ public class DocMd extends ScaleDoc {
 
     }
 
-    public void calcPrices() {
+    private void calcPrices() {
         BigDecimal priceTva = newInfoSet.getDecimal("priceTva");
         if (newInfoSet.getObject("tva") != null && !priceTva.equals(BigDecimal.ZERO)) {
             CustomItem t = newInfoSet.getItem("tva");

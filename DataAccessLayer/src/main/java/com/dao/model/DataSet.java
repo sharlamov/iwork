@@ -5,9 +5,9 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DataSet extends ArrayList<Object[]> implements IDataSet {
+public class DataSet extends ArrayList<Object[]> {
 
-    private LinkedHashMap<String, Integer> names;
+    private final LinkedHashMap<String, Integer> names;
 
     public DataSet(String... list) {
         this(Arrays.asList(list));
@@ -15,7 +15,9 @@ public class DataSet extends ArrayList<Object[]> implements IDataSet {
 
     public DataSet(Collection<String> list) {
         names = new LinkedHashMap<>(list.size());
-        list.forEach(s -> names.put(s.toUpperCase(), names.size()));
+        int i = 0;
+        for (String s : list)
+            names.put(s.toUpperCase(), i++);
     }
 
     public DataSet(Map<String, Integer> names) {
@@ -158,7 +160,7 @@ public class DataSet extends ArrayList<Object[]> implements IDataSet {
 
     public DataSet copy() { //? lambda
         DataSet newDataSet = new DataSet(names);
-        stream().forEach(row -> {
+        forEach(row -> {
             Object[] nRow = new Object[row.length];
             for (int i = 0; i < row.length; i++) {
                 nRow[i] = cloneObject(row[i]);
@@ -227,7 +229,7 @@ public class DataSet extends ArrayList<Object[]> implements IDataSet {
         return d;
     }
 
-    public List<IDataSet> groupBy(String fieldName) {
+    public List<DataSet> groupBy(String fieldName) {
         int col = findField(fieldName.toUpperCase());
         if (col > -1) {
             Map<Object, List<Object[]>> collect = stream().collect(Collectors.groupingBy(row -> row[col], LinkedHashMap::new, Collectors.toList()));

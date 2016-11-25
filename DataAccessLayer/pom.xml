@@ -4,7 +4,15 @@
 
     <groupId>com.dao</groupId>
     <artifactId>jdbc-dao</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
+    <dependencies>
+        <!-- JDBC -->
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.1.0.7.0</version>
+        </dependency>
+    </dependencies>
     <packaging>jar</packaging>
 
     <name>JdbcDAO</name>

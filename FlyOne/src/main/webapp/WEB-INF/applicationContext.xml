@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:ws="http://jax-ws.dev.java.net/spring/core"
+       xmlns:wss="http://jax-ws.dev.java.net/spring/servlet"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-3.0.xsd
+http://www.springframework.org/schema/tx
+http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+http://jax-ws.dev.java.net/spring/core
+http://jax-ws.dev.java.net/spring/core.xsd
+http://jax-ws.dev.java.net/spring/servlet
+http://jax-ws.dev.java.net/spring/servlet.xsd">
+
+
+    <context:component-scan base-package="com.soapservice"/>
+    <context:annotation-config/>
+    <context:spring-configured/>
+
+    <!-- Data Source Declaration -->
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.hib.driver}"/>
+        <property name="url" value="${jdbc.hib.url}"/>
+        <property name="username" value="${jdbc.hib.login}"/>
+        <property name="password" value="${jdbc.hib.pass}"/>
+    </bean>
+
+    <!-- Session Factory Declaration -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan">
+            <list>
+                <value>com.soapservice.model</value>
+            </list>
+        </property>
+
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${jdbc.hib.dialect}</prop>
+                <prop key="hibernate.hbm2ddl.auto">${jdbc.hib.hbm2ddl}</prop>
+                <prop key="hibernate.show_sql">${jdbc.hib.show.sql}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+    <!-- Transaction Manager is defined -->
+    <bean id="txManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="databasePropertyPlaceholderConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
+        <property name="locations">
+            <list>
+                <value>/WEB-INF/settings.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <wss:binding url="/FlyService">
+        <wss:service>
+            <ws:service bean="#flyWs"/>
+        </wss:service>
+    </wss:binding>
+
+    <!-- Web service methods -->
+    <bean id="flyWs" class="com.soapservice.endpoints.FlyService">
+    <!--    <property name="helloWorldBo" ref="HelloWorldBo" />-->
+    </bean>
+
+
+
+</beans>
+

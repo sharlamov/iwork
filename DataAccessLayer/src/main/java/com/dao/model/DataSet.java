@@ -131,11 +131,32 @@ public class DataSet extends ArrayList<Object[]> {
     }
 
     public void addRow(Object... data) {
-        add(data);//?
+        add(data);
     }
 
     public void concat(DataSet d1) {
-        d1.names.forEach((k, v) -> addField(k, getObject(0, v)));
+        int cnt = Math.min(size(), d1.size());
+        if (cnt == 0)
+            return;
+
+        List<Integer> ints = new ArrayList<>(d1.names.size());
+        d1.names.forEach((k, v) -> {
+            int n = findField(k);
+            if (n == -1) {
+                names.put(k, names.size());
+                ints.add(v);
+            }
+        });
+
+        for (int i = 0; i < cnt; i++) {
+            Object[] src = get(i);
+            Object[] dest = new Object[src.length + ints.size()];
+            System.arraycopy(src, 0, dest, 0, src.length);
+            for (int i1 = 0; i1 < ints.size(); i1++) {
+                dest[src.length + i1] = d1.getObject(i, ints.get(i1));
+            }
+            set(i, dest);
+        }
     }
 
     public BigDecimal sum(String fieldName) {
@@ -153,20 +174,20 @@ public class DataSet extends ArrayList<Object[]> {
                     }
                 }
             }
-
         }
         return res;
     }
 
-    public DataSet copy() { //? lambda
+    public DataSet copy() {
         DataSet newDataSet = new DataSet(names);
-        forEach(row -> {
-            Object[] nRow = new Object[row.length];
-            for (int i = 0; i < row.length; i++) {
-                nRow[i] = cloneObject(row[i]);
+        for (int i = 0; i < size(); i++) {
+            Object[] rOld = get(i);
+            Object[] rNew = new Object[rOld.length];
+            for (int y = 0; y < rOld.length; y++) {
+                rNew[y] = cloneObject(rOld[y]);
             }
-            newDataSet.add(nRow);
-        });
+            newDataSet.add(rNew);
+        }
 
         return newDataSet;
     }

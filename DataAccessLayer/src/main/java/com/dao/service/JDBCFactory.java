@@ -41,6 +41,8 @@ public class JDBCFactory {
             stmt.setBigDecimal(i, ((CustomItem) value).getId());
         } else if (value instanceof InputStream) {
             stmt.setBlob(i, (InputStream) value);
+        } else if (value instanceof byte[]) {
+            stmt.setString(i, new String((byte[]) value));
         } else {
             stmt.setString(i, value.toString());
         }
@@ -82,6 +84,26 @@ public class JDBCFactory {
         }
 
         return sb.toLowerCase().startsWith("select") ? select(sb) : update(sb);
+    }
+
+    public void executeBatch(String query, DataSet set) throws Exception {
+        String sb = parse(query.trim(), null);
+        PreparedStatement pstmt = getConnection().prepareStatement(sb);
+        boolean oldCommit = getConnection().getAutoCommit();
+        getConnection().setAutoCommit(false);
+
+        for (Object[] row : set) {
+            for (int i = 0; i < values.size() && i < row.length; i++)
+                addInParam(pstmt, i + 1, row[i]);
+
+            pstmt.addBatch();
+        }
+
+        pstmt.executeBatch();
+        getConnection().setAutoCommit(oldCommit);
+
+        if (!pstmt.isClosed())
+            pstmt.close();
     }
 
     private DataSet select(String sql) throws Exception {

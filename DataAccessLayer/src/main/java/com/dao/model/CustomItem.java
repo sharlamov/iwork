@@ -59,13 +59,12 @@ public class CustomItem {
 
     @Override
     public boolean equals(Object obj) {
-        CustomItem other = (CustomItem) obj;
-        if (id == null) {
-            if (other.id != null)
-                return false;
-        } else if (other == null || !id.equals(other.id))
+        if (obj instanceof CustomItem) {
+            CustomItem other = (CustomItem) obj;
+            return !(this.id == null || other.id == null) && this.id.equals(other.id);
+        } else {
             return false;
-        return true;
+        }
     }
 
     public CustomItem copy() {

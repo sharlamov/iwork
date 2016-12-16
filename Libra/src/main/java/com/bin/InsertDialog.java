@@ -20,6 +20,7 @@ import java.util.Arrays;
 public class InsertDialog extends JDialog {
 
     private final InsertType type;
+    private String check;
     private final IEdit edit;
     private DataSet dataSet;
     private DbPanel dbPanel;
@@ -81,6 +82,7 @@ public class InsertDialog extends JDialog {
                 JPanel pan = dbPanel.createPanel(5, null);
                 de = new TextDbEdit("npp", dataSet);
                 de.addValidator(Validators.NULL);
+                check = Libra.sql("CHECKDRIVER");
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new TextDbEdit("fiskcod", dataSet));
                 dbPanel.addToPanel(8, 8 + 27 + 27, 200, pan, new TextDbEdit("seria", dataSet));
@@ -111,6 +113,8 @@ public class InsertDialog extends JDialog {
                 dbPanel = new DbPanel(366, 173);
                 JPanel pan = dbPanel.createPanel(3, null);
                 de = new TextDbEdit("clccodt", dataSet);
+                de.setAlphaNum(true);
+                check = Libra.sql("CHECKAUTO");
                 de.addValidator(Validators.NULL);
                 dbPanel.addToPanel(8, 8, 200, pan, de);
                 dbPanel.addToPanel(8, 8 + 27, 200, pan, new ComboDbEdit<>("sort", Arrays.asList("Auto camion", "Camion cu remorca", "Semi-remorca", "Transportatorul de seminte", "Autobasculante", "Cisterne"), dataSet));
@@ -125,7 +129,12 @@ public class InsertDialog extends JDialog {
     private void btnYesAction() {
         try {
             if (dbPanel.verify()) {
-                BigDecimal bd = Libra.libraService.execute(type.getSql(), dataSet);
+                BigDecimal bd = null;
+                if (check != null && !check.isEmpty())
+                    bd = Libra.libraService.exec(check, dataSet).getDecimal("cod");
+                if (bd == null || bd.equals(BigDecimal.ZERO))
+                    bd = Libra.libraService.exec(type.getSql(), dataSet).getDecimal("id");
+
                 edit.setValue(new CustomItem(bd, de.getValue()));
                 Libra.libraService.commit();
                 dispose();

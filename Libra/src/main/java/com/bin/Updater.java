@@ -89,6 +89,9 @@ class Updater {
     }
 
     private String getLatestVersion() throws Exception {
+        if (settings.getUpdateUrl() == null)
+            return "0";
+
         String data = IOUtils.toString(new URL(settings.getUpdateUrl() + "/version.txt").openStream(), Charset.defaultCharset());
         return data.substring(data.indexOf("[version]") + 9, data.indexOf("[/version]"));
     }

@@ -95,11 +95,9 @@ public class DataGrid extends JPanel {
         if (summaryRow != null) {
             summaryMap.clear();
 
-            long l = System.currentTimeMillis();
             BigDecimal b = dtm.getSumByColumn("masa_brutto");
             BigDecimal t = dtm.getSumByColumn("masa_tara");
             BigDecimal n = dtm.getSumByColumn("masa_netto");
-            System.out.println((System.currentTimeMillis() - l) + " sum ");
 
             summaryMap.put("summary.count", Libra.decimalFormat.format(getRowCount()));
             summaryMap.put("summary.brutto", Libra.decimalFormat.format(b));
@@ -146,7 +144,7 @@ public class DataGrid extends JPanel {
             tbl.getTableHeader().revalidate();
             tbl.setAutoCreateRowSorter(true);
         }
-        DataSet d = libraService.executeQuery(sql, params);
+        DataSet d = libraService.exec(sql, params);
         dtm.publish(d);
 
         refreshSummary();

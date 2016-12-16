@@ -22,6 +22,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -137,7 +138,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
         toolBar.add(lostCarLabel);
         toolBar.add(Box.createHorizontalGlue());
         toolBar.addSeparator();
-        Date cDate = Libra.truncDate(null);
+        Date cDate = java.sql.Date.valueOf(LocalDate.now());
         date1 = new DateDbEdit("d1", filter);
         date2 = new DateDbEdit("d2", filter);
         date1.setDate(cDate);
@@ -186,7 +187,7 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
 
     public void lostCarsInit() {
         try {
-            DataSet lostDS = Libra.libraService.executeQuery(Libra.sql("LOSTCAR" + doc.getId()), filter);
+            DataSet lostDS = Libra.libraService.exec(Libra.sql("LOSTCAR" + doc.getId()), filter);
             if (lostDS != null && !lostDS.isEmpty()) {
                 lostCarLabel.setText(Libra.lng("lostcar") + " " + lostDS.getString("dd"));
             }

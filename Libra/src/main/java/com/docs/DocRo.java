@@ -43,9 +43,9 @@ public class DocRo extends ScaleDoc {
 
         try {
             if (isOpened) {
-                infoPanel.setValue("test1", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init("clcnamet", newInfoSet.getObject("clcgestionart"))).getString("info"));
-                infoPanel.setValue("test2", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init(" clcnamet", newInfoSet.getObject(" clcdrivert"))).getString(" info"));
-                infoPanel.setValue("test3", Libra.libraService.executeQuery(Libra.sql("FINFO1"), DataSet.init(" clcnamet", newInfoSet.getObject(" clccusert"))).getString(" info"));
+                infoPanel.setValue("test1", Libra.libraService.exec(Libra.sql("FINFO"), newInfoSet.getObject("clcgestionart")).getString("info"));
+                infoPanel.setValue("test2", Libra.libraService.exec(Libra.sql("FINFO"), newInfoSet.getObject(" clcdrivert")).getString(" info"));
+                infoPanel.setValue("test3", Libra.libraService.exec(Libra.sql("FINFO1"), newInfoSet.getObject(" clccusert")).getString(" info"));
             }
         } catch (Exception e) {
             Libra.eMsg(e);
@@ -64,21 +64,21 @@ public class DocRo extends ScaleDoc {
                     BigDecimal key = (BigDecimal) oldDataSet.getObject("id");
                     boolean isNewDoc = key == null;
                     if (isNewDoc) {
-                        key = Libra.libraService.execute(Libra.sql("NEXTVAL"), null);
+                        key = Libra.libraService.exec(Libra.sql("NEXT")).getDecimal("id");
                         newDataSet.setObject("id", key);
                     }
 
-                    Libra.libraService.execute(isNewDoc ? Libra.sql("INSSCALEIN") : Libra.sql("UPDSCALEIN"), newDataSet);
+                    Libra.libraService.exec(isNewDoc ? Libra.sql("INSSCALEIN") : Libra.sql("UPDSCALEIN"), newDataSet);
 
                     if (doc.isUsePrintInfo()) {
                         newInfoSet.setObject("pid", key);
                         initTab(false);
-                        Libra.libraService.execute(Libra.sql("MERGEPRINTDETAILRO"), newInfoSet);
+                        Libra.libraService.exec(Libra.sql("MERGEPRINTDETAILRO"), newInfoSet);
                     }
 
                     if (!historySet.isEmpty()) {
                         historySet.setObject("id", key);
-                        Libra.libraService.execute(Libra.sql("INSHISTORY"), historySet);
+                        Libra.libraService.exec(Libra.sql("INSHISTORY"), historySet);
                     }
 
                     Libra.libraService.commit();
@@ -109,7 +109,7 @@ public class DocRo extends ScaleDoc {
             Libra.iMsg(Libra.lng("error.empty.nrdoc"));
         } else {
             try {
-                DataSet set = Libra.libraService.executeQuery(Libra.sql("LOADOUTDOC"), DataSet.init("nrdoc", nrDoc));
+                DataSet set = Libra.libraService.exec(Libra.sql("LOADOUTDOC"), nrDoc);
                 if (set.isEmpty()) {
                     Libra.iMsg(Libra.lng("error.notfound.nrdoc"));
                 } else {
@@ -423,7 +423,7 @@ public class DocRo extends ScaleDoc {
     public DbPanel createInfoPanel() {
         int stepDown = 27;
         try {
-            newInfoSet = Libra.libraService.executeQuery(doc.getPrintInfoSql(), newDataSet);
+            newInfoSet = Libra.libraService.exec(doc.getPrintInfoSql(), newDataSet);
         } catch (Exception e) {
             Libra.eMsg(e);
         }
@@ -455,7 +455,7 @@ public class DocRo extends ScaleDoc {
         ip.addToPanel(8, 25, 150, p2, delegat);
         delegat.addChangeEditListener(source -> {
             try {
-                infoPanel.setValue("test0", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init("clcnamet", newInfoSet.getObject("clcdelegatt"))).getString("info"));
+                infoPanel.setValue("test0", Libra.libraService.exec(Libra.sql("FINFO"), newInfoSet.getObject("clcdelegatt")).getString("info"));
             } catch (Exception e) {
                 Libra.eMsg(e, true);
             }
@@ -465,7 +465,7 @@ public class DocRo extends ScaleDoc {
         ip.addToPanel(8, 25 + stepDown, 150, p2, clcgestionart);
         clcgestionart.addChangeEditListener(source -> {
             try {
-                infoPanel.setValue("test1", Libra.libraService.executeQuery(Libra.sql("FINFO"), DataSet.init("clcnamet", newInfoSet.getObject(" clcgestionart"))).getString(" info"));
+                infoPanel.setValue("test1", Libra.libraService.exec(Libra.sql("FINFO"), newInfoSet.getObject(" clcgestionart")).getString(" info"));
             } catch (Exception e) {
                 Libra.eMsg(e, true);
             }

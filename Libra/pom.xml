@@ -15,11 +15,17 @@
     </properties>
 
     <dependencies>
-        <!-- JDBC -->
+        <!-- POI -->
         <dependency>
-            <groupId>com.oracle</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <version>11.1.0.7.0</version>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>3.14</version>
+        </dependency>
+        <!-- DAO -->
+        <dependency>
+            <groupId>com.dao</groupId>
+            <artifactId>jdbc-dao</artifactId>
+            <version>1.1</version>
         </dependency>
         <!-- component calendar -->
         <dependency>
@@ -32,12 +38,6 @@
             <groupId>com.serial</groupId>
             <artifactId>serial-comm</artifactId>
             <version>3.3</version>
-        </dependency>
-        <!-- Report -->
-        <dependency>
-            <groupId>com.report</groupId>
-            <artifactId>spread-report</artifactId>
-            <version>1.0</version>
         </dependency>
         <!-- Baloon hint -->
         <dependency>

@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -194,7 +195,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
         BigDecimal val = newDataSet.getDecimal("season");
         if (val.equals(BigDecimal.ZERO)) {
             try {
-                DataSet set = Libra.libraService.executeQuery(Libra.sql("DEFAULTSEASON"), DataSet.init("clcdivt", clcdivt.getValue(), "cDate", Libra.truncDate(null)));
+                DataSet set = Libra.libraService.exec(Libra.sql("DEFAULTSEASON"), clcdivt.getValue(), LocalDate.now());
                 val = set.getDecimal("sezon_yyyy");
             } catch (Exception e) {
                 Libra.eMsg(e, true);
@@ -271,7 +272,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
                     JRadioButton rb = (JRadioButton) p.getComponent(i);
                     if (rb.isSelected()) {
                         try {
-                            Libra.reportService.buildReport(doc.getReports().get(i), newDataSet);
+                            Libra.libraService.buildReport(doc.getReports().get(i), newDataSet);
                         } catch (Exception e) {
                             Libra.eMsg(e);
                         }
@@ -301,7 +302,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
                     JRadioButton rb = (JRadioButton) p.getComponent(i);
                     if (rb.isSelected()) {
                         try {
-                            Libra.libraService.execute(doc.getActions().get(i).getSql(), newDataSet);
+                            Libra.libraService.exec(doc.getActions().get(i).getSql(), newDataSet);
                             Libra.libraService.commit();
                             JOptionPane.showMessageDialog(null, Libra.lng("doc.saved"), "Ok", JOptionPane.INFORMATION_MESSAGE);
                         } catch (Exception e) {

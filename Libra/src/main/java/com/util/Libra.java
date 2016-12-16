@@ -4,7 +4,6 @@ import com.dao.model.CustomItem;
 import com.model.Scale;
 import com.model.settings.Settings;
 import com.service.LibraService;
-import com.service.ReportService;
 import com.view.component.db.editors.ComboDbEdit;
 import org.apache.commons.io.FileUtils;
 
@@ -16,20 +15,17 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class Libra {
 
-    public static String TITLE = "Libra 1.4";
+    public static String TITLE = "Libra 1.5";
 
     public static Settings SETTINGS;
 
     public static LibraService libraService;
-
-    public static ReportService reportService = new ReportService();
 
     public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
 
@@ -108,17 +104,6 @@ public class Libra {
             vDefVal = vDefVal.add(new BigDecimal((int) (text.charAt(i))));
         }
         return vDefVal;
-    }
-
-    public static Date truncDate(Date date) {
-        Calendar cal = Calendar.getInstance();
-        if (date != null)
-            cal.setTime(date);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        return cal.getTime();
     }
 
     public static void initFilial(ComboDbEdit<CustomItem> siloses, ComboDbEdit<CustomItem> filials, boolean useHide) {

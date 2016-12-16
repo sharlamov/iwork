@@ -129,7 +129,7 @@ public class ReportDialog extends JDialog implements ActionListener, ChangeEditL
                     }
                 }
                 if (isCorrect) {
-                    Libra.reportService.buildReport(report, dataSet);
+                    Libra.libraService.buildReport(report, dataSet);
                     dispose();
                 }
             } catch (Exception ex) {

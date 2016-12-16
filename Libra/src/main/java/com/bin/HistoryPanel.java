@@ -38,7 +38,7 @@ public class HistoryPanel extends JPanel {
     public void refreshData(BigDecimal id) {
         removeAll();
         try {
-            DataSet dataSet = Libra.libraService.executeQuery(Libra.sql("HISTORY"), DataSet.init("id", id));
+            DataSet dataSet = Libra.libraService.exec(Libra.sql("HISTORY"), id);
             for (Object[] objects : dataSet) {
                 addInfo((BigDecimal) objects[0], (Date) objects[1], (CustomItem) objects[2], (BigDecimal) objects[3]);
                 makeFoto(objects[4]);

@@ -1,12 +1,10 @@
-package com.driver;
+package com.serialcomm.driver;
 
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

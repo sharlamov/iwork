@@ -1,7 +1,7 @@
-package com.bin;
+package com.serialcomm.bin;
 
-import com.driver.ScaleEventListener;
-import com.driver.ScalesDriver;
+import com.serialcomm.driver.ScalesDriver;
+import com.serialcomm.driver.ScaleEventListener;
 
 import javax.swing.*;
 import java.awt.*;

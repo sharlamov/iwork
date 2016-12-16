@@ -1,4 +1,4 @@
-package com.driver;
+package com.serialcomm.driver;
 
 public interface ScaleEventListener {
 

@@ -1,7 +1,7 @@
-package com.bin;
+package com.serialcomm.bin;
 
-import com.driver.ScaleEventListener;
-import com.driver.TestDriver;
+import com.serialcomm.driver.ScaleEventListener;
+import com.serialcomm.driver.TestDriver;
 import jssc.SerialPortEvent;
 
 import java.io.*;

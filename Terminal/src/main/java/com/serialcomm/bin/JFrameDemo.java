@@ -1,7 +1,7 @@
-package com.bin;
+package com.serialcomm.bin;
 
-import com.driver.ScalesDriver;
-import com.driver.ScalesManager;
+import com.serialcomm.driver.ScalesDriver;
+import com.serialcomm.driver.ScalesManager;
 import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -93,7 +93,7 @@ public class JFrameDemo extends JFrame implements ActionListener {
     }
 
     public void print(List<String> list) {
-        for (String s : list) print(s);
+        list.forEach(this::print);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -136,11 +136,9 @@ public class JFrameDemo extends JFrame implements ActionListener {
                 tabbedPane.repaint();
             }
         } else if (e.getSource().equals(btn0)) {
-            try {
-                restart(null);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
+
+            SplashWindow1 sp = new SplashWindow1("asd", this);
+            sp.show();
         }
     }
 
@@ -218,4 +216,21 @@ public class JFrameDemo extends JFrame implements ActionListener {
 
 }
 
-
+class SplashWindow1 extends JWindow
+{
+    public SplashWindow1(String filename, Frame f)
+    {
+        super(f);
+        JLabel l = new JLabel(new ImageIcon(filename));
+        getContentPane().add(l, BorderLayout.CENTER);
+        pack();
+        Dimension screenSize =
+                Toolkit.getDefaultToolkit().getScreenSize();
+        Dimension labelSize = l.getPreferredSize();
+        setLocation(screenSize.width/2 - (labelSize.width/2),
+                screenSize.height/2 - (labelSize.height/2));
+        setVisible(true);
+        screenSize = null;
+        labelSize = null;
+    }
+}

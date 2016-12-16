@@ -1,4 +1,4 @@
-package com.driver;
+package com.serialcomm.driver;
 
 public enum ScaleType {
     R320(2400, "([\u0002][-|\\s|0-9][0-9|\\s]{7}[G])"),

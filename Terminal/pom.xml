@@ -1,14 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com</groupId>
-  <artifactId>driver</artifactId>
-  <version>3.3</version>
-  <packaging>jar</packaging>
+    <groupId>com.serial</groupId>
+    <artifactId>serial-comm</artifactId>
+    <version>3.3</version>
+    <packaging>jar</packaging>
 
-  <name>driver</name>
-  <url>http://maven.apache.org</url>
+    <name>serial-comm</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -25,7 +24,6 @@
 
     <build>
         <plugins>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -34,7 +32,7 @@
                     <finalName>Terminal</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>com.bin.Start</mainClass>
+                            <mainClass>com.serialcomm.bin.Start</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -51,6 +49,13 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -1,4 +1,4 @@
-package com.driver;
+package com.serialcomm.driver;
 
 import jssc.SerialPort;
 import jssc.SerialPortEvent;

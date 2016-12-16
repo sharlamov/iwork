@@ -6,10 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
- 
+
 @Repository
-public class CateringDAOImpl implements CateringDAO
-{
+public class CateringDAOImpl implements CateringDAO {
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -18,7 +17,7 @@ public class CateringDAOImpl implements CateringDAO
     }
 
     @Override
-    public List<Object> getItems() {
-        return currentSession().createSQLQuery("Select cod, sysfid From vmdb_docs where rownum<5").list();
+    public List<Object[]> getItems(String sql) {
+        return currentSession().createSQLQuery(sql).list();
     }
 }

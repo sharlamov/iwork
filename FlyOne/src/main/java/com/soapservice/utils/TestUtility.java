@@ -70,10 +70,8 @@ public class TestUtility {
         element.setWeight(500);
         element.setDescription(getLabel("Это описание товара. Это описание товара. Это описание товара. Это описание товара. Это описание товара. Это описание товара.", "Aceasta descriere a marfurilor. Aceasta descriere a marfurilor. Aceasta descriere a marfurilor. Aceasta descriere a marfurilor. Aceasta descriere a marfurilor. Aceasta descriere a marfurilor.", "This description of the goods. This description of the goods. This description of the goods. This description of the goods. This description of the goods. This description of the goods."));
 
-        com.soapservice.model.Url url = new com.soapservice.model.Url();
-        url.setPath("my_big_photo1.png");
         Photo photo = new Photo();
-        photo.setUrl(url);
+        photo.setUrl("my_big_photo1.png");
         element.getPhotos().getPhoto().add(photo);
 
         for (int i = 0, price = 50; i < 4; i++) {

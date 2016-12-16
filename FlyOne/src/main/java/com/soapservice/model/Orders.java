@@ -7,20 +7,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement
+@XmlRootElement(name = "ORDERS")
 public class Orders {
 
-    @XmlElement(required = true)
+
     private List<Order> order;
 
+    @XmlElement(name = "ORDER", required = true)
     public void setOrder(List<Order> order) {
         this.order = order;
     }
 
     public List<Order> getOrder() {
         if (order == null) {
-            order = new ArrayList<Order>();
+            order = new ArrayList<>();
         }
         return this.order;
     }

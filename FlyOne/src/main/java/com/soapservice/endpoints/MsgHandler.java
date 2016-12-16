@@ -3,7 +3,6 @@ package com.soapservice.endpoints;
 import com.sun.xml.messaging.saaj.util.Base64;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPMessage;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;

@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement
+@XmlRootElement(name = "MENU")
 public class Menu {
 
-    @XmlElement(required = true)
+    @XmlElement(name = "ITEM")
     private List<Item> item;
 
 
@@ -29,7 +29,7 @@ public class Menu {
 
     public List<Item> getItem() {
         if (item == null) {
-            item = new ArrayList<Item>();
+            item = new ArrayList<>();
         }
         return this.item;
     }

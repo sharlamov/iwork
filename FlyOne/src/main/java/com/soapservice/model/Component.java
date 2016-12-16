@@ -15,48 +15,26 @@ import javax.xml.bind.annotation.XmlType;
 import java.math.BigDecimal;
 
 
-/**
- * <p>Java class for component complex type.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
- * 
- * <pre>
- * &lt;complexType name="component">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}int"/>
- *         &lt;element name="name" type="{http://flyone.com/model}label"/>
- *         &lt;element name="price" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
- *         &lt;element name="specialPrice" type="{http://www.w3.org/2001/XMLSchema}decimal"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
- * </pre>
- * 
- * 
- */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "component", propOrder = {
-    "id",
-    "name",
-    "price",
-    "specialPrice"
+@XmlType(name = "COMPONENT", propOrder = {
+        "id",
+        "name",
+        "price",
+        "specialPrice"
 })
 public class Component {
 
+    @XmlElement(name = "ID")
     protected int id;
-    @XmlElement(required = true)
+    @XmlElement(name = "NAME", required = true)
     protected Label name;
-    @XmlElement(required = true)
+    @XmlElement(name = "PRICE", required = true)
     protected BigDecimal price;
-    @XmlElement(required = true)
+    @XmlElement(name = "SPECIALPRICE", required = true)
     protected BigDecimal specialPrice;
 
     /**
      * Gets the value of the id property.
-     * 
      */
     public int getId() {
         return id;
@@ -64,7 +42,6 @@ public class Component {
 
     /**
      * Sets the value of the id property.
-     * 
      */
     public void setId(int value) {
         this.id = value;
@@ -72,11 +49,9 @@ public class Component {
 
     /**
      * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Label }
-     *     
+     *
+     * @return possible object is
+     * {@link Label }
      */
     public Label getName() {
         return name;
@@ -84,11 +59,9 @@ public class Component {
 
     /**
      * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Label }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Label }
      */
     public void setName(Label value) {
         this.name = value;
@@ -96,11 +69,9 @@ public class Component {
 
     /**
      * Gets the value of the price property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getPrice() {
         return price;
@@ -108,11 +79,9 @@ public class Component {
 
     /**
      * Sets the value of the price property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setPrice(BigDecimal value) {
         this.price = value;
@@ -120,11 +89,9 @@ public class Component {
 
     /**
      * Gets the value of the specialPrice property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getSpecialPrice() {
         return specialPrice;
@@ -132,11 +99,9 @@ public class Component {
 
     /**
      * Sets the value of the specialPrice property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setSpecialPrice(BigDecimal value) {
         this.specialPrice = value;

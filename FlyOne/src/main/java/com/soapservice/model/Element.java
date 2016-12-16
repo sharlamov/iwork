@@ -14,11 +14,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "element", propOrder = {
+@XmlType(name = "ELEMENT", propOrder = {
     "id",
     "category",
     "name",
@@ -34,27 +32,30 @@ import java.util.List;
 })
 public class Element {
 
-    protected int id;
-    protected int category;
-    @XmlElement(required = true)
+    @XmlElement(name = "ID", required = true)
+    private int id;
+    @XmlElement(name = "CATEGORY", required = true)
+    private int category;
+    @XmlElement(name = "NAME", required = true)
     protected Label name;
-    @XmlElement(required = true)
-    protected BigInteger count;
-    @XmlElement(required = true)
-    protected BigDecimal price;
-    @XmlElement(required = true)
-    protected BigDecimal specialPrice;
-    @XmlElement(required = true)
-    protected BigDecimal total;
-    @XmlElement(required = true)
-    protected Algorithm algorithm;
-    protected int weight;
-    @XmlElement(name = "Description", required = true)
-    protected Label description;
-    @XmlElement(required = true)
-    protected Photos photos;
-    @XmlElement(required = true)
-    protected Components components;
+    @XmlElement(name = "COUNT", required = true)
+    private BigInteger count;
+    @XmlElement(name = "PRICE", required = true)
+    private BigDecimal price;
+    @XmlElement(name = "SPECIALPRICE", required = true)
+    private BigDecimal specialPrice;
+    @XmlElement(name = "TOTAL", required = true)
+    private BigDecimal total;
+    @XmlElement(name = "ALGORITHM", required = true)
+    private Algorithm algorithm;
+    @XmlElement(name = "WEIGHT", required = true)
+    private int weight;
+    @XmlElement(name = "DESCRIPTION", required = true)
+    private Label description;
+    @XmlElement(name = "PHOTOS", required = true)
+    private Photos photos;
+    @XmlElement(name = "COMPONENTS", required = true)
+    private Components components;
 
     /**
      * Gets the value of the id property.

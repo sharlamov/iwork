@@ -16,9 +16,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for label complex type.
- * 
+ * <p>
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ * <p>
  * <pre>
  * &lt;complexType name="label">
  *   &lt;complexContent>
@@ -32,31 +32,42 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "label", propOrder = {
-    "ru",
-    "ro",
-    "en"
+        "ru",
+        "ro",
+        "en"
 })
 public class Label {
 
-    @XmlElement(name = "Ru", required = true)
-    protected String ru;
-    @XmlElement(name = "Ro", required = true)
-    protected String ro;
-    @XmlElement(name = "En", required = true)
-    protected String en;
+    @XmlElement(name = "RU", required = true)
+    private String ru;
+    @XmlElement(name = "RO", required = true)
+    private String ro;
+    @XmlElement(name = "EN", required = true)
+    private String en;
+
+    public Label() {
+    }
+
+    public Label(String ru, String ro, String en) {
+        this.ru = ru;
+        this.ro = ro;
+        this.en = en;
+    }
+
+    public Label(Object ru, Object ro, Object en) {
+        this.ru = ru != null ? ru.toString() : "";
+        this.ro = ro != null ? ro.toString() : "";
+        this.en = en != null ? en.toString() : "";
+    }
 
     /**
      * Gets the value of the ru property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRu() {
         return ru;
@@ -64,11 +75,9 @@ public class Label {
 
     /**
      * Sets the value of the ru property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRu(String value) {
         this.ru = value;
@@ -76,11 +85,9 @@ public class Label {
 
     /**
      * Gets the value of the ro property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getRo() {
         return ro;
@@ -88,11 +95,9 @@ public class Label {
 
     /**
      * Sets the value of the ro property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setRo(String value) {
         this.ro = value;
@@ -100,11 +105,9 @@ public class Label {
 
     /**
      * Gets the value of the en property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getEn() {
         return en;
@@ -112,11 +115,9 @@ public class Label {
 
     /**
      * Sets the value of the en property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setEn(String value) {
         this.en = value;

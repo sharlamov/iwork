@@ -5,12 +5,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "DISCOUNTS")
 public class Discounts {
 
     private List<Discount> discount;
 
-    @XmlElement
+    @XmlElement(name = "DISCOUNT")
     public void setDiscount(List<Discount> discount) {
         this.discount = discount;
     }

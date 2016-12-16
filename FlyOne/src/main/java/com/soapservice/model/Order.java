@@ -1,102 +1,67 @@
 package com.soapservice.model;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ORDER")
 public class Order {
 
-    protected int id;
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "date")
-    protected XMLGregorianCalendar date;
-    @XmlElement(required = true)
-    protected BigInteger userId;
-    @XmlElement(required = true)
-    protected BigInteger statusId;
-    @XmlElement(required = true)
-    protected BigDecimal discountCard;
-    @XmlElement(required = true)
-    protected BigDecimal deliveryPrice;
-    @XmlElement(required = true)
-    protected BigDecimal total;
-    @XmlElement(required = true)
-    protected PayMethod payMethod;
-    protected Boolean payed;
-    @XmlElement(required = true)
-    protected String comment;
-    @XmlElement(required = true)
-    protected Delivery delivery;
-    @XmlElement(required = true)
-    protected Elements elements;
 
-    /**
-     * Gets the value of the id property.
-     * 
-     */
+    @XmlElement(name = "ID", required = true)
+    private int id;
+    @XmlElement(name = "DATE", required = true)
+    private String date;
+    @XmlElement(name = "USERID", required = true)
+    private BigInteger userId;
+    @XmlElement(name = "STATUSID", required = true)
+    private BigInteger statusId;
+    @XmlElement(name = "DISCOUNTCARD", required = true)
+    private BigDecimal discountCard;
+    @XmlElement(name = "DELIVERYPRICE", required = true)
+    private BigDecimal deliveryPrice;
+    @XmlElement(name = "TOTAL", required = true)
+    private BigDecimal total;
+    @XmlElement(name = "PAYMETHOD", required = true)
+    private PayMethod payMethod;
+    @XmlElement(name = "PAYED", required = true)
+    private Boolean payed;
+    @XmlElement(name = "COMMENT", required = true)
+    private String comment;
+    @XmlElement(name = "DELIVERY", required = true)
+    private Delivery delivery;
+    @XmlElement(name = "ELEMENTS", required = true)
+    private Elements elements;
+
     public int getId() {
         return id;
     }
 
-    /**
-     * Sets the value of the id property.
-     * 
-     */
     public void setId(int value) {
         this.id = value;
     }
 
-    /**
-     * Gets the value of the date property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getDate() {
+    public String getDate() {
         return date;
     }
 
-    /**
-     * Sets the value of the date property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setDate(XMLGregorianCalendar value) {
+    public void setDate(String value) {
         this.date = value;
     }
 
-    /**
-     * Gets the value of the userId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
-     */
     public BigInteger getUserId() {
         return userId;
     }
 
     /**
      * Sets the value of the userId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
      */
     public void setUserId(BigInteger value) {
         this.userId = value;
@@ -104,11 +69,9 @@ public class Order {
 
     /**
      * Gets the value of the statusId property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @return possible object is
+     * {@link BigInteger }
      */
     public BigInteger getStatusId() {
         return statusId;
@@ -116,11 +79,9 @@ public class Order {
 
     /**
      * Sets the value of the statusId property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigInteger }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigInteger }
      */
     public void setStatusId(BigInteger value) {
         this.statusId = value;
@@ -128,11 +89,9 @@ public class Order {
 
     /**
      * Gets the value of the discountCard property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getDiscountCard() {
         return discountCard;
@@ -140,11 +99,9 @@ public class Order {
 
     /**
      * Sets the value of the discountCard property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setDiscountCard(BigDecimal value) {
         this.discountCard = value;
@@ -152,11 +109,9 @@ public class Order {
 
     /**
      * Gets the value of the deliveryPrice property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getDeliveryPrice() {
         return deliveryPrice;
@@ -164,11 +119,9 @@ public class Order {
 
     /**
      * Sets the value of the deliveryPrice property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setDeliveryPrice(BigDecimal value) {
         this.deliveryPrice = value;
@@ -176,11 +129,9 @@ public class Order {
 
     /**
      * Gets the value of the total property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @return possible object is
+     * {@link BigDecimal }
      */
     public BigDecimal getTotal() {
         return total;
@@ -188,11 +139,9 @@ public class Order {
 
     /**
      * Sets the value of the total property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link BigDecimal }
      */
     public void setTotal(BigDecimal value) {
         this.total = value;
@@ -200,11 +149,9 @@ public class Order {
 
     /**
      * Gets the value of the payMethod property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PayMethod }
-     *     
+     *
+     * @return possible object is
+     * {@link PayMethod }
      */
     public PayMethod getPayMethod() {
         return payMethod;
@@ -212,11 +159,9 @@ public class Order {
 
     /**
      * Sets the value of the payMethod property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PayMethod }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link PayMethod }
      */
     public void setPayMethod(PayMethod value) {
         this.payMethod = value;
@@ -224,7 +169,6 @@ public class Order {
 
     /**
      * Gets the value of the payed property.
-     * 
      */
     public boolean isPayed() {
         return payed;
@@ -232,7 +176,6 @@ public class Order {
 
     /**
      * Sets the value of the payed property.
-     * 
      */
     public void setPayed(boolean value) {
         this.payed = value;
@@ -240,11 +183,9 @@ public class Order {
 
     /**
      * Gets the value of the comment property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getComment() {
         return comment;
@@ -252,11 +193,9 @@ public class Order {
 
     /**
      * Sets the value of the comment property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setComment(String value) {
         this.comment = value;
@@ -264,11 +203,9 @@ public class Order {
 
     /**
      * Gets the value of the delivery property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Delivery }
-     *     
+     *
+     * @return possible object is
+     * {@link Delivery }
      */
     public Delivery getDelivery() {
         return delivery;

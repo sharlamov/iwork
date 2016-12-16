@@ -8,24 +8,25 @@
 
 package com.soapservice.model;
 
-import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "ELEMENTS")
 public class Elements {
 
 
     protected List<Element> element;
 
-    @XmlElement
+    @XmlElement(name = "ELEMENT")
     public void setElement(List<Element> element) {
         this.element = element;
     }
 
     public List<Element> getElement() {
         if (element == null) {
-            element = new ArrayList<Element>();
+            element = new ArrayList<>();
         }
         return this.element;
     }

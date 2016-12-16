@@ -8,9 +8,9 @@
 
 package com.soapservice.model;
 
-import javax.persistence.Entity;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -35,14 +35,13 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "item", propOrder = {
-    "id",
-    "categoryId"
-})
+@XmlType(name = "ITEM")
 public class Item {
 
-    protected int id;
-    protected int categoryId;
+    @XmlElement(name = "ID")
+    private int id;
+    @XmlElement(name = "CATEGORYID")
+    private int categoryId;
 
     /**
      * Gets the value of the id property.

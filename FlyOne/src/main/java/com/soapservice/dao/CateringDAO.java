@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface CateringDAO
 {
-    List<Object> getItems();
+    List<Object[]> getItems(String sql);
 }

@@ -13,20 +13,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.List;
 
-@XmlRootElement
+@XmlRootElement(name = "PHOTOS")
 public class Photos {
 
 
     private List<Photo> photo;
 
-    @XmlElement
+    @XmlElement(name = "PHOTO")
     public void setPhoto(List<Photo> photo) {
         this.photo = photo;
     }
 
     public List<Photo> getPhoto() {
         if (photo == null) {
-            photo = new ArrayList<Photo>();
+            photo = new ArrayList<>();
         }
         return this.photo;
     }

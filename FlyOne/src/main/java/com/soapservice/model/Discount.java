@@ -10,14 +10,15 @@ package com.soapservice.model;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
  * <p>Java class for discount complex type.
- * 
+ * <p>
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ * <p>
  * <pre>
  * &lt;complexType name="discount">
  *   &lt;complexContent>
@@ -31,24 +32,24 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "discount", propOrder = {
-    "id",
-    "number",
-    "percent"
+@XmlType(name = "DISCOUNTS", propOrder = {
+        "id",
+        "number",
+        "percent"
 })
 public class Discount {
 
-    protected int id;
-    protected long number;
-    protected int percent;
+    @XmlElement(name = "ID")
+    private int id;
+    @XmlElement(name = "NUMBER")
+    private long number;
+    @XmlElement(name = "PERCENT")
+    private int percent;
 
     /**
      * Gets the value of the id property.
-     * 
      */
     public int getId() {
         return id;
@@ -56,7 +57,6 @@ public class Discount {
 
     /**
      * Sets the value of the id property.
-     * 
      */
     public void setId(int value) {
         this.id = value;
@@ -64,7 +64,6 @@ public class Discount {
 
     /**
      * Gets the value of the number property.
-     * 
      */
     public long getNumber() {
         return number;
@@ -72,7 +71,6 @@ public class Discount {
 
     /**
      * Sets the value of the number property.
-     * 
      */
     public void setNumber(long value) {
         this.number = value;
@@ -80,7 +78,6 @@ public class Discount {
 
     /**
      * Gets the value of the percent property.
-     * 
      */
     public int getPercent() {
         return percent;
@@ -88,7 +85,6 @@ public class Discount {
 
     /**
      * Sets the value of the percent property.
-     * 
      */
     public void setPercent(int value) {
         this.percent = value;

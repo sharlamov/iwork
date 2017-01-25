@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 public class CateringService {
 
     private final CateringDAO dao;
+    private String categoriesList = "4711, 4716, 4717";
 
     @Autowired
     public CateringService(CateringDAO dao) {
@@ -20,7 +21,9 @@ public class CateringService {
 
     public Menu getMenu() {
         Menu menu = new Menu();
-        for (Object o : dao.getItems("select sc item_id, parent_id1 categoryid from  vms_sysgrp_id1")) {
+        for (Object o : dao.getItems("select sc, sch \n" +
+                "from tms_sysgrp m,tms_sysgrph h where  m.group1 = h.group1 and m.group2 = h.group2\n" +
+                "and m.group3 = h.group3 and m.group4 = h.group4 and m.group5 = h.group5 and sch in (" + categoriesList + ")")) {
             Object[] matr = (Object[]) o;
             Item item = new Item();
             item.setId(((BigDecimal) matr[0]).intValue());
@@ -30,9 +33,9 @@ public class CateringService {
         return menu;
     }
 
-    public Categories getCategories() {
+    public Categories getCategoriesList() {
         Categories categories = new Categories();
-        for (Object o : dao.getItems("select id1 categoryid, (select namerus from vms_univers where cod = g.sch) name_ru, coment name_ro from vms_sysgrph g where id0 = 1 and group2 = 1")) {
+        for (Object o : dao.getItems("select cod, namerus, denumirea from vms_univers where cod in (select sch from tms_sysgrph where sch in (" + categoriesList + "))")) {
             Object[] matr = (Object[]) o;
             Category item = new Category();
             item.setId(((BigDecimal) matr[0]).intValue());
@@ -40,6 +43,34 @@ public class CateringService {
             categories.getCategory().add(item);
         }
         return categories;
+    }
+
+    public Elements GET_ELEMENTS() {
+        Elements response = new Elements();
+        for (Object o : dao.getItems("select cod element_id, \n" +
+                "       sch categoryid,\n" +
+                "       namerus name_ru,\n" +
+                "       denumirea name_ro,\n" +
+                "       pretv4 price,\n" +
+                "       pretv4 specialprice," +
+                "       (select norma1 from vun9magr_1regnorm_m_d1 where sc_m_produs = p.cod and trunc(sysdate) between datastart and dataend and d1_dep_d1_execut is not null)  weight\n" +
+                " from yimc_univ_p15tvr_pr p, " +
+                " (select sc, sch from tms_sysgrp m,tms_sysgrph h where  m.group1 = h.group1 and m.group2 = h.group2\n" +
+                " and m.group3 = h.group3 and m.group4 = h.group4 and m.group5 = h.group5 and sch in (" + categoriesList + ")) f " +
+                " where nvl(pretv4,0) <> 0 and p.cod = f.sc")) {
+            Object[] matr = (Object[]) o;
+            Element element = new Element();
+            element.setId(((BigDecimal) matr[0]).intValue());
+            element.setCategory(((BigDecimal) matr[1]).intValue());
+            element.setName(new Label(matr[2], matr[3], ""));
+            element.setPrice((BigDecimal) matr[4]);
+            element.setSpecialPrice((BigDecimal) matr[5]);
+            element.setAlgorithm(Algorithm.STANDART);
+            element.setWeight(((BigDecimal) matr[5]).intValue());
+            response.getElement().add(element);
+        }
+
+        return response;
     }
 
     public Statuses getStatuses() {
@@ -52,5 +83,17 @@ public class CateringService {
             statuses.getStatus().add(item);
         }
         return statuses;
+    }
+
+    public int setOrders(Orders orders) {
+        boolean b = false;
+        for (Order order : orders.getOrder()) {
+            Integer nrdoc = dao.insertDocument("", order);
+            b = true;
+            for (Element element : order.getElements().getElement()) {
+                dao.insertElement("CALL ycat_docs.ins_element(:nrdoc,:psc,:pcant,:psuma)", nrdoc, element);
+            }
+        }
+        return 7;
     }
 }

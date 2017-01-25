@@ -1,6 +1,4 @@
-package com.test;
-
-import com.test.FormEditor;
+package com.test.editor;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -17,14 +15,14 @@ public class ResizableBorder implements Border {
 
     private int dist = 8;
 
-    int locations[] = {
+    private int locations[] = {
             SwingConstants.NORTH, SwingConstants.SOUTH, SwingConstants.WEST,
             SwingConstants.EAST, SwingConstants.NORTH_WEST,
             SwingConstants.NORTH_EAST, SwingConstants.SOUTH_WEST,
             SwingConstants.SOUTH_EAST
     };
 
-    int cursors[] = {
+    private int cursors[] = {
             Cursor.N_RESIZE_CURSOR, Cursor.S_RESIZE_CURSOR, Cursor.W_RESIZE_CURSOR,
             Cursor.E_RESIZE_CURSOR, Cursor.NW_RESIZE_CURSOR, Cursor.NE_RESIZE_CURSOR,
             Cursor.SW_RESIZE_CURSOR, Cursor.SE_RESIZE_CURSOR
@@ -43,8 +41,7 @@ public class ResizableBorder implements Border {
     @Override
     public void paintBorder(Component component, Graphics g, int x, int y,
                             int w, int h) {
-        //if (component.hasFocus()) {
-        if(component.equals(fe.selected)){
+        if (component.equals(fe.getSelected())) {
             g.setColor(Color.black);
             g.drawRect(x + dist / 2, y + dist / 2, w - dist, h - dist);
             for (int loc : locations) {
@@ -63,8 +60,7 @@ public class ResizableBorder implements Border {
             case SwingConstants.NORTH:
                 return new Rectangle(x + w / 2 - dist / 2, y, dist, dist);
             case SwingConstants.SOUTH:
-                return new Rectangle(x + w / 2 - dist / 2, y + h - dist, dist,
-                        dist);
+                return new Rectangle(x + w / 2 - dist / 2, y + h - dist, dist, dist);
             case SwingConstants.WEST:
                 return new Rectangle(x, y + h / 2 - dist / 2, dist, dist);
             case SwingConstants.EAST:
@@ -82,7 +78,6 @@ public class ResizableBorder implements Border {
     }
 
     public int getCursor(MouseEvent me) {
-
         Component c = me.getComponent();
         int w = c.getWidth();
         int h = c.getHeight();

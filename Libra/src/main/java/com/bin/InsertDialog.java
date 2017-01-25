@@ -14,10 +14,12 @@ import com.view.component.panel.DbPanel;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-public class InsertDialog extends JDialog {
+public class InsertDialog extends JDialog implements FocusListener {
 
     private final InsertType type;
     private String check;
@@ -148,5 +150,15 @@ public class InsertDialog extends JDialog {
     private void btnNoAction() {
         dispose();
         ((Component) edit).requestFocus();
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+
     }
 }

@@ -3,46 +3,44 @@ package com.test.table;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.util.Arrays;
 
-public class PropCellRenderer extends DefaultTableCellRenderer {
+class PropCellRenderer extends DefaultTableCellRenderer {
 
-    public PropCellRenderer() {
+    private Font defFont;
 
+    PropCellRenderer() {
+        defFont = (new Label()).getFont();
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value,
                                                    boolean isSelected, boolean hasFocus, int row, int col) {
 
-        Component label = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-        if (col != 1)
-            return label;
-
-
+        JLabel label = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
         String pName = ((String) table.getValueAt(row, 0)).toLowerCase();
+        String text = "";
+        Font font = defFont;
+        Color bColor = null;
+        Color fColor = null;
 
         switch (pName) {
             case "background": {
-                Color color = (Color) value;
-                label.setBackground(color);
-                if (color != null && table.isCellSelected(row, col)) {
-                    setBackground(color.darker());
-                }
-            }break;
+                bColor = (Color) value;
+            }
+            break;
             case "foreground": {
-                Color color = (Color) value;
-                ((JLabel)label).setText("foreground");
-                label.setForeground(color);
-                if (color != null && table.isCellSelected(row, col)) {
-                    setForeground(color.darker());
-                }
-            }break;
-            case "bounds":{
+                fColor = (Color) value;
+                text = "example";
+            }
+            break;
+            case "bounds": {
                 Rectangle rect = (Rectangle) value;
-                ((JLabel)label).setText((int)rect.getX() + ", " + (int)rect.getY() + ", " + (int)rect.getWidth() + ", " + (int)rect.getHeight());
-            }break;
-            case "font":{
-                String  strStyle;
-                Font font = (Font) value;
+                text = (int) rect.getX() + ", " + (int) rect.getY() + ", " + (int) rect.getWidth() + ", " + (int) rect.getHeight();
+            }
+            break;
+            case "font": {
+                String strStyle;
+                font = (Font) value;
 
                 if (font.isBold()) {
                     strStyle = font.isItalic() ? "bolditalic" : "bold";
@@ -50,15 +48,35 @@ public class PropCellRenderer extends DefaultTableCellRenderer {
                     strStyle = font.isItalic() ? "italic" : "plain";
                 }
 
-                ((JLabel)label).setText(font.getName() + ", " + strStyle + ", " + font.getSize());
-                label.setFont(font);
-            }break;
-            case "isopaque":{
-                //boolean b = value != null && (boolean) value;//?????
-                //((JCheckBox)label).setSelected(false);
-            }break;
-
+                text = font.getName() + ", " + strStyle + ", " + font.getSize();
+            }
+            break;
+            case "changeable":
+            case "isopaque": {
+                text = value.toString();
+            }
+            break;
+            case "type": {
+                String type = value.toString();
+                text = type.substring(type.lastIndexOf('.') + 1);
+            }
+            break;
+            default:
+                text = value == null ? "" : value.toString();
         }
+
+        label.setText(text);
+        label.setFont(font);
+        label.setBackground(bColor);
+        label.setForeground(fColor);
+
+        if (table.isCellSelected(row, col)) {
+            if (bColor != null)
+                label.setBackground(bColor.darker());
+            if (fColor != null)
+                label.setForeground(fColor.darker());
+        }
+
         return label;
     }
 }

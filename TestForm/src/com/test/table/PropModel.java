@@ -1,11 +1,12 @@
 package com.test.table;
 
-import com.test.comps.IDesign;
 import com.test.comps.TProp;
+import com.test.comps.interfaces.ISettings;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +14,11 @@ public class PropModel extends AbstractTableModel {
 
     private List<Object[]> prop;
     private String[] names = {"Name", "Value"};
+    private Map<String, Integer> map;
 
     public PropModel() {
         prop = new ArrayList<>();
+        map = new HashMap<>();
     }
 
     @Override
@@ -50,12 +53,34 @@ public class PropModel extends AbstractTableModel {
 
     public void publish(Component comp) {
         TProp info = new TProp();
-        ((IDesign) comp).initProperties(info);
+        ((ISettings) comp).initProperties(info);
         prop.clear();
+        map.clear();
+        int i = 0;
 
-        for (Map.Entry<String, Object> entry : info.entrySet())
+        for (Map.Entry<String, Object> entry : info.entrySet()){
             prop.add(new Object[]{entry.getKey(), entry.getValue()});
+            map.put(entry.getKey().toLowerCase(), i++);
+        }
 
         fireTableDataChanged();
+    }
+
+    public void clear(){
+        prop.clear();
+        map.clear();
+        fireTableDataChanged();
+    }
+
+    public void apply(Component comp) {
+        TProp info = new TProp();
+        prop.forEach(a -> info.put(String.valueOf(a[0]), a[1]));
+        ((ISettings) comp).initComponent(info);
+    }
+
+    public void updateProp(String name, Object value) {
+        int row = map.get(name.toLowerCase());
+        setValueAt(value, row, 1);
+        fireTableCellUpdated(row, 1);
     }
 }

@@ -246,6 +246,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
 
     private void saveDocument() {
         if (save()) {
+            libraPanel.refreshSavedDocDate(newDataSet.getDate("time_out"));
             libraPanel.refreshMaster();
             libraPanel.setRowPosition(newDataSet.getDecimal("id"));
             dispose();

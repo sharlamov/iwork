@@ -1,10 +1,8 @@
-package com.view.component.db.editors;
+package com.test.comps;
 
 import com.dao.model.CustomItem;
 import com.dao.model.DataSet;
-import com.service.LibraService;
-import com.view.component.grid.DataGrid;
-import com.view.component.grid.GridField;
+import com.test.comps.grid.DataGrid;
 
 import javax.swing.*;
 import javax.swing.event.AncestorEvent;
@@ -18,38 +16,22 @@ import java.awt.event.MouseEvent;
 public class SearchDbEdit extends TextDbEdit {
     //?search with delay!!!
 
-    private final GridField[] fields;
-    private final LibraService service;
-    private final String sql;
-    private String[] targetFields;
+    private DataGrid dataGrid;
     private PopupFactory factory;
     private Popup popup;
-    private DataGrid dataGrid;
+
+    private String[] targetFields;
     private boolean shouldHide;
     private boolean shouldClear = true;
 
-    private SearchDbEdit(String name, DataSet dataSet, GridField[] fields, LibraService service, String sql) {
-        super(name, dataSet);
-
-        this.fields = fields;
-        this.service = service;
-        this.sql = sql;
+    public SearchDbEdit() {
         factory = PopupFactory.getSharedInstance();
-        initGridPanel();
         installAncestorListener();
-    }
-
-    public SearchDbEdit(String name, DataSet dataSet, LibraService service, String sql) {
-        this(name, dataSet, new GridField[]{new GridField("clccodt", 300)}, service, sql);
-    }
-
-    public SearchDbEdit(String name, DataSet dataSet, String targetFields, GridField[] fields, LibraService service, String sql) {
-        this(name, dataSet, fields, service, sql);
-        this.targetFields = targetFields.split(",");
+        initGridPanel();
     }
 
     private void initGridPanel() {
-        dataGrid = new DataGrid(service, sql, fields, false);
+        dataGrid = new DataGrid();
         dataGrid.setPreferredSize(new Dimension(dataGrid.getDataGridWith() + 3, 250));
         dataGrid.setFocusable(false);
         dataGrid.addMouseListener(new MouseAdapter() {
@@ -60,6 +42,7 @@ public class SearchDbEdit extends TextDbEdit {
                 }
             }
         });
+
     }
 
     private void installAncestorListener() {
@@ -153,7 +136,7 @@ public class SearchDbEdit extends TextDbEdit {
     public void focusLost(FocusEvent e) {
         super.focusLost(e);
         hidePopup();
-        if (shouldClear && getValue() == null) {
+        if (shouldClear && getValue(getName()) == null) {
             setText(null);
         }
     }
@@ -182,26 +165,26 @@ public class SearchDbEdit extends TextDbEdit {
     }
 
     private void removeValue() {
-        setValue(null);
+        setValue(getName(), null);
     }
 
     @Override
-    public void setValue(Object value) {
+    public void setValue(String sName, Object value) {
         if (value instanceof CustomItem) {
-            getDataSet().setObject(getName(), value);
+            getDataSet().setObject(sName, value);
             CustomItem ci = (CustomItem) value;
             setText(ci.getId() == null ? null : ci.getLabel());
         } else if (value == null || value.toString().isEmpty()) {
-            getDataSet().setObject(getName(), null);
+            getDataSet().setObject(sName, null);
             setText(null);
         } else if ((value instanceof String || value instanceof Number) && !shouldClear) {
-            super.setValue(value);
+            super.setValue(sName, value);
         } else if (value instanceof DataSet) {
             DataSet selDataSet = (DataSet) value;
             int count = selDataSet.getColCount();
             if (count == 1) {
                 Object result = selDataSet.getObject(0, 0);
-                getDataSet().setObject(getName(), result);
+                getDataSet().setObject(sName, result);
                 setText(result.toString());
             } else {
                 for (int i = 0; i < targetFields.length; i++) {
@@ -210,7 +193,7 @@ public class SearchDbEdit extends TextDbEdit {
                         getDataSet().setObject(fName, selDataSet.getObject(0, i));
                     }
                 }
-                setText(getValue().toString());
+                setText(getValue(sName).toString());
             }
         }
         setCaretPosition(0);
@@ -220,13 +203,34 @@ public class SearchDbEdit extends TextDbEdit {
     private void selectValue() {
         int row = dataGrid.getSelectedRow();
         if (row != -1 && popup != null) {
-            setValue(dataGrid.getDataSetByRow(row));
+            setValue(getName(), dataGrid.getDataSetByRow(row));
         } else if (row == -1 && popup != null && dataGrid.getRowCount() == 1) {
-            setValue(dataGrid.getDataSetByRow(0));
+            setValue(getName(), dataGrid.getDataSetByRow(0));
         }
     }
 
     public void setShouldClear(boolean shouldClear) {
         this.shouldClear = shouldClear;
+    }
+
+    @Override
+    public void prepareProperties(TProp prop) {
+        super.prepareProperties(prop);
+        prop.put("shouldHide", shouldHide);
+        prop.put("shouldClear", shouldClear);
+        prop.put("targetFields", targetFields);
+        dataGrid.prepareProperties(prop);
+    }
+
+    @Override
+    public void prepareComponent(TProp prop) {
+        shouldHide = prop.fetch("shouldHide");
+        shouldClear = prop.fetch("shouldClear");
+        targetFields = prop.fetch("targetFields");
+        //initGridPanel();
+        dataGrid.prepareComponent(prop);
+        dataGrid.init(getDataSource(), getTranslator());
+
+        super.prepareComponent(prop);
     }
 }

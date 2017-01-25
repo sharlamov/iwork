@@ -28,6 +28,8 @@ public class App {
         String url = decodeURL(prop.getProperty("url"));
         JDBCFactory dao = new JDBCFactory(url);
 
+        int scaleId = Integer.parseInt(prop.getProperty("scale", "-1"));
+
         int minuts = Integer.parseInt(prop.getProperty("minuts", "60"));
         period = 1000 * 60 * minuts;
 
@@ -36,8 +38,8 @@ public class App {
         File f2 = new File(prop.getProperty("file2"));
 
         actions = new ArrayList<>();
-        actions.add(new DbfToOracle(f1, dao, this::checkF1, isDebug));
-        actions.add(new DbfToOracle(f2, dao, this::checkF2, isDebug));
+        actions.add(new DbfToOracle(f1, dao, this::checkF1, isDebug, scaleId));
+        actions.add(new DbfToOracle(f2, dao, this::checkF2, isDebug, scaleId));
         actions.forEach(DbfToOracle::updateData);
         runnable = () -> {
             try {
@@ -51,7 +53,7 @@ public class App {
         };
     }
 
-    public void start() {
+    private void start() {
         runnable.run();
     }
 
@@ -107,7 +109,7 @@ public class App {
     }
 
 
-    public String decodeURL(String code) {
+    private String decodeURL(String code) {
         StringBuilder url = new StringBuilder();
         for (String s : code.split("(?<=\\G...)")) {
             url.append((char) (1000 - Integer.valueOf(s)));

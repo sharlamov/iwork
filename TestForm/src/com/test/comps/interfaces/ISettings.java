@@ -1,4 +1,6 @@
-package com.test.comps;
+package com.test.comps.interfaces;
+
+import com.test.comps.TProp;
 
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
@@ -6,7 +8,11 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface IDesign {
+public interface ISettings {
+
+    void prepareProperties(TProp prop);
+
+    void prepareComponent(TProp prop);
 
     default TProp save() {
         Container comp = (Container) this;
@@ -17,8 +23,8 @@ public interface IDesign {
         if (count > 0) {
             List<TProp> children = new ArrayList<>(count);
             for (Component child : comp.getComponents()) {
-                if (child instanceof IDesign) {
-                    children.add(((IDesign) child).save());
+                if (child instanceof ISettings) {
+                    children.add(((ISettings) child).save());
                 }
             }
             prop.put("children", children);
@@ -35,7 +41,7 @@ public interface IDesign {
             for (TProp child : children) {
                 Class<?> clazz = Class.forName(child.fetch("type"));
                 Container subComp = (Container) clazz.newInstance();
-                ((IDesign) subComp).load(child);
+                ((ISettings) subComp).load(child);
                 comp.add(subComp);
             }
         }
@@ -56,8 +62,6 @@ public interface IDesign {
         return res instanceof UIResource ? null : res;
     }
 
-    void prepareProperties(TProp prop);
-
     default void initComponent(TProp prop) {
         JComponent comp = (JComponent) this;
         prepareComponent(prop);
@@ -66,11 +70,9 @@ public interface IDesign {
             comp.setBackground(prop.fetch("background"));
         if (prop.fetch("foreground") != null)
             comp.setForeground(prop.fetch("foreground"));
-        comp.setFont(prop.fetch("font"));
-        comp.setBounds(prop.fetch("bounds"));
+//        comp.setFont(prop.fetch("font"));
+//        comp.setBounds(prop.fetch("bounds"));
     }
-
-    void prepareComponent(TProp prop);
-
-
+//Font
+    //LinkedTreeMap
 }

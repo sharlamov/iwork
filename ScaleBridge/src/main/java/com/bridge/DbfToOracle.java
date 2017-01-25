@@ -20,20 +20,27 @@ public class DbfToOracle {
     private JDBCFactory dao;
     private final BiFunction<DataSet, Object[], Boolean> checkFunc;
     private final boolean isDebug;
+    private int scaleId;
     private String tableName;
     private long last_order;
 
-    public DbfToOracle(File dbf, JDBCFactory dao, BiFunction<DataSet, Object[], Boolean> checkFunc, boolean isDebug) {
+    public DbfToOracle(File dbf, JDBCFactory dao, BiFunction<DataSet, Object[], Boolean> checkFunc, boolean isDebug, int scaleId) {
         this.dbf = dbf;
         this.dao = dao;
         this.checkFunc = checkFunc;
         this.isDebug = isDebug;
+        this.scaleId = scaleId;
         tableName = this.dbf.getName().replace('.', '_');
     }
 
 
-    public void updateData() {
+    void updateData() {
         long t = System.currentTimeMillis();
+
+        if (scaleId == -1) {
+            log("Incorrect scale number!!!");
+            return;
+        }
 
         try {
             DbfReader reader = new DbfReader(dbf);
@@ -44,7 +51,7 @@ public class DbfToOracle {
                 createTable(reader);
 
             //get last key values from Oracle
-            set = dao.exec("select * from (select * from " + tableName + " order by last_order desc) where rownum = 1");
+            set = dao.exec("select * from (select * from " + tableName + " where scaleId = :scaleId order by last_order desc) where rownum = 1", scaleId);
 
             //start check from last and put to dataset revers order
             DataSet result = checkLast(reader, set);
@@ -61,9 +68,10 @@ public class DbfToOracle {
     }
 
     private Object[] addTimeOrder(Object[] src) {
-        Object[] dest = new Object[src.length + 1];
+        Object[] dest = new Object[src.length + 2];
         System.arraycopy(src, 0, dest, 0, src.length);
         dest[src.length] = ++last_order;
+        dest[src.length + 1] = scaleId;
         return dest;
     }
 
@@ -84,11 +92,10 @@ public class DbfToOracle {
                 result.add(0, addTimeOrder(dataRow));
             }
 
-            int n = result.getColCount() - 1;
+            int n = result.findField("last_order");
             int cnt = result.size();
             for (int i = 0; i < cnt; i++)
                 result.get(i)[n] = last_order - cnt + 1 + i;
-
         } else {
             Object[] dataRow;
             while ((dataRow = reader.nextRecord()) != null)
@@ -121,7 +128,9 @@ public class DbfToOracle {
             }
             builder.append(',');
         }
-        builder.append("LAST_ORDER NUMBER NOT NULL UNIQUE)");
+        builder.append("LAST_ORDER NUMBER NOT NULL,");
+        builder.append("SCALEID NUMBER NOT NULL,");
+        builder.append("PRIMARY KEY (SCALEID, LAST_ORDER))");
 
         log(builder);
         dao.exec(builder.toString());

@@ -22,7 +22,7 @@ public class FlyService {
     private final TestUtility utility = new TestUtility();
 
     public String SET_ORDERS(@WebParam(name = "ORDERS") Orders orders) {
-        return "Save " + orders.getOrder().size() + " orders";
+        return "Save success! Nrdoc: " + service.setOrders(orders);
     }
 
     @WebResult(name = "MENU")
@@ -32,7 +32,7 @@ public class FlyService {
 
     @WebResult(name = "CATEGORIES")
     public Categories GET_CATEGORIES() {
-        return service.getCategories();
+        return service.getCategoriesList();
     }
 
     @WebResult(name = "COMPONENTS")
@@ -47,7 +47,7 @@ public class FlyService {
 
     @WebResult(name = "ELEMENTS")
     public Elements GET_ELEMENTS() {
-        return utility.GET_ELEMENTS();
+        return service.GET_ELEMENTS();
     }
 
     @WebResult(name = "ORDERS")

@@ -265,4 +265,9 @@ public class LibraPanel extends JPanel implements ListSelectionListener, ItemLis
             date2.setMinSelectableDate(date1.getDate());
         }
     }
+
+    public void refreshSavedDocDate(Date date) {
+        date1.setValue(date);
+        date2.setValue(date);
+    }
 }

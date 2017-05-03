@@ -79,7 +79,6 @@ public class FormEditor extends JFrame {
 
         try {
             long t = System.currentTimeMillis();
-            // JsonService.ll("designs.json");
             TProp designs = JsonService.loadFile(TProp.class, "designs.json");
 
             ISettings pan = new TPanel(designs, null, null);

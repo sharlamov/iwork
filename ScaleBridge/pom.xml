@@ -39,7 +39,7 @@
           <finalName>ScaleBridge</finalName>
           <archive>
             <manifest>
-              <mainClass>com.bridge.App</mainClass>
+              <mainClass>com.bridge.bin.App</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

@@ -18,7 +18,6 @@ public interface ISettings {
         Container comp = (Container) this;
         TProp prop = new TProp();
         initProperties(prop);
-
         int count = comp.getComponentCount();
         if (count > 0) {
             List<TProp> children = new ArrayList<>(count);
@@ -70,9 +69,7 @@ public interface ISettings {
             comp.setBackground(prop.fetch("background"));
         if (prop.fetch("foreground") != null)
             comp.setForeground(prop.fetch("foreground"));
-//        comp.setFont(prop.fetch("font"));
-//        comp.setBounds(prop.fetch("bounds"));
+        comp.setFont(prop.fetch("font"));
+        comp.setBounds(prop.fetch("bounds"));
     }
-//Font
-    //LinkedTreeMap
 }

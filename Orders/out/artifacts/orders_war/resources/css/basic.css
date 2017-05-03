@@ -1,0 +1,42 @@
+body {
+    background-color: #C3CCD5;
+}
+
+.row {
+    /*height: 80px;*/
+    width: 1000px;
+    margin: auto;
+}
+
+.ui-widget, .ui-widget .ui-widget {
+    font-size: 12px !important;
+    font-family: "latoregular", "Trebuchet MS", Arial, Helvetica, sans-serif;
+}
+
+.btn {
+    width: 100px;
+}
+
+.Fs48 {
+    font-size: 48px !important;
+}
+
+.Fs24 {
+    font-size: 24px !important;
+}
+
+.Fs16 {
+    font-size: 16px !important;
+}
+
+.gray {
+    color: GrayText;
+}
+
+a {
+    text-decoration: none;
+}
+
+.ui-widget-content{
+    color:black !important;
+}

@@ -1,0 +1,30 @@
+.order_div {
+    margin-left: 5px;
+    margin-bottom: 5px;
+    display: block;
+    text-decoration: none;
+}
+
+.data-block {
+    margin-top: 5px;
+    float: left;
+}
+
+.left-filter {
+    width: 25%;
+}
+
+.right-list {
+    width: 75%;
+}
+
+.one-menu{
+    width:110px!important;
+    min-width: 110px!important;
+}
+
+
+.one-edit{
+    width:200px;
+
+}

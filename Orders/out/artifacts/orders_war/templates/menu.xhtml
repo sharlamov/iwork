@@ -1,0 +1,16 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html" xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <h:outputStylesheet library="css" name="menu.css"/>
+</h:head>
+<h:body>
+    <p:menubar>
+
+        <p:menuitem value="Главная" icon="ui-icon-home" outcome="home"/>
+        <p:submenu label="Разделы" icon="ui-icon-document">
+            <p:menuitem value="Заявки на оплату" icon="fa fa-money Fs16 orange" outcome="orders"/>
+        </p:submenu>
+    </p:menubar>
+</h:body>
+</html>
+

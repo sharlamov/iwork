@@ -1,0 +1,206 @@
+<ui:composition template="/templates/basic.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+                xmlns:cc="http://java.sun.com/jsf/composite/components"
+>
+
+    <ui:define name="content">
+
+        <h:outputStylesheet library="css" name="orders.css"/>
+        <p:importEnum type="com.orders.enums.Currencies" var="Currencies" allSuffix="ALL_ENUM_VALUES"/>
+
+        <p:messages id="msgs" autoUpdate="true" closable="true"/>
+
+        <p:outputPanel id="editOrder" widgetVar="editOrder">
+            <p:toolbar style="margin-top: 5px">
+                <f:facet name="left">
+                    <p:button type="button" style="width: 100px" value="Назад"
+                              icon="ui-icon-arrowreturnthick-1-s" outcome="orders"/>
+                    <p:commandButton style="width: 100px" value="Сохранить" icon="ui-icon-disk"
+                                     action="#{orderEditBean.save}" process=":dataForm:editOrder"
+                                     update="messages grid" disabled="#{orderEditBean.disabled}" validateClient="true"/>
+                </f:facet>
+                <f:facet name="right">
+                    <p:commandButton styleClass="btn" value="Отменить" icon="ui-icon-close"
+                                     oncomplete="if (!args.validationFailed) openDialog('editDialog', 'dataForm', 'Отмена');"
+                                     actionListener="#{orderEditBean.openApprove(false)}"
+                                     process=":dataForm:editOrder" update=":dataForm:editDialog grid messages"
+                                     disabled="#{orderEditBean.disabledApprove}"/>
+                    <p:commandButton styleClass="btn" value="Утвердить" icon="ui-icon-check"
+                                     oncomplete="if (!args.validationFailed) openDialog('editDialog', 'dataForm', 'Утвердить');"
+                                     actionListener="#{orderEditBean.openApprove(true)}"
+                                     process=":dataForm:editOrder" update="messages grid"
+                                     disabled="#{orderEditBean.disabledApprove}" validateClient="true"/>
+                </f:facet>
+            </p:toolbar>
+
+            <p:panelGrid columns="2" style="width: 60%; margin-top: 5px;float: left" id="grid">
+                <f:facet name="header">
+                    <p:column colspan="2">Форма заполнения заявки №
+                        <h:outputText value="#{orderEditBean.order.getObject('ord')} от "/>
+                        <h:outputText value="#{orderEditBean.order.getObject('reg_time')}">
+                            <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"/>
+                        </h:outputText>
+                        <h:outputText value="(#{orderEditBean.order.getObject('clcuseridt')})"/>
+                    </p:column>
+                </f:facet>
+
+                <h:outputText value="Компания"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}" name="clcdivt"
+                             sql="#{orderEditBean.loggedUser.divFilter}" disabled="#{orderEditBean.disabled}"
+                             required="true" requiredMessage="Поле 'Компания' не должно быть пустым"/>
+
+                <h:outputText value="Инициатор"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}"
+                             name="clcinitiatort" disabled="#{orderEditBean.disabled}" sql="#{sql.univOR}"
+                             required="true" requiredMessage="Поле 'Инициатор' не должно быть пустым"
+                />
+
+                <h:outputText value="Отдел"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}"
+                             name="clcdept" disabled="#{orderEditBean.disabled}"
+                             sql="#{sql.univOI}" required="true" requiredMessage="Поле 'Отдел' не должно быть пустым"/>
+
+                <h:outputText value="ЦФО"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}"
+                             name="clccfot" disabled="#{orderEditBean.disabled}"
+                             sql="#{sql.univOCFR}" required="true" requiredMessage="Поле 'ЦФО' не должно быть пустым"/>
+
+                <h:outputText value="Тип затрат"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}"
+                             name="clctype_costt" disabled="#{orderEditBean.disabled}"
+                             sql="#{sql.univTCTYPE}" required="true"
+                             requiredMessage="Поле 'Тип затрат' не должно быть пустым"/>
+
+                <h:outputText value="Контрагент"/>
+                <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}"
+                             name="clcclientt" disabled="#{orderEditBean.disabled}"
+                             sql="#{sql.univOE}" required="true"
+                             requiredMessage="Поле 'Контрагент' не должно быть пустым"/>
+
+                <h:outputText value="Материал / Услуга"/>
+                <p:inputTextarea rows="6" cols="50" autoResize="false" style="resize: none"
+                                 disabled="#{orderEditBean.disabled}"
+                                 value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('text')]}"
+                                 required="true" requiredMessage="Поле 'Материал / Услуга' не должно быть пустым"/>
+
+                <h:outputText value="Счет на оплату/Номер НН"/>
+                <p:inputText disabled="#{orderEditBean.disabled}" style="width: 368px"
+                             value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('contPay')]}"
+                             required="true" requiredMessage="Счет на оплату/Номер НН"/>
+
+                <h:outputText value="Дата платежа"/>
+                <p:calendar value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('pay_date')]}"
+                            pattern="dd.MM.yyyy" readonlyInput="true" disabled="#{orderEditBean.disabled}">
+                    <f:convertDateTime pattern="dd.MM.yyyy"/>
+                </p:calendar>
+
+                <h:outputText value="Кол-во предложений"/>
+                <p:spinner value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('offers')]}"
+                           disabled="#{orderEditBean.disabled}" min="0" max="10"/>
+
+                <h:outputText value="Комментарий"/>
+                <p:inputTextarea rows="6" cols="50" autoResize="false" style="resize: none"
+                                 disabled="#{orderEditBean.disabled}"
+                                 value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('comments')]}"/>
+
+                <h:outputText value="Сумма"/>
+                <p:outputPanel>
+                    <p:inputNumber value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('suma')]}"
+                                   symbolPosition="s" decimalSeparator="," thousandSeparator=" "
+                                   disabled="#{orderEditBean.disabled}" required="true" id="sum1"
+                                   requiredMessage="Поле 'Сумма' не должно быть пустым"/>
+                    <p:message for="sum1" display="icon" style="float: right"/>
+                </p:outputPanel>
+
+
+                <h:outputText value="Валюта"/>
+                <p:selectOneMenu value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('val')]}"
+                                 disabled="#{orderEditBean.disabled}">
+                    <f:selectItems value="#{Currencies.ALL_ENUM_VALUES}"/>
+                </p:selectOneMenu>
+            </p:panelGrid>
+
+            <p:outputPanel style="margin-top: 5px;margin-left: 5px;float: left;width: 39%;">
+                <p:panelGrid id="files" style="width: 100%;">
+                    <f:facet name="header">
+                        <p:column colspan="3">Прикрепленные файлы</p:column>
+                    </f:facet>
+                    <ui:repeat value="#{orderEditBean.orderFiles}" var="item" varStatus="rows">
+                        <p:row>
+                            <p:column>
+                                <p:graphicImage name="/images/ext/${orderEditBean.getExt(item[2])}.png"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value='${item[2]}'/>
+                            </p:column>
+                            <p:column>
+                                <p:commandButton icon="ui-icon-search"  actionListener="#{orderEditBean.downloadFile(item[2], item[3], item[4])}"
+                                                 ajax="false" rendered="#{item[1] ne null}"/>
+                                <p:commandButton action="#{orderEditBean.removeFile(rows.index)}"
+                                                 update="@form:files" process="@this"
+                                                 disabled="#{orderEditBean.disabled}"
+                                                 icon="ui-icon-close" title="Удалить"/>
+                            </p:column>
+                        </p:row>
+                    </ui:repeat>
+                </p:panelGrid>
+
+                <p:fileUpload fileUploadListener="#{orderEditBean.handleFileUpload}" mode="advanced" label="Прикрепить"
+                              disabled="#{orderEditBean.disabled}"
+                              update="messages files" auto="true" sizeLimit="5242880" style="margin-top: 5px;"
+                              allowTypes="/(\.|\/)(bmp|gif|jpe?g|png|tif|xls|xlsx|pdf|doc|docx)$/"/>
+            </p:outputPanel>
+
+
+            <p:dataTable var="row" style="margin-top: 5px; float: left" value="#{orderEditBean.history}">
+                <p:column headerText="" width="20">
+                    <p:graphicImage
+                            name="/images/#{row[orderEditBean.history.findField('direct')] lt 0 ? 'down' : 'up'}.png"/>
+                </p:column>
+                <p:column headerText="Пользователь" width="150">
+                    <h:outputText value="#{row[orderEditBean.history.findField('clcuseridt')]}"/>
+                </p:column>
+                <p:column headerText="Статус" width="100">
+                    <h:outputText value="#{row[orderEditBean.history.findField('clcstatust')]}"/>
+                </p:column>
+                <p:column headerText="Комментарий">
+                    <h:outputText value="#{row[orderEditBean.history.findField('text')]}"/>
+                </p:column>
+                <p:column headerText="Дата/Время" width="110">
+                    <h:outputText value="#{row[orderEditBean.history.findField('datetime')]}">
+                        <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"/>
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+        </p:outputPanel>
+
+        <p:dialog modal="true" widgetVar="statusDialog" header="Статус" draggable="false" closable="false"
+                  resizable="false">
+            <p:graphicImage name="/images/ajaxloadingbar.gif"/>
+        </p:dialog>
+
+        <p:dialog header="asd" id="editDialog" widgetVar="editDialog"
+                  modal="true" showEffect="explode" hideEffect="explode"
+                  resizable="false" closeOnEscape="true">
+
+            <p:outputPanel id="scaleDetail" class="editForm">
+                <p:panelGrid columns="2">
+                    <h:outputText value="Комментарий"/>
+                    <p:inputTextarea rows="6" cols="50" autoResize="false" style="resize: none"
+                                     value="#{orderEditBean.commentDlg}"/>
+                </p:panelGrid>
+            </p:outputPanel>
+            <hr/>
+            <div style="float: right">
+                <p:commandButton value="Да" styleClass="btn" oncomplete="dlgHide('editDialog')"
+                                 action="#{orderEditBean.approve}" update="messages" process="editDialog"/>
+                <p:commandButton value="Отмена" onclick="dlgHide('editDialog')" styleClass="btn"
+                                 immediate="true" global="false" process="editDialog" update="messages">
+                </p:commandButton>
+            </div>
+        </p:dialog>
+
+    </ui:define>
+</ui:composition>

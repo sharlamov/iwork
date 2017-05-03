@@ -1,0 +1,19 @@
+<ui:composition template="/templates/basic.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://xmlns.jcp.org/jsf/html" xmlns:pe="http://primefaces.org/ui/extensions">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="dash.css"/>
+
+        <div class="tiles_board">
+            <ui:repeat value="#{authBean.menu}" var="item" varStatus="rows">
+                <h:link outcome="#{authBean.menu.getObject(rows.index, 'reference')}" styleClass="ebox">
+                    <i class="#{authBean.menu.getObject(rows.index, 'image')} Fs48 orange" style="text-align: center;"/>
+                    <div class="Fs16 title">#{authBean.menu.getObject(rows.index, 'name_ru')}</div>
+                    <div class="Fs10 desc">#{authBean.menu.getObject(rows.index, 'desc_ru')}</div>
+                </h:link>
+            </ui:repeat>
+        </div>
+    </ui:define>
+</ui:composition>

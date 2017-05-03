@@ -1,0 +1,152 @@
+<ui:composition template="/templates/basic.xhtml"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui"
+                xmlns:cc="http://java.sun.com/jsf/composite/components">
+
+    <ui:define name="content">
+        <h:outputStylesheet library="css" name="orders.css"/>
+        <p:importEnum type="com.orders.enums.Sorting" var="Sorting" allSuffix="ALL_ENUM_VALUES"/>
+
+        <p:outputPanel class="data-block left-filter">
+            <p:panelGrid style="width: 100%">
+                <f:facet name="header">
+                    <p:column colspan="2">Фильтры</p:column>
+                </f:facet>
+                <p:row>
+                    <p:column>На утверждение</p:column>
+                    <p:column>
+                        <p:selectBooleanCheckbox value="#{ordersBean.useAuthorised}">
+                            <p:ajax update="ordersList ordersCountLabel" listener="#{ordersBean.applyFilter}"/>
+                        </p:selectBooleanCheckbox>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Компания</p:column>
+                    <p:column>
+                        <cc:findList dataSet="#{ordersBean.filter}" action="#{ordersBean.find}"
+                                     onSelect="#{ordersBean.applyFilter}" onSelect2="#{ordersBean.applyFilter2}"
+                                     update="dataForm:ordersList dataForm:ordersCountLabel"
+                                     sql="#{ordersBean.loggedUser.divFilter}" name="clcdivt" size="10">
+                        </cc:findList>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Клиент</p:column>
+                    <p:column>
+                        <cc:findList dataSet="#{ordersBean.filter}" action="#{ordersBean.find}"
+                                     onSelect="#{ordersBean.applyFilter}"
+                                     update="dataForm:ordersList dataForm:ordersCountLabel"
+                                     sql="#{sql.univOE}" name="clcclientt" size="10"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Отдел</p:column>
+                    <p:column>
+                        <cc:findList dataSet="#{ordersBean.filter}" action="#{ordersBean.find}"
+                                     onSelect="#{ordersBean.applyFilter}"
+                                     update="dataForm:ordersList dataForm:ordersCountLabel"
+                                     sql="#{sql.univOI}" name="clcdept" size="10"/>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Статус</p:column>
+                    <p:column>
+                        <cc:findList dataSet="#{ordersBean.filter}" action="#{ordersBean.find}"
+                                     onSelect="#{ordersBean.applyFilter}"
+                                     update="dataForm:ordersList dataForm:ordersCountLabel"
+                                     sql="#{sql.syssState}" name="clcstatust" size="10"/>
+                    </p:column>
+                </p:row>
+
+            </p:panelGrid>
+
+            <p:panelGrid style="margin-top: 5px; width: 100%">
+                <f:facet name="header">
+                    <p:column colspan="2">Сортировка</p:column>
+                </f:facet>
+                <p:row>
+                    <p:column>Дата</p:column>
+                    <p:column>
+                        <p:selectOneMenu value="#{ordersBean.sDate}">
+                            <f:selectItems value="#{Sorting.ALL_ENUM_VALUES}"/>
+                            <p:ajax update="ordersList ordersCountLabel" listener="#{ordersBean.applyFilter}"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Сумма</p:column>
+                    <p:column>
+                        <p:selectOneMenu value="#{ordersBean.sSuma}">
+                            <f:selectItems value="#{Sorting.ALL_ENUM_VALUES}"/>
+                            <p:ajax update="ordersList ordersCountLabel" listener="#{ordersBean.applyFilter}"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                </p:row>
+                <p:row>
+                    <p:column>Клиент</p:column>
+                    <p:column>
+                        <p:selectOneMenu value="#{ordersBean.sClient}">
+                            <f:selectItems value="#{Sorting.ALL_ENUM_VALUES}"/>
+                            <p:ajax update="ordersList ordersCountLabel" listener="#{ordersBean.applyFilter}"/>
+                        </p:selectOneMenu>
+                    </p:column>
+                </p:row>
+            </p:panelGrid>
+
+        </p:outputPanel>
+
+        <p:outputPanel styleClass="data-block right-list">
+            <p:toolbar style="margin-left: 5px;">
+                <f:facet name="left">
+                    <p:button value="Создать" icon="ui-icon-plus" styleClass="btn"
+                              outcome="editOrder" rendered="#{ordersBean.useCreateBtn}"/>
+                </f:facet>
+                <f:facet name="right">
+                    <p:outputLabel id="ordersCountLabel" value="Кол-во заявок: #{ordersBean.count}"/>
+                </f:facet>
+            </p:toolbar>
+
+
+            <p:outputPanel id="ordersList" widgetVar="ordersList" style="margin-top: 5px;">
+                <ui:repeat value="#{ordersBean.orders}" var="ord" varStatus="rows">
+                    <p:link outcome="editOrder?faces-redirect=true" class="order_div">
+                        <f:param name="orderId" value="#{ord[0]}"/>
+                        <p:panelGrid style="width: 100%">
+                            <p:row>
+                                <p:column rowspan="3" style="width: 20px">
+                                    <p:graphicImage name="images/#{ordersBean.getStatusImg(rows.index, 'clcstatust')}"/>
+                                </p:column>
+                                <p:column
+                                        style="width: 20%">#{ordersBean.orders.getObject(rows.index, "clcdivt")}</p:column>
+                                <p:column
+                                        style="width: 20%">#{ordersBean.orders.getObject(rows.index, "ord")}</p:column>
+                                <p:column style="width: 20%">
+                                    <h:outputText value='#{ordersBean.orders.getObject(rows.index, "reg_time")}'>
+                                        <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column style="width: 20%px">
+                                    <h:outputText value='#{ordersBean.orders.getObject(rows.index, "pay_date")}'>
+                                        <f:convertDateTime pattern="dd.MM.yyyy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column rowspan="3"
+                                          style="width: 100px;">#{ordersBean.orders.getObject(rows.index, "suma")} #{ordersBean.orders.getObject(rows.index, "val")}</p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="4"
+                                          style="">#{ordersBean.orders.getObject(rows.index, "clcclientt")}</p:column>
+                            </p:row>
+                            <p:row>
+                                <p:column colspan="4"
+                                          style="">#{ordersBean.orders.getObject(rows.index, "text")}</p:column>
+                            </p:row>
+                        </p:panelGrid>
+                    </p:link>
+                </ui:repeat>
+            </p:outputPanel>
+        </p:outputPanel>
+
+    </ui:define>
+</ui:composition>

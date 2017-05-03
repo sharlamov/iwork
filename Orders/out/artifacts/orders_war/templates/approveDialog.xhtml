@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:cc="http://java.sun.com/jsf/composite/components">
+<f:view>
+    <h:form id="approveDlg">
+        <p:dialog header="Edit????" id="editDialog" widgetVar="editDialog"
+                  modal="true" showEffect="explode" hideEffect="explode"
+                  resizable="false" closeOnEscape="true">
+            <p:outputPanel id="scaleDetail" class="editForm">
+                <p:panelGrid columns="2">
+
+                    <h:outputText value="Компания"/>
+                    <cc:findList dataSet="#{orderEditBean.order}" action="#{orderEditBean.find}" name="clcdivt"
+                                 sql="#{orderEditBean.loggedUser.divFilter}"/>
+
+                    <h:outputText value="Комментарий"/>
+                    <p:inputTextarea rows="6" cols="50" autoResize="false" style="resize: none"
+                                     disabled="#{orderEditBean.disabled}"
+                                     value="#{orderEditBean.order.get(0)[orderEditBean.order.findField('comments')]}"/>
+
+
+                </p:panelGrid>
+            </p:outputPanel>
+            <hr />
+            <p:commandButton value="Salvare"
+                             oncomplete="if (!args.validationFailed) PF('editDialog').hide()"
+                             actionListener="#{laborBean.saveLabor}"
+                             update=":contentForm:table :msgs" process=":formDlg1:editDialog" />
+            <p:commandButton value="Anulare" onclick="PF('editDialog').hide()"
+                             immediate="true" global="false" process=":formDlg1:editDialog">
+            </p:commandButton>
+        </p:dialog>
+    </h:form>
+</f:view>
+</html>

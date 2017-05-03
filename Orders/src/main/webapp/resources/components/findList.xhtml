@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:composite="http://java.sun.com/jsf/composite" xmlns:h="http://xmlns.jcp.org/jsf/html">
+<composite:interface>
+    <composite:attribute name="action" required="true"
+                         method-signature="java.util.List action(java.lang.String)"/>
+    <composite:attribute name="onSelect" method-signature="void onSelect(javax.faces.event.AjaxBehaviorEvent)"/>
+    <composite:attribute name="onSelect2" method-signature="void onSelect2(org.primefaces.event.SelectEvent)"/>
+    <composite:attribute name="dataSet" type="com.dao.model.DataSet" required="true"/>
+    <composite:attribute name="name" type="java.lang.String" required="true"/>
+    <composite:attribute name="styleClass" type="java.lang.String"/>
+    <composite:attribute name="size" type="java.lang.Integer" default="45"/>
+    <composite:attribute name="sql" type="java.lang.String" required="true"/>
+    <composite:attribute name="disabled" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="required" type="java.lang.Boolean" default="false"/>
+    <composite:attribute name="requiredMessage" type="java.lang.String"/>
+    <composite:attribute name="update" type="java.lang.String"/>
+</composite:interface>
+<composite:implementation>
+    <p:outputPanel>
+        <script>
+            function findKeyPress(event, changeCallback) {
+                if (event.keyCode == 13) changeCallback();
+            }
+        </script>
+        <p:autoComplete id="autoc" completeMethod="#{cc.attrs.action}" dropdown="true" size="#{cc.attrs.size}"
+                        value="#{cc.attrs.dataSet.get(0)[cc.attrs.dataSet.findField(cc.attrs.name)]}"
+                        onkeyup="findKeyPress(event, onchange)"
+                        var="item" itemValue="#{item}" itemLabel="#{item.label}" disabled="#{cc.attrs.disabled}"
+                        converter="customItemConverter" forceSelection="true" styleClass="#{cc.attrs.styleClass}"
+                        required="#{cc.attrs.required}" requiredMessage="#{cc.attrs.requiredMessage}">
+            <f:attribute name="sql" value="#{cc.attrs.sql}"/>
+
+            <p:ajax event="itemSelect" listener="#{cc.attrs.onSelect}" disabled="#{empty cc.attrs.onSelect}"
+                    update="#{cc.attrs.update}"/>
+            <p:ajax event="change" listener="#{cc.attrs.onSelect}" disabled="#{empty cc.attrs.onSelect}"
+                    update="#{cc.attrs.update}"/>
+        </p:autoComplete>
+        <p:message for="autoc" display="icon" style="float: right"/>
+        <h:outputText/>
+
+    </p:outputPanel>
+</composite:implementation>
+</html>

@@ -1,0 +1,12 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:ui="http://java.sun.com/jsf/facelets">
+
+    <div id="layout-topbar">
+        <h:graphicImage name="/images/logo.jpg" style="padding: 15px; width:200px;height: 100px;"/>
+        <h:commandLink action="#{authBean.logout}" immediate="true"
+                       styleClass="fa fa-sign-out gray Fs24" style="float: right; margin: 10px;"/>
+        <h:outputLabel value="#{authBean.userName}" style="float: right; margin-top: 13px;"/>
+    </div>
+
+</ui:composition>

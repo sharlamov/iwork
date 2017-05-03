@@ -1,12 +1,16 @@
 package com.dao.model;
 
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class CustomItem {
+public class CustomItem implements Serializable{
 
     private BigDecimal id;
     private String label;
+
+    public CustomItem() {
+    }
 
     public CustomItem(BigDecimal id, String label) {
         this.id = id;

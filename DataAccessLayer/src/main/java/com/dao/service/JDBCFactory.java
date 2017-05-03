@@ -22,6 +22,11 @@ public class JDBCFactory {
         values = new ArrayList<>();
     }
 
+    public JDBCFactory(Connection connection) {
+        this("");
+        this.connection = connection;
+    }
+
     private void addInParam(PreparedStatement stmt, int i, Object value) throws SQLException {
         if (value == null) {
             stmt.setNull(i, Types.NULL);

@@ -53,7 +53,7 @@ public class CateringService {
                 "       denumirea name_ro,\n" +
                 "       pretv4 price,\n" +
                 "       pretv4 specialprice," +
-                "       (select norma1 from vun9magr_1regnorm_m_d1 where sc_m_produs = p.cod and trunc(sysdate) between datastart and dataend and d1_dep_d1_execut is not null)  weight\n" +
+                "       nvl((select norma1 from vun9magr_1regnorm_m_d1 where sc_m_produs = p.cod and trunc(sysdate) between datastart and dataend and d1_dep_d1_execut is not null),0)*1000  weight\n" +
                 " from yimc_univ_p15tvr_pr p, " +
                 " (select sc, sch from tms_sysgrp m,tms_sysgrph h where  m.group1 = h.group1 and m.group2 = h.group2\n" +
                 " and m.group3 = h.group3 and m.group4 = h.group4 and m.group5 = h.group5 and sch in (" + categoriesList + ")) f " +
@@ -66,7 +66,7 @@ public class CateringService {
             element.setPrice((BigDecimal) matr[4]);
             element.setSpecialPrice((BigDecimal) matr[5]);
             element.setAlgorithm(Algorithm.STANDART);
-            element.setWeight(((BigDecimal) matr[5]).intValue());
+            element.setWeight(((BigDecimal) matr[6]).intValue());
             response.getElement().add(element);
         }
 
@@ -75,7 +75,7 @@ public class CateringService {
 
     public Statuses getStatuses() {
         Statuses statuses = new Statuses();
-        for (Object o : dao.getItems("select cod1 id, denumirea ro, namerus ru from vms_syss where tip = 'Z' and cod = 2010")) {
+        for (Object o : dao.getItems("select cod1 id, namerus ru, denumirea ro from vms_syss where tip = 'Z' and cod = 2017")) {
             Object[] matr = (Object[]) o;
             Status item = new Status();
             item.setId(((BigDecimal) matr[0]).intValue());
@@ -85,15 +85,21 @@ public class CateringService {
         return statuses;
     }
 
-    public int setOrders(Orders orders) {
-        boolean b = false;
-        for (Order order : orders.getOrder()) {
-            Integer nrdoc = dao.insertDocument("", order);
-            b = true;
-            for (Element element : order.getElements().getElement()) {
-                dao.insertElement("CALL ycat_docs.ins_element(:nrdoc,:psc,:pcant,:psuma)", nrdoc, element);
-            }
+    public Orders getOrderStatus() {
+        Orders response = new Orders();
+        for (Object o : dao.getItems("select docid, status from VMDB_WEB_STATUS")) {
+            Object[] matr = (Object[]) o;
+            Order order = new Order();
+            order.setId(((BigDecimal) matr[0]).intValue());
+            order.setStatusId(((BigDecimal) matr[1]).toBigInteger());
+            response.getOrder().add(order);
         }
-        return 7;
+        return response;
+    }
+
+    public void setOrders(Orders orders) {
+        for (Order order : orders.getOrder()) {
+            dao.insertDocument("", order);
+        }
     }
 }

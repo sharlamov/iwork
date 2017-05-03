@@ -80,5 +80,6 @@
     <orderEntry type="library" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.xbean:xbean-spring:3.14" level="project" />
     <orderEntry type="library" name="Maven: javax.jws:jsr181-api:1.0-MR1" level="project" />
+    <orderEntry type="library" name="Maven: commons-io:commons-io:2.5" level="project" />
   </component>
 </module>

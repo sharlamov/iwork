@@ -3,6 +3,7 @@ package com.dao.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 public class DataSet extends ArrayList<Object[]> {
@@ -270,8 +271,49 @@ public class DataSet extends ArrayList<Object[]> {
         return -1;
     }
 
-    public <T, K> Map<T, K> toSimpleMap() {
+    public <T, K> Map<T, K> toMapFromColumns() {
         return isEmpty() ? Collections.emptyMap() : stream().collect(Collectors.toMap(x -> (T) x[0], x -> (K) x[1]));
+    }
+
+    public Map<String, Object> toMap() {
+        if (isEmpty())
+            return Collections.emptyMap();
+
+        Map<String, Object> res = new HashMap<>(names.size());
+        for (Map.Entry<String, Integer> entry : names.entrySet()) {
+            res.put(entry.getKey(), get(0)[entry.getValue()]);
+        }
+
+        return res;
+    }
+
+    public <T> Set<T> toDistinctList(String fieldName) {
+        int n = findField(fieldName);
+        Set<T> res = new HashSet<>();
+        if (n != -1) {
+            for (Object[] row : this) {
+                T o = (T) row[n];
+                if (o != null)
+                    res.add(o);
+            }
+        }
+        return res;
+    }
+
+    public Number agg(String fieldName, BiFunction<Number, Number, Number> func) {
+        Number res = null;
+        if (!isEmpty()) {
+            int col = findField(fieldName);
+            if (col > -1) {
+                for (Object[] row : this) {
+                    if (row[col] instanceof Number) {
+                        Number nr = (Number) row[col];
+                        res = res == null ? nr : func.apply(res, nr);
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     public List<String> getNames() {

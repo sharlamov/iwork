@@ -4,6 +4,8 @@ import com.reporting.model.CustomUser;
 import com.reporting.service.UserService;
 import com.reporting.util.WebUtil;
 import org.primefaces.context.RequestContext;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -15,7 +17,10 @@ import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
+import javax.faces.event.PhaseId;
 import javax.faces.event.ValueChangeEvent;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -71,7 +76,9 @@ public class AuthBean {
         context.addCallbackParam("loggedIn", loggedIn);
         context.addCallbackParam("loggedPage", page);
     }
-
+    public StreamedContent getStream() throws IOException {
+        return new DefaultStreamedContent(new FileInputStream("D:/tmp/DOC.PDF"));
+    }
     public String logout() {
         SecurityContextHolder.clearContext();
         return "login?faces-redirect=true";

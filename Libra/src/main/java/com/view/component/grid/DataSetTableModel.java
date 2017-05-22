@@ -115,4 +115,8 @@ public class DataSetTableModel extends AbstractTableModel {
     public int defineLocation(String fieldName, Object value) {
         return dataSet.location(fieldName, value);
     }
+
+    public DataSet getDataSet() {
+        return dataSet;
+    }
 }

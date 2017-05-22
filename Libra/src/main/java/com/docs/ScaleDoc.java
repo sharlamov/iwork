@@ -14,6 +14,8 @@ import com.util.Fonts;
 import com.util.Libra;
 import com.util.Pictures;
 import com.view.component.db.editors.*;
+import com.view.component.grid.DataGrid;
+import com.view.component.grid.GridField;
 import com.view.component.panel.DbPanel;
 import com.view.component.widget.ScaleWidget;
 
@@ -54,6 +56,10 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
     private JButton bCancel = new JButton(Libra.lng("cancel"));
     DbPanel fieldsPanel;
     DbPanel infoPanel;
+    DataSet newPackSet;
+    DataSet oldPackSet;
+    //DbPanel packPanel;
+    //DataGrid packGrid;
     FocusPolicy policy;
     DataSet historySet = new DataSet("tip", "id", "nr", "dt", "br", "userid", "sc", "masa", "scaleId", "photo1", "photo2");
     SearchDbEdit sc;
@@ -68,6 +74,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
     private ComboDbEdit<CustomItem> clcelevatort;
     private ComboDbEdit<CustomItem> clcdivt;
     private JTabbedPane tabbedPane;
+
 
     ScaleDoc(LibraPanel libraPanel, final DataSet dataSet, Doc doc, Dimension size) {
         super((JFrame) null, Libra.lng(doc.getName()), true);
@@ -90,6 +97,9 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
         initFieldsPanel();
         initWeightBoard();
         initStatusPanel();
+
+        if (doc.getId() == 0)
+            initPackPanel();
 
         setVisible(true);
     }
@@ -241,7 +251,7 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
     }
 
     boolean isModified() {
-        return !newDataSet.equals(oldDataSet) || !newInfoSet.equals(oldInfoSet);
+        return !newDataSet.equals(oldDataSet) || !newInfoSet.equals(oldInfoSet) || (newPackSet != null && !newPackSet.equals(oldPackSet));
     }
 
     private void saveDocument() {
@@ -534,5 +544,141 @@ abstract class ScaleDoc extends JDialog implements ActionListener, ChangeEditLis
 
     private boolean isNetNull() {
         return newDataSet.getDecimal("masa_netto").equals(BigDecimal.ZERO);
+    }
+
+    private void initPackPanel() {
+        DbPanel packPanel = new DbPanel(720, 550);
+        tabbedPane.addTab(Libra.lng("packaging"), packPanel);
+
+        JLabel lb1 = new JLabel(Libra.lng("add_packing_control_data"));
+        lb1.setBounds(10, 5, 500, 25);
+        lb1.setFont(Fonts.bold18);
+        packPanel.add(lb1);
+
+        GridField[] flds = {
+                new GridField("clcsct", 320),
+                new GridField("cant", 90),
+                new GridField("netto", 90),
+                new GridField("tara", 90),
+                new GridField("brutto", 90)
+        };
+
+        String sql = "select pid, pid1, sc, clcsct, cant, netto, tara, brutto from libra_packing_view where pid = :id";
+        DataGrid packGrid = new DataGrid(Libra.libraService, sql, flds, false);
+        packGrid.setBounds(10, 35, packGrid.getDataGridWith() + 4, 250);
+        packPanel.add(packGrid);
+
+        JLabel resultText = new JLabel();
+        resultText.setBounds(450, 300, 200, 25);
+        resultText.setFont(Fonts.bold24);
+        resultText.setForeground(Color.gray);
+        packPanel.add(resultText);
+
+        JButton b1 = new JButton(Libra.lng("add"));
+        b1.addActionListener(a -> {
+            DataSet rowData = packGrid.getDataSetByRow(-1);
+            boolean isChanged = DialogMaster.createFixDialog(Libra.lng("add"), rowData);
+            if (isChanged) {
+                updateRowPackaging(rowData);
+                newPackSet.add(rowData.get(0));
+                packGrid.refresh();
+                resultText.setText(newPackSet.sum("brutto").toString());
+            }
+        });
+
+        b1.setBounds(10, 300, 100, 25);
+        packPanel.add(b1);
+        JButton b2 = new JButton(Libra.lng("change"));
+        b2.addActionListener(a -> {
+            int gRow = packGrid.getSelectedRow();
+            if (gRow > -1) {
+                DataSet rowData = packGrid.getDataSetByRow(gRow);
+                boolean isChanged = DialogMaster.createFixDialog(Libra.lng("change"), rowData);
+                if (isChanged) {
+                    updateRowPackaging(rowData);
+                    newPackSet.set(gRow, rowData.get(0));
+                    packGrid.refresh();
+                    resultText.setText(newPackSet.sum("brutto").toString());
+                }
+            } else {
+                Libra.iMsg(Libra.lng("selectRow"));
+            }
+        });
+        b2.setBounds(120, 300, 100, 25);
+        packPanel.add(b2);
+        JButton b3 = new JButton(Libra.lng("remove"));
+        b3.setBounds(230, 300, 100, 25);
+        b3.addActionListener(a -> {
+            int gRow = packGrid.getSelectedRow();
+            if (gRow > -1) {
+                newPackSet.remove(gRow);
+                packGrid.refresh();
+                resultText.setText(newPackSet.sum("brutto").toString());
+            } else {
+                Libra.iMsg(Libra.lng("selectRow"));
+            }
+        });
+        packPanel.add(b3);
+
+        try {
+            packGrid.select(newDataSet.getDecimal("id"));
+            newPackSet = packGrid.getDataSet();
+            oldPackSet = newPackSet.copy();
+            resultText.setText(newPackSet.sum("brutto").toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!isNetNull()){
+            packPanel.blockPanel();
+        }
+        //dobaviti dannie po vesu (Sprositi po vesam kto budet vvoditi)
+        //dobaviti control esli fasovka
+        //obrabotati knopki i dialog
+        //dobaviti control i sohranenie
+    }
+
+    public void updateRowPackaging(DataSet set) {
+        String sql = "select netto, tara, netto + tara brutto from (\n" +
+                "select nvl(:cant * (select sum(cant_k) from tms_umlinks un where :clcsct = un.cod), 0) netto \n" +
+                ",nvl(:cant * (select sum(coef) from tms_ums un where :clcsct = un.cod), 0) tara from dual)";
+        try {
+            DataSet upd = Libra.libraService.exec(sql, set);
+            set.setObject("netto", upd.getObject("netto"));
+            set.setObject("tara", upd.getObject("tara"));
+            set.setObject("brutto", upd.getObject("brutto"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isPacking() {
+        BigDecimal net = newDataSet.getDecimal("masa_netto");
+
+        if (net.intValue() > 0) {
+            CustomItem item = newDataSet.getItem("clcsct");
+            BigDecimal packCod = new BigDecimal("371846");
+            if (item.getId().equals(packCod) &&
+                    (newPackSet == null || newPackSet.isEmpty() || newPackSet.sum("brutto").equals(BigDecimal.ZERO))) {
+                Libra.iMsg(Libra.lng("fillPacking"));
+                return false;
+            }
+
+            if (!item.getId().equals(packCod) && newPackSet != null && !newPackSet.isEmpty()) {
+                Libra.iMsg(Libra.lng("clearPacking"));
+                return false;
+            }
+
+            if (item.getId().equals(packCod)) {
+                BigDecimal check = new BigDecimal("0.015");
+                BigDecimal icant = newPackSet.sum("brutto");
+                newDataSet.setObject("INV_CANT", icant);
+                if (icant.divide(net, BigDecimal.ROUND_DOWN).subtract(BigDecimal.ONE).abs().compareTo(check) > 0) {
+                    Libra.iMsg(Libra.lng("weightNotSiut"));
+                }
+            }
+        }
+
+        return true;
     }
 }

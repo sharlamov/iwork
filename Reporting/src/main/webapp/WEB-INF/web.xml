@@ -39,6 +39,10 @@
         <extension>xhtml</extension>
         <mime-type>application/xml</mime-type>
     </mime-mapping>
+    <mime-mapping>
+        <extension>woff2</extension>
+        <mime-type>application/x-font-woff2</mime-type>
+    </mime-mapping>
 
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener
@@ -59,6 +63,15 @@
         <welcome-file>home.xhtml</welcome-file>
     </welcome-file-list>
 
+
+    <servlet>
+        <servlet-name>Push Servlet</servlet-name>
+        <servlet-class>org.primefaces.push.PushServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Push Servlet</servlet-name>
+        <url-pattern>/primepush/*</url-pattern>
+    </servlet-mapping>
 
     <!-- JSF mapping -->
     <servlet>

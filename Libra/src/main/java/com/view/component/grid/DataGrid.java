@@ -146,6 +146,10 @@ public class DataGrid extends JPanel {
         return d.size();
     }
 
+    public void refresh() {
+        dtm.publish(dtm.getDataSet());
+    }
+
     public int select(Object... params) throws Exception {
         createRowSorter(tbl.getAutoCreateRowSorter());
         DataSet d = libraService.exec(sql, params);
@@ -253,5 +257,13 @@ public class DataGrid extends JPanel {
 
     private int getCurrentRow(int row) {
         return row == -1 || !tbl.getAutoCreateRowSorter() || tbl.getRowSorter() == null ? row : tbl.getRowSorter().convertRowIndexToModel(row);
+    }
+
+    public BigDecimal getSumByColumn(String fName) {
+        return dtm.getSumByColumn(fName);
+    }
+
+    public DataSet getDataSet() {
+        return dtm.getDataSet();
     }
 }

@@ -37,6 +37,8 @@ public class SearchDbEdit extends TextDbEdit {
         factory = PopupFactory.getSharedInstance();
         initGridPanel();
         installAncestorListener();
+
+        dataSet.addField("findquery", null);
     }
 
     public SearchDbEdit(String name, DataSet dataSet, LibraService service, String sql) {
@@ -95,8 +97,9 @@ public class SearchDbEdit extends TextDbEdit {
 
     private int search(String text) {
         int cnt = 0;
+        getDataSet().setObject("findquery", "%" + text.trim().toLowerCase() + "%");
         try {
-            cnt = dataGrid.select("%" + text.trim().toLowerCase() + "%");
+            cnt = dataGrid.select(getDataSet());
         } catch (Exception e) {
             e.printStackTrace();
         }

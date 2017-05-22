@@ -10,9 +10,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by sharlamov on 04.11.2015.
- */
 public class MapUtil {
 
     private static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {

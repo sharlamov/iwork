@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<f:view locale="#{authBean.localeCode}">
+    <h:head>
+        <script type="text/javascript">
+            function handleMessage(data) {
+                $('.display').html(data);
+            }
+        </script>
+
+    </h:head>
+    <h:body>
+        <p:growl id="messages" showDetail="true"/>
+        <p:socket onMessage="handleMessage" channel="/notify"/>
+        <h:form id="inputDataForm" style="height: 100%;">
+            <p:commandButton value="Click" actionListener="#{homeBean.getTest}" process="@this" ajax="false"/>
+        </h:form>
+    </h:body>
+</f:view>
+</html>

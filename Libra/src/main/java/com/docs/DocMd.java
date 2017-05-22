@@ -32,7 +32,7 @@ public class DocMd extends ScaleDoc {
     public boolean save() {
         boolean isSaved = !isModified();
         try {
-            if (!isSaved && fieldsPanel.verify()) {
+            if (!isSaved && fieldsPanel.verify() && isPacking()) {
                 if (Libra.qMsg("saveConfirmDialog0", "saveConfirmDialog1", this)) {
                     updateDataSet();
 
@@ -55,6 +55,12 @@ public class DocMd extends ScaleDoc {
                     if (!historySet.isEmpty()) {
                         historySet.setObject("id", key);
                         Libra.libraService.exec(Libra.sql("INSHISTORY"), historySet);
+                    }
+
+                    if (!newPackSet.isEmpty()) {
+                        for (int i = 0; i < newPackSet.size(); i++)
+                            newPackSet.setObject(i, "pid", key);
+                        Libra.libraService.execBatch(Libra.sql("INSPACKING"), newPackSet);
                     }
 
                     Libra.libraService.commit();
@@ -116,6 +122,10 @@ public class DocMd extends ScaleDoc {
         fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
         policy.add(clcdrivert);
         fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
+
+        SearchDbEdit clctypeopert = new SearchDbEdit("clctype_opert", newDataSet, Libra.libraService, Libra.sql("OPERTYPE"));
+        fieldsPanel.addToPanel(370, 8 + stepDown, 150, p2, clctypeopert);
+        policy.add(clctypeopert);
 //////////////////
         JPanel p3 = fieldsPanel.createPanel(4, null);
 
@@ -131,7 +141,7 @@ public class DocMd extends ScaleDoc {
         fieldsPanel.addToPanel(8, 8 + stepDown, 200, p3, clcppogruz_s_12t);
         policy.add(clcppogruz_s_12t);
 
-        SearchDbEdit clcdep_loadt = new SearchDbEdit("clcdep_loadt", newDataSet, Libra.libraService, Libra.sql("UNIVOIE"));
+        SearchDbEdit clcdep_loadt = new SearchDbEdit("clcdep_loadt", newDataSet, Libra.libraService, Libra.sql("UNIVOI"));
         fieldsPanel.addToPanel(8, 8 + stepDown + stepDown, 200, p3, clcdep_loadt);
         policy.add(clcdep_loadt);
 
@@ -265,8 +275,12 @@ public class DocMd extends ScaleDoc {
         fieldsPanel.addToPanel(370, 8, 150, p2, clcdrivert);
         policy.add(clcdrivert);
         fieldsPanel.addInsertBtn(clcdrivert, InsertType.UNIVOF);
+
+        SearchDbEdit clctypeopert = new SearchDbEdit("clctype_opert", newDataSet, Libra.libraService, Libra.sql("OPERTYPE"));
+        fieldsPanel.addToPanel(370, 8 + stepDown, 150, p2, clctypeopert);
+        policy.add(clctypeopert);
 //////////////////
-        JPanel p3 = fieldsPanel.createPanel(3, null);
+        JPanel p3 = fieldsPanel.createPanel(4, null);
         SearchDbEdit clcdep_destinatt = new SearchDbEdit("clcclientt", newDataSet, Libra.libraService, Libra.sql("UNIVOIE"));
         clcdep_destinatt.addValidator(Validators.NULL);
         fieldsPanel.addToPanel(8, 8, 200, p3, clcdep_destinatt);
@@ -296,8 +310,12 @@ public class DocMd extends ScaleDoc {
 
         policy.add(clcpunctto_s_12t);
 
+        SearchDbEdit clcdep_unloadt = new SearchDbEdit("clcdep_unloadt", newDataSet, Libra.libraService, Libra.sql("UNIVOI"));
+        fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 200, p3, clcdep_unloadt);
+        policy.add(clcdep_unloadt);
+
         sezon_yyyy = new NumberDbEdit("season", newDataSet);
-        fieldsPanel.addToPanel(370, 8 + stepDown + stepDown, 100, p3, sezon_yyyy);
+        fieldsPanel.addToPanel(370, 8 + stepDown + stepDown + stepDown, 100, p3, sezon_yyyy);
         policy.add(sezon_yyyy);
 //////////////////
         JPanel p4 = fieldsPanel.createPanel(2, null);

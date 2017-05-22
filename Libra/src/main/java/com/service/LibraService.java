@@ -34,7 +34,7 @@ public class LibraService {
         if (dataSet.isEmpty())
             throw new Exception("Error: Queries are empty");
 
-        Libra.queries = dataSet.toSimpleMap();
+        Libra.queries = dataSet.toMapFromColumns();
     }
 
     public void loadLang(LangType lang) {
@@ -43,7 +43,7 @@ public class LibraService {
 
         try {
             DataSet dataSet = exec(sql);
-            Libra.languages = dataSet.toSimpleMap();
+            Libra.languages = dataSet.toMapFromColumns();
         } catch (Exception e) {
             Libra.eMsg(e, true);
         }
@@ -92,7 +92,7 @@ public class LibraService {
         }
 
         //load design
-        Libra.designs = exec(Libra.sql("DESIGNS"), user.getProfile().toUpperCase()).toSimpleMap();
+        Libra.designs = exec(Libra.sql("DESIGNS"), user.getProfile().toUpperCase()).toMapFromColumns();
         if (Libra.designs.isEmpty()) {
             throw new Exception(Libra.lng("Profile not found!"));
         }
@@ -126,6 +126,12 @@ public class LibraService {
         DataSet set = dao.exec(query, params);
         System.out.println("sql: " + (System.currentTimeMillis() - t));
         return set;
+    }
+
+    public void execBatch(String query, DataSet params) throws Exception {
+        long t = System.currentTimeMillis();
+        dao.executeBatch(query, params);
+        System.out.println("executeBatch: " + (System.currentTimeMillis() - t));
     }
 
     public DataSet filterDataSet(String sql, DataSet params, Map<String, String> filterMap) throws Exception {

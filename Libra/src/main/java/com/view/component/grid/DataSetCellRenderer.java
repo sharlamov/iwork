@@ -14,8 +14,6 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
     private final boolean useBGColor;
     private final Map<Integer, Font> columnsFont;
     private DecimalFormat numberFormat = new DecimalFormat("#,###.##");
-    private int lastRow = -1;
-    private Color clr;
 
     public DataSetCellRenderer(boolean useBGColor, Map<Integer, Font> columnsFont) {
         this.useBGColor = useBGColor;
@@ -30,10 +28,7 @@ public class DataSetCellRenderer extends DefaultTableCellRenderer {
                 : table.getRowSorter().convertRowIndexToModel(row);
 
         if (useBGColor) {
-            if (lastRow != row) {
-                clr = ((DataSetTableModel) table.getModel()).getRowColor(sorterRow);
-                lastRow = row;
-            }
+            Color clr = ((DataSetTableModel) table.getModel()).getRowColor(sorterRow);
             label.setBackground(clr);
 
             if (table.isCellSelected(sorterRow, col)) {

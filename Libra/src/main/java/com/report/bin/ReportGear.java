@@ -30,6 +30,10 @@ public class ReportGear {
     private int columnCount;
 
     public void make(File source, DataSet header, DataSet master) throws Exception {
+        make(source, "", "libra", header, master, true);
+    }
+
+    public void make(File source, String path, String name, DataSet header, DataSet master, boolean isOpen) throws Exception {
         this.header = header;
         this.master = master;
 
@@ -48,7 +52,7 @@ public class ReportGear {
         init(newBook);
         process(oldSheet, newSheet);
 
-        File target = File.createTempFile("libra", ".xls");
+        File target = File.createTempFile(path + name, ".xls");
         target.deleteOnExit();
         FileOutputStream fileOut = new FileOutputStream(target);
 
@@ -57,7 +61,8 @@ public class ReportGear {
         oldBook.close();
         inp.close();
 
-        Desktop.getDesktop().open(target);
+        if(isOpen)
+            Desktop.getDesktop().open(target);
 
         System.out.println(System.currentTimeMillis() - t);
     }

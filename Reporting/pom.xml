@@ -14,7 +14,7 @@
 
         <!-- Third Party dependencies -->
         <version.standard.taglibs>1.1.2</version.standard.taglibs>
-        <jdk.version>1.7</jdk.version>
+        <jdk.version>1.8</jdk.version>
 
     </properties>
 
@@ -29,12 +29,19 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.atmosphere</groupId>
+            <artifactId>atmosphere-runtime</artifactId>
+            <version>2.4.9</version>
+        </dependency>
+
         <!-- JSF -->
         <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>5.3</version>
         </dependency>
+
 
         <dependency>
             <groupId>com.sun.faces</groupId>

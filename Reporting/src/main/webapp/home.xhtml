@@ -1,10 +1,14 @@
 <ui:composition template="templates/layout.xhtml"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html">
+                xmlns:ui="http://java.sun.com/jsf/facelets" xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="dash.css"/>
+        <p:socket onMessage="handleMessage" channel="/notify"/>
+        <p:commandButton value="Click" actionListener="#{homeBean.getTest}" process="@this" ajax="false"/>
         <div class="tiles_board">
+
             <ui:repeat value="#{homeBean.reportList}" var="menu">
                 <a href="#{request.contextPath}/#{menu[5]}" class="ebox">
                     <i class="fa #{menu[4]} Fs48 orange" style="text-align: center;"/>

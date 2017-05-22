@@ -2,48 +2,92 @@ package com.orders.controllers;
 
 import com.dao.model.CustomItem;
 import com.dao.model.DataSet;
-import com.orders.enums.Sorting;
+import org.primefaces.event.SelectEvent;
+import org.primefaces.event.TabChangeEvent;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import javax.faces.event.AjaxBehaviorEvent;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @ManagedBean
 @ViewScoped
 public class OrdersBean extends AbstractBean {
 
     private DataSet orders;
-    private CustomItem fDiv;
-    private CustomItem fDep;
-    private CustomItem fClient;
-    private Sorting sSuma = Sorting.NONE;
-    private Sorting sDate = Sorting.NONE;
-    private Sorting sClient = Sorting.NONE;
     private DataSet filter;
+    private CustomItem user;
     private Boolean useCreateBtn;
-    private Boolean useAuthorised;
+    private Object[] selectedOrder;
+    private List<Object[]> tabs;
+    private Integer tabIndex;
 
     @PostConstruct
     public void init() {
         try {
-            filter = new DataSet("userid", "clcdivt", "clcclientt", "clcdept", "clcstatust", "lvl");
-            filter.add(new Object[filter.getCachedNames().size()]);
-            filter.setObject("userid", getLoggedUser().getId());
-            loadFromApp();
-            applyFilter(null);
+            user = getItemUser();
+            filter = getSessionParam("filter");
+            if (filter == null)
+                filter = DataSet.init("userid", user.getId(), "clcdivt", null, "clcclientt", null, "status", 0);
 
-            DataSet set = getDb().exec(sql("canCreate"), filter);
-            useCreateBtn = set.getInt("cnt") > 0;
+            tabIndex = getActiveTabIndex();
+
+            tabs = new ArrayList<>();
+            tabs.add(new Object[]{"Мои", 0, "podcast.png"});
+            tabs.add(new Object[]{"Все", 99, "database.png"});
+            tabs.add(new Object[]{"Оформление", 1, "to-do-list.png"});
+            tabs.add(new Object[]{"Утверждение", 2, "folder_green_backup.png"});
+            tabs.add(new Object[]{"Закрытые", 3, "folder_blue_todos.png"});
+
+            apply();
+            useCreateBtn = getDb().value(sql("canCreate"), Integer.class, user.getId()) > 0;
         } catch (Exception e) {
             msg(e);
         }
     }
 
-    public void applyFilter(AjaxBehaviorEvent event) throws Exception {
+    public void onRowDblClickSelect(final SelectEvent event) {
+        Object[] row = (Object[]) event.getObject();
+        goToPage("editOrder.xhtml?orderId=" + row[0]);
+    }
+
+    public void onTabChange(TabChangeEvent event) {
+        Object[] tabData = (Object[]) event.getData();
+        filter.setObject("status", tabData[1]);
+        try {
+            apply();
+        } catch (Exception e) {
+            msg(e);
+        }
+    }
+
+    public int getActiveTabIndex() {
+        int n = filter.getInt("status");
+        switch (n) {
+            case 99:
+                return 1;
+            case 1:
+                return 2;
+            case 2:
+                return 3;
+            case 3:
+                return 4;
+            default:
+                return 0;
+        }
+    }
+
+    public void rep() throws Exception {
+        getMailService().createReport();
+    }
+
+    public void apply() throws Exception {
         StringBuilder bld = new StringBuilder(sql("ordersList"));
 
-        if (useAuthorised) {
+        if (filter.getInt("status") == 0) {
             bld.append(" and r.AUTHORIZ_LEVEL = o.lvl ");
         }
 
@@ -57,132 +101,58 @@ public class OrdersBean extends AbstractBean {
             bld.append(" and client = :clcclientt ");
         }
 
-        if (filter.getObject("clcdept") != null) {
-            bld.append(" and dep = :clcdept ");
+        if (filter.getInt("status") != 99 && filter.getInt("status") > 0) {
+            bld.append(" and status = :status ");
         }
 
-        if (filter.getObject("clcstatust") != null) {
-            bld.append(" and status = :clcstatust ");
-        }
-
-        bld.append(" order by 'r' ");
-
-        if (!sSuma.equals(Sorting.NONE)) {
-            bld.append(" ,suma ");
-            if (sSuma.equals(Sorting.DOWN))
-                bld.append("desc ");
-        }
-
-        if (!sClient.equals(Sorting.NONE)) {
-            bld.append(" ,client ");
-            if (sClient.equals(Sorting.DOWN))
-                bld.append("desc ");
-        }
-
-        if (!sDate.equals(Sorting.NONE)) {
-            bld.append(" ,pay_date ");
-            if (sDate.equals(Sorting.DOWN))
-                bld.append("desc ");
-        }
+        bld.append(" order by 1 desc ");
 
         orders = getDb().exec(bld.toString(), filter);
-        saveToApp();
+        setSessionParam("filter", filter);
     }
 
-    public String getStatusImg(int row, String fieldName) {
-        CustomItem item = (CustomItem) orders.getObject(row, fieldName);
+    public int decimalSort(Object val1, Object val2) {
+        return ((BigDecimal) val1).compareTo((BigDecimal) val2);
+    }
+
+    public void applyFilter(AjaxBehaviorEvent event) throws Exception {
+        apply();
+    }
+
+    public String getStatusImg(Object status) {
+        CustomItem item = (CustomItem) status;
         switch (item.getId().intValue()) {
             case 2:
-                return "order_green.png";
+                return "folder_green_backup.png";
             case 3:
-                return "order_blue.png";
-            case 4:
-                return "order_orange.png";
+                return "folder_blue_todos.png";
             default:
-                return "order.png";
+                return "to-do-list.png";
         }
     }
 
-    private void saveToApp() {
-        setSessionParam("clcdivt", filter.getObject("clcdivt"));
-        setSessionParam("useAuthorised", useAuthorised);
-        setSessionParam("clcclientt", filter.getObject("clcclientt"));
-        setSessionParam("clcstatust", filter.getObject("clcstatust"));
-        setSessionParam("clcdept", filter.getObject("clcdept"));
-        setSessionParam("sSuma", sSuma);
-        setSessionParam("sClient", sClient);
-        setSessionParam("sDate", sDate);
-    }
-
-    private void loadFromApp() {
-        filter.setObject("clcdivt", getSessionParam("clcdivt"));
-        useAuthorised = getSessionParam("useAuthorised");
-        filter.setObject("clcclientt", getSessionParam("clcclientt"));
-        filter.setObject("clcstatust", getSessionParam("clcstatust"));
-        filter.setObject("clcdept", getSessionParam("clcdept"));
-        sSuma = getSessionParam("sSuma") == null ? Sorting.NONE : getSessionParam("sSuma");
-        sClient = getSessionParam("sClient") == null ? Sorting.NONE : getSessionParam("sClient");
-        sDate = getSessionParam("sDate") == null ? Sorting.NONE : getSessionParam("sDate");
-    }
-
-    public DataSet getOrders() {
-        return orders;
-    }
-
-    public CustomItem getfDiv() {
-        return fDiv;
-    }
-
-    public void setfDiv(CustomItem fDiv) {
-        this.fDiv = fDiv;
-    }
-
-    public CustomItem getfDep() {
-        return fDep;
-    }
-
-    public void setfDep(CustomItem fDep) {
-        this.fDep = fDep;
-    }
-
-    public CustomItem getfClient() {
-        return fClient;
-    }
-
-    public void setfClient(CustomItem fClient) {
-        this.fClient = fClient;
-    }
-
-    public void setFilter(DataSet filter) {
-        this.filter = filter;
+    public void setOrders(DataSet orders) {
+        this.orders = orders;
     }
 
     public DataSet getFilter() {
         return filter;
     }
 
-    public Sorting getsSuma() {
-        return sSuma;
+    public void setFilter(DataSet filter) {
+        this.filter = filter;
     }
 
-    public void setsSuma(Sorting sSuma) {
-        this.sSuma = sSuma;
+    public DataSet getOrders() {
+        return orders;
     }
 
-    public Sorting getsDate() {
-        return sDate;
+    public CustomItem getUser() {
+        return user;
     }
 
-    public void setsDate(Sorting sDate) {
-        this.sDate = sDate;
-    }
-
-    public Sorting getsClient() {
-        return sClient;
-    }
-
-    public void setsClient(Sorting sClient) {
-        this.sClient = sClient;
+    public void setUser(CustomItem user) {
+        this.user = user;
     }
 
     public Integer getCount() {
@@ -193,11 +163,27 @@ public class OrdersBean extends AbstractBean {
         return useCreateBtn;
     }
 
-    public Boolean getUseAuthorised() {
-        return useAuthorised;
+    public Object[] getSelectedOrder() {
+        return selectedOrder;
     }
 
-    public void setUseAuthorised(Boolean useAuthorised) {
-        this.useAuthorised = useAuthorised;
+    public void setSelectedOrder(Object[] selectedOrder) {
+        this.selectedOrder = selectedOrder;
+    }
+
+    public List<Object[]> getTabs() {
+        return tabs;
+    }
+
+    public void setTabs(List<Object[]> tabs) {
+        this.tabs = tabs;
+    }
+
+    public Integer getTabIndex() {
+        return tabIndex;
+    }
+
+    public void setTabIndex(Integer tabIndex) {
+        this.tabIndex = tabIndex;
     }
 }

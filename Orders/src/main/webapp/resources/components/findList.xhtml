@@ -16,9 +16,10 @@
     <composite:attribute name="required" type="java.lang.Boolean" default="false"/>
     <composite:attribute name="requiredMessage" type="java.lang.String"/>
     <composite:attribute name="update" type="java.lang.String"/>
+    <composite:attribute name="style" type="java.lang.String"/>
 </composite:interface>
 <composite:implementation>
-    <p:outputPanel>
+    <p:outputPanel style="#{cc.attrs.style}">
         <script>
             function findKeyPress(event, changeCallback) {
                 if (event.keyCode == 13) changeCallback();

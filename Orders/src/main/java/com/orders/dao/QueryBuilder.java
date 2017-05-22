@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,14 +21,15 @@ public class QueryBuilder {
     private String sql;
     private StringBuilder query;
     private int len;
-    private Map<String, Object> params;
+    //private Map<String, Object> params;
+    private List<Object[]> params;
     private QueryTypes type;
 
     public QueryBuilder(String sql, Object... values) {
         this.sql = sql;
         this.len = sql.length();
         this.query = new StringBuilder(this.len);
-        this.params = new LinkedHashMap<>();
+        this.params = new ArrayList<>();
         this.values = values;
 
         type = defineType(sql);
@@ -47,7 +47,9 @@ public class QueryBuilder {
     }
 
     private Object getValue(String name) {
-        if (values[0] instanceof DataSet) {
+        if (values.length == 0)
+            return null;
+        else if (values[0] instanceof DataSet) {
             return ((DataSet) values[0]).getObject(name);
         } else if (values[0] instanceof Map<?, ?>) {
             return ((Map<String, Object>) values[0]).get(name);
@@ -59,7 +61,7 @@ public class QueryBuilder {
 
     private void addParam(StringBuilder param) {
         String name = param.toString();
-        params.put(name, getValue(name));
+        params.add(new Object[]{name, getValue(name)});
     }
 
     private void parse() {
@@ -103,30 +105,50 @@ public class QueryBuilder {
     }
 
     public void applyParams(CallableStatement statement) throws SQLException {
-        int i = 1;
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
+        for (int i = 0; i < params.size(); i++) {
+            Object[] row = params.get(i);
+            String key = row[0].toString();
+            if (key.toLowerCase().startsWith("out_"))
+                statement.registerOutParameter(i + 1, Types.VARCHAR);
+            else
+                addInParam(statement, i + 1, row[1]);
+        }
+        // int i = 1;
+        /*for (Map.Entry<String, Object> entry : params.entrySet()) {
             if (entry.getKey().toLowerCase().startsWith("out_"))
                 statement.registerOutParameter(i++, Types.VARCHAR);
             else
                 addInParam(statement, i++, entry.getValue());
-        }
+        }*/
     }
 
     public void applyParams(PreparedStatement ps) throws SQLException {
-        int i = 1;
+        for (int i = 0; i < params.size(); i++) {
+            addInParam(ps, i + 1, params.get(i)[1]);
+        }
+        /*int i = 1;
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             addInParam(ps, i++, entry.getValue());
-        }
+        }*/
     }
 
     public List<SqlParameter> getSqlParameters() throws SQLException {
         List<SqlParameter> parameters = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
+
+        for (Object[] row : params) {
+            String key = row[0].toString();
+            if (key.toLowerCase().startsWith("out_"))
+                parameters.add(new SqlOutParameter(key.substring(4), Types.VARCHAR));
+            else
+                parameters.add(new SqlParameter(key, toJdbcType(row[1])));
+        }
+
+        /*for (Map.Entry<String, Object> entry : params.entrySet()) {
             if (entry.getKey().toLowerCase().startsWith("out_"))
                 parameters.add(new SqlOutParameter(entry.getKey().substring(4), Types.VARCHAR));
             else
                 parameters.add(new SqlParameter(entry.getKey(), toJdbcType(entry.getValue())));
-        }
+        }*/
         return parameters;
     }
 
@@ -186,7 +208,7 @@ public class QueryBuilder {
         return type;
     }
 
-    public Map<String, Object> getParams() {
+    public List<Object[]> getParams() {
         return params;
     }
 }

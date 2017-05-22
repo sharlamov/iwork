@@ -3,18 +3,26 @@ body {
 }
 
 .row {
-    /*height: 80px;*/
-    width: 1000px;
+    width: 1200px;
     margin: auto;
 }
 
-.ui-widget, .ui-widget .ui-widget {
-    font-size: 12px !important;
-    font-family: "latoregular", "Trebuchet MS", Arial, Helvetica, sans-serif;
+.btn1 {
+    width: 140px;
+    height: 35px;
 }
 
-.btn {
-    width: 100px;
+.headLine{
+    height: 30px;
+}
+
+.ui-tabs .ui-tabs-nav li a{
+    padding: 5px !important;
+}
+
+.ui-widget, .ui-widget .ui-widget {
+    font-size: 15px !important;
+    font-family: Tahoma, Geneva, sans-serif
 }
 
 .Fs48 {
@@ -39,4 +47,8 @@ a {
 
 .ui-widget-content{
     color:black !important;
+}
+
+.ui-tabs .ui-tabs-panel {
+    padding: 5px 5px !important;
 }

@@ -34,7 +34,7 @@ abstract class AbstractBean implements Serializable {
     private MailService mailService;
 
     @ManagedProperty("#{sql}")
-    private ResourceBundle bundle; // +setter
+    private ResourceBundle bundle;
 
     public List<CustomItem> find(String query) {
         String sql = getAttribute("sql");
@@ -50,10 +50,12 @@ abstract class AbstractBean implements Serializable {
         }
     }
 
+    private ExternalContext extc() {
+        return FacesContext.getCurrentInstance().getExternalContext();
+    }
+
     public void downloadFile(Object name, Object type, Object object) throws Exception {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
-        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        HttpServletResponse response = (HttpServletResponse) extc().getResponse();
 
         BufferedInputStream input = null;
         BufferedOutputStream output = null;
@@ -94,16 +96,17 @@ abstract class AbstractBean implements Serializable {
         // Inform JSF that it doesn't need to handle response.
         // This is very important, otherwise you will get the following exception in the logs:
         // java.lang.IllegalStateException: Cannot forward after response has been committed.
-        facesContext.responseComplete();
+        FacesContext.getCurrentInstance().responseComplete();
     }
 
     // Helpers (can be refactored to public utility class) ----------------------------------------
 
-    private static void close(Closeable resource) {
+    private void close(Closeable resource) {
         if (resource != null) {
             try {
                 resource.close();
             } catch (IOException e) {
+                mailService.dbLog(e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -117,13 +120,13 @@ abstract class AbstractBean implements Serializable {
         return (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
-    public CustomItem getItemUser() {
-        CustomUser cu = getLoggedUser();
-        return new CustomItem(cu.getId(), cu.getUsername());
+    protected CustomItem getItemUser() {
+        CustomUser user = getLoggedUser();
+        return new CustomItem(user.getId(), user.getUsername());
     }
 
     public String getParam(String name) {
-        return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(name);
+        return extc().getRequestParameterMap().get(name);
     }
 
     public <T> T getAttribute(String name) {
@@ -132,11 +135,20 @@ abstract class AbstractBean implements Serializable {
     }
 
     public <T> T getSessionParam(String name) {
-        return (T) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get(name);
+        return (T) extc().getSessionMap().get(name);
     }
 
     public void setSessionParam(String name, Object value) {
-        FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put(name, value);
+        extc().getSessionMap().put(name, value);
+    }
+
+    public void goToPage(String page) {
+        try {
+            extc().redirect(page);
+        } catch (IOException e) {
+            mailService.dbLog(e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     void msg(String text, boolean useFlash) {
@@ -160,6 +172,7 @@ abstract class AbstractBean implements Serializable {
         context.addMessage(null, message);
         context.validationFailed();
         e.printStackTrace();
+        mailService.dbLog(e.getMessage());
     }
 
     public void setBundle(ResourceBundle bundle) {

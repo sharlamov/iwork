@@ -3,8 +3,6 @@ package com.orders.controllers;
 import com.dao.model.DataSet;
 import com.orders.model.CustomUser;
 import com.orders.utils.WebUtil;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -14,15 +12,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
-import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
-import javax.faces.event.PhaseId;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.Serializable;
-import java.sql.Blob;
-import java.sql.SQLException;
 
 @ManagedBean(name = "authBean")
 @SessionScoped
@@ -48,30 +39,33 @@ public class AuthBean extends AbstractBean implements Serializable {
             message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Добро пожаловать", userName);
 
             menu = getDb().exec("select * from tmdb_orders_menu order by cod");
-
-            setSessionParam("useAuthorised", true);
         } catch (Exception e) {
             message = new FacesMessage(FacesMessage.SEVERITY_FATAL, "Вход запрещен", e.getMessage());
             e.printStackTrace();
+            getMailService().dbLog(e.getMessage());
         }
 
         FacesContext.getCurrentInstance().addMessage(null, message);
         return menu.size() > 1 ? "home" : menu.getString("reference") + "?faces-redirect=true";
     }
 
-    public StreamedContent handleFileDownload() throws IOException {
-        return new DefaultStreamedContent(new FileInputStream("D:/tmp/DOC.PDF"), "application/pdf");
+
+    public String login1() {
+        UsernamePasswordAuthenticationToken upa = new UsernamePasswordAuthenticationToken(userName, WebUtil.encode(pass));
+        Authentication result = authenticationManager.authenticate(upa);
+
+        if (result.isAuthenticated()) {
+            SecurityContextHolder.getContext().setAuthentication(result);
+        }
+        return "home?faces-redirect=true";
     }
 
     public String logout() {
+        FacesContext.getCurrentInstance().getExternalContext().getSessionMap().clear();
         SecurityContextHolder.clearContext();
         return "login?faces-redirect=true";
     }
 
-    public void setAuthenticationManager(
-            AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
 
     public CustomUser getCurrentUser() {
         return currentUser;
@@ -99,5 +93,9 @@ public class AuthBean extends AbstractBean implements Serializable {
 
     public DataSet getMenu() {
         return menu;
+    }
+
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
     }
 }

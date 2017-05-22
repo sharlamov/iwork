@@ -2,23 +2,18 @@ package com.orders.controllers;
 
 import com.dao.model.CustomItem;
 import com.dao.model.DataSet;
+import com.orders.utils.WebUtil;
 import org.primefaces.event.FileUploadEvent;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 import org.primefaces.model.UploadedFile;
 
 import javax.annotation.PostConstruct;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.Blob;
+import javax.faces.context.FacesContext;
 
 @ManagedBean
 @ViewScoped
-public class OrderEditBean extends AbstractBean implements Serializable {
+public class OrderEditBean extends AbstractBean {
 
     private DataSet order;
     private DataSet orderFiles;
@@ -89,7 +84,7 @@ public class OrderEditBean extends AbstractBean implements Serializable {
             if (preLevel != proLevel)
                 getDb().exec(sql("insertHistory"), orderId, proLevel, commentDlg, getItemUser(), order.getObject("clcstatust"));
 
-            msg("Заявка № " + orderId + " сохранена успешно", true);
+            //msg("Заявка № " + orderId + " сохранена успешно", true);
             return "orders?faces-redirect=true";
         } catch (Exception e) {
             msg(e);
@@ -97,43 +92,41 @@ public class OrderEditBean extends AbstractBean implements Serializable {
         }
     }
 
-    public String approve() {
+    public void approve() {
         try {
-            String info;
+            String msg = "";
             if (isApprove) {
                 DataSet set = getDb().exec(sql("nextLevel"), order);
 
                 if (set.getObject("nStep") == null) {
                     order.setObject("clcstatust", new CustomItem(3, null));
                     order.setObject("lvl", 1000);
-                    info = "Процесс подтверждения успешно завершен!";
                 } else {
                     order.setObject("lvl", set.getObject("nStep"));
                     order.setObject("clcstatust", new CustomItem(2, null));
-                    info = "Заявка № " + orderId + "  утверждена успешно, осталось " + set.getObject("rSteps") + " шаг(а)!";
-                    sendOrderNotification("Заявка № " + orderId + " ожидает вашего утверждения! ", order);
+                    msg = "Order No. %s is waiting for your approval!";
                 }
             } else {
                 DataSet set = getDb().exec(sql("previousLevel"), order);
                 int lvl = set.getInt("nStep");
                 order.setObject("clcstatust", new CustomItem(lvl > 0 ? 2 : 1, null));
                 order.setObject("lvl", lvl);
-                info = "Заявка № " + orderId + " отменена";
-                sendOrderNotification("Заявка № " + orderId + " ожидает вашего просмотра! ", order);
+                msg = "Order No. %s is waiting for your attention!";
             }
 
-            msg(info, true);
-            return save();
+            save();
+            goToPage("orders.xhtml");
+
+            sendOrderNotification(String.format(msg, orderId), order);
         } catch (Exception e) {
             msg(e);
-            return "";
         }
     }
 
     private void sendOrderNotification(String msg, DataSet order) throws Exception {
         DataSet emails = getDb().exec(sql("findRecipients"), order);
         for (Object[] email : emails) {
-            getMailService().sendEmail(email[0].toString(), msg, msg);
+            getMailService().sendEmail(email[0].toString(), msg);
         }
     }
 

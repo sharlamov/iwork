@@ -15,19 +15,19 @@
         <p:outputPanel id="editOrder" widgetVar="editOrder">
             <p:toolbar style="margin-top: 5px">
                 <f:facet name="left">
-                    <p:button type="button" style="width: 100px" value="Назад"
+                    <p:button type="button" value="Назад" styleClass="btn1"
                               icon="ui-icon-arrowreturnthick-1-s" outcome="orders"/>
-                    <p:commandButton style="width: 100px" value="Сохранить" icon="ui-icon-disk"
+                    <p:commandButton value="Сохранить" icon="ui-icon-disk" styleClass="btn1"
                                      action="#{orderEditBean.save}" process=":dataForm:editOrder"
                                      update="messages grid" disabled="#{orderEditBean.disabled}" validateClient="true"/>
                 </f:facet>
                 <f:facet name="right">
-                    <p:commandButton styleClass="btn" value="Отменить" icon="ui-icon-close"
+                    <p:commandButton styleClass="btn1" value="Отменить" icon="ui-icon-close"
                                      oncomplete="if (!args.validationFailed) openDialog('editDialog', 'dataForm', 'Отмена');"
                                      actionListener="#{orderEditBean.openApprove(false)}"
                                      process=":dataForm:editOrder" update=":dataForm:editDialog grid messages"
                                      disabled="#{orderEditBean.disabledApprove}"/>
-                    <p:commandButton styleClass="btn" value="Утвердить" icon="ui-icon-check"
+                    <p:commandButton styleClass="btn1" value="Утвердить" icon="ui-icon-check"
                                      oncomplete="if (!args.validationFailed) openDialog('editDialog', 'dataForm', 'Утвердить');"
                                      actionListener="#{orderEditBean.openApprove(true)}"
                                      process=":dataForm:editOrder" update="messages grid"
@@ -38,7 +38,8 @@
             <p:panelGrid columns="2" style="width: 60%; margin-top: 5px;float: left" id="grid">
                 <f:facet name="header">
                     <p:column colspan="2">Форма заполнения заявки №
-                        <h:outputText value="#{orderEditBean.order.getObject('ord')} от "/>
+                        <h:outputText value="#{orderEditBean.order.getObject('ord')} от "
+                                      style="height: 26px!important;"/>
                         <h:outputText value="#{orderEditBean.order.getObject('reg_time')}">
                             <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"/>
                         </h:outputText>
@@ -136,7 +137,8 @@
                                 <h:outputText value='${item[2]}'/>
                             </p:column>
                             <p:column>
-                                <p:commandButton icon="ui-icon-search"  actionListener="#{orderEditBean.downloadFile(item[2], item[3], item[4])}"
+                                <p:commandButton icon="ui-icon-search"
+                                                 actionListener="#{orderEditBean.downloadFile(item[2], item[3], item[4])}"
                                                  ajax="false" rendered="#{item[1] ne null}"/>
                                 <p:commandButton action="#{orderEditBean.removeFile(rows.index)}"
                                                  update="@form:files" process="@this"
@@ -162,13 +164,13 @@
                 <p:column headerText="Пользователь" width="150">
                     <h:outputText value="#{row[orderEditBean.history.findField('clcuseridt')]}"/>
                 </p:column>
-                <p:column headerText="Статус" width="100">
+                <p:column headerText="Статус" width="130">
                     <h:outputText value="#{row[orderEditBean.history.findField('clcstatust')]}"/>
                 </p:column>
                 <p:column headerText="Комментарий">
                     <h:outputText value="#{row[orderEditBean.history.findField('text')]}"/>
                 </p:column>
-                <p:column headerText="Дата/Время" width="110">
+                <p:column headerText="Дата/Время" width="150">
                     <h:outputText value="#{row[orderEditBean.history.findField('datetime')]}">
                         <f:convertDateTime pattern="dd.MM.yyyy HH:mm:ss"/>
                     </h:outputText>
@@ -194,9 +196,9 @@
             </p:outputPanel>
             <hr/>
             <div style="float: right">
-                <p:commandButton value="Да" styleClass="btn" oncomplete="dlgHide('editDialog')"
-                                 action="#{orderEditBean.approve}" update="messages" process="editDialog"/>
-                <p:commandButton value="Отмена" onclick="dlgHide('editDialog')" styleClass="btn"
+                <p:commandButton value="Да" styleClass="btn1" oncomplete="dlgHide('editDialog')"
+                                 actionListener="#{orderEditBean.approve}" update="messages" process="editDialog"/>
+                <p:commandButton value="Отмена" onclick="dlgHide('editDialog')" styleClass="btn1"
                                  immediate="true" global="false" process="editDialog" update="messages">
                 </p:commandButton>
             </div>

@@ -8,5 +8,5 @@ public interface QueryFactory extends Serializable {
 
     DataSet exec(String sql, Object... values) throws Exception;
 
-    <T> T execForValue(String sql, Class<T> clazz, Object... values);
+    <T> T value(String sql, Class<T> clazz, Object... values);
 }

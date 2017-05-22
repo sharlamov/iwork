@@ -50,7 +50,7 @@ public class QueryFactoryImpl implements QueryFactory {
 
     @Override
     @Transactional
-    public <T> T execForValue(String sql, Class<T> clazz, Object... values) {
+    public <T> T value(String sql, Class<T> clazz, Object... values) {
         long t = System.currentTimeMillis();
         T value = jdbcTemplate.queryForObject(sql, values, clazz);
         System.out.println("sql: " + (System.currentTimeMillis() - t));

@@ -1,12 +1,74 @@
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:ui="http://java.sun.com/jsf/facelets">
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui" xmlns:f="http://xmlns.jcp.org/jsf/core"
+>
+    <h:outputStylesheet library="css" name="header.css"/>
+    <h:outputScript library="scripts" name="home_layout.js"/>
+    <h:outputScript library="scripts" name="home_scroll.js"/>
+    <h:outputScript library="scripts" name="home_replink.js"/>
 
     <div id="layout-topbar">
-        <h:graphicImage name="/images/logo.jpg" style="padding: 15px; width:200px;height: 100px;"/>
-        <h:commandLink action="#{authBean.logout}" immediate="true"
-                       styleClass="fa fa-sign-out gray Fs24" style="float: right; margin: 10px;"/>
-        <h:outputLabel value="#{authBean.userName}" style="float: right; margin-top: 13px;"/>
+        <a id="mobile-menu-button">
+            <span class="ButtonLine" id="ButtonLine1"/>
+            <span class="ButtonLine" id="ButtonLine2"/>
+            <span class="ButtonLine" id="ButtonLine3"/>
+        </a>
+
+        <span style="font-size: xx-large;font-weight: bold;color: white;margin-left: 10px; float: left">TRANS-OIL</span>
+
+        <ul id="top-menu">
+            <li style="padding-top: 10px;padding-right: 10px">
+                <span style="font-weight: bold; color: white">#{authBean.userName}</span>
+            </li>
+            <li>
+                <p:lightBox id="lighbox2" onHide="$('#vid1').get(0).pause();" onShow="$('#vid1').get(0).play();" rendered="true">
+                    <h:outputLink value="#" styleClass="ripplelink fa fa-question whiteBtn"/>
+
+                    <f:facet name="inline">
+                        <video controls="" autoplay="" id="vid1" width="800px" height="550px">
+                            <source src="../resources/video/instr.mp4"
+                                    type="video/mp4"/>
+                        </video>
+                    </f:facet>
+                </p:lightBox>
+            </li>
+            <li>
+                <h:commandLink action="#{authBean.logout}" immediate="true"
+                               styleClass="ripplelink fa fa-power-off"/>
+            </li>
+        </ul>
     </div>
+
+
+    <div id="wrapper">
+        <div id="wrapperIndent">
+            <div class="Animated05 ps-container ps-active-y" id="layout-menu-cover">
+                <ul class="layout-menu ShadowEffect modena-menu">
+                    <li role="menuitem">
+                        <a class="menulink ripplelink" href="#{request.contextPath}/views/home.xhtml"><i
+                                class="fa fa-user"/>Главная</a>
+                    </li>
+                    <li role="menuitem"><a href="#" class="menulink ripplelink">
+                        <i class="icon-null"/><i class="fa fa-user"/>Разделы</a>
+                        <ul role="menu">
+                            <li role="menuitem" class="active-menu-parent"><a
+                                    class="menulink ripplelink active-menu active-menu-restore"
+                                    href="#{request.contextPath}/views/orders.xhtml"><i
+                                    class="icon-null"/><i class="fa fa-user"/>Заявки на оплату</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <p:dialog header="Effects" widgetVar="dlg3" showEffect="explode" hideEffect="bounce"
+              modal="true" closeOnEscape="true" width="400" height="250">
+        <h:panelGroup id="video">
+            <p:media value="/resources/video/Video_1.mp4" width="1000" height="500"/>
+        </h:panelGroup>
+    </p:dialog>
 
 </ui:composition>

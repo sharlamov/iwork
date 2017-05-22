@@ -1,11 +1,7 @@
 package com.orders.services;
 
-import org.springframework.mail.javamail.MimeMessageHelper;
-
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import java.io.File;
-import java.io.IOException;
 
 public interface MailService {
 
@@ -13,6 +9,9 @@ public interface MailService {
 
     void sendEmail(String to, String sub, String msgBody);
 
+    void sendEmail(String to, String msg);
+
     void createReport() throws Exception;
 
+    void dbLog(String e);
 }

@@ -6,24 +6,20 @@
 >
 
 <h:head>
-    <frame-options policy="SAMEORIGIN"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta http-equiv="refresh" content="#{session.maxInactiveInterval};url=#{request.contextPath}/views/login.xhtml"/>
     <h:outputStylesheet library="css" name="basic.css"/>
     <h:outputScript library="scripts" name="basic.js"/>
 
-    <title>TRANSOIL GROUP</title>
+    <title>TRANS-OIL</title>
 </h:head>
 <h:body>
     <p:growl id="messages" showDetail="true"/>
     <h:form id="dataForm" style="height: 100%;">
-        <div class="row" style="background-color: #4CAF50">
+        <div >
             <ui:include src="header.xhtml"/>
         </div>
-        <div class="row" style="background-color: bisque">
-            <ui:include src="menu.xhtml"/>
-        </div>
-        <div class="row">
+        <div class="row" style="margin-top: 5px">
             <ui:insert name="content"/>
         </div>
     </h:form>

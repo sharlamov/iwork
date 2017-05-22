@@ -129,7 +129,7 @@ public class ReportGear {
 
     private String getGroupParam(Row row) {
         Cell cell = row.getCell(1);
-        return cell != null && cell.getCellType() == 1 ? cell.getStringCellValue().replace("_", "").toUpperCase() : "";
+        return cell != null && cell.getCellType() == 1 ? cell.getStringCellValue().substring(1).toUpperCase() : "";
     }
 
     private void printSetup(Sheet oldSheet, Sheet newSheet) {

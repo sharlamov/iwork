@@ -14,3 +14,8 @@ Libra/templates/*.xlsx
 setting.json
 Libra/settings.json
 Libra/settings.json
+*.mp4
+Orders/out/
+Orders/out/*
+Orders/out/*
+Libra/settings.json
